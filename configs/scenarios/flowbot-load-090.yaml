@@ -1,5 +1,5 @@
-# FlowBot-like load: each 52 Mb/s bottleneck carries ~29 Mb/s of video plus
-# PPBP cross traffic averaging 18 Mb/s (load ~0.9 of capacity), bursty and
+# FlowBot-like load 0.9: each 52 Mb/s bottleneck carries ~29 Mb/s of video
+# plus PPBP cross traffic averaging 17.8 Mb/s ((29 + 17.8) / 52 = 0.9), bursty and
 # self-similar (Hurst 0.8, 0.5 s mean bursts at 2 Mb/s each). Congestion
 # comes from the traffic itself, not from scripted link changes. pie with a
 # 200-packet limit (~1 BDP); the seeds make every run identical.
@@ -39,5 +39,5 @@ routers:
   r2: { aqm: pie, queue_limit_packets: 200 }
 
 events:
-  - { at_s: 0, type: ppbp, id: cross-a, route: cross-a, duration_s: 120, mean_mbps: 18, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 1 }
-  - { at_s: 0, type: ppbp, id: cross-b, route: cross-b, duration_s: 120, mean_mbps: 18, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 2 }
+  - { at_s: 0, type: ppbp, id: cross-a, route: cross-a, duration_s: 120, mean_mbps: 17.8, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 1 }
+  - { at_s: 0, type: ppbp, id: cross-b, route: cross-b, duration_s: 120, mean_mbps: 17.8, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 2 }

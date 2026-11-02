@@ -1,0 +1,43 @@
+# FlowBot-like load 0.7: each 52 Mb/s bottleneck carries ~29 Mb/s of video
+# plus PPBP cross traffic averaging 7.4 Mb/s ((29 + 7.4) / 52 = 0.7), bursty and
+# self-similar (Hurst 0.8, 0.5 s mean bursts at 2 Mb/s each). Congestion
+# comes from the traffic itself, not from scripted link changes. pie with a
+# 200-packet limit (~1 BDP); the seeds make every run identical.
+duration_s: 120
+
+link_defaults:
+  forward: { bandwidth_mbps: 1000, delay_ms: 1 }
+  reverse: { bandwidth_mbps: 1000, delay_ms: 1 }
+
+links:
+  - { from: pub, to: r1, forward: { bandwidth_mbps: 1000, delay_ms: 5 }, reverse: { bandwidth_mbps: 1000, delay_ms: 5 } }
+  - { from: r1, to: r2, forward: { bandwidth_mbps: 1000, delay_ms: 10 }, reverse: { bandwidth_mbps: 1000, delay_ms: 10 } }
+  - { from: r2, to: switch-a, forward: { bandwidth_mbps: 52 } }
+  - { from: r2, to: switch-b, forward: { bandwidth_mbps: 52 } }
+  - { from: switch-a, to: a00, forward: { delay_ms: 2 }, reverse: { delay_ms: 2 } }
+  - { from: switch-a, to: a01, forward: { delay_ms: 4 }, reverse: { delay_ms: 4 } }
+  - { from: switch-a, to: a02, forward: { delay_ms: 6 }, reverse: { delay_ms: 6 } }
+  - { from: switch-a, to: a03, forward: { delay_ms: 8 }, reverse: { delay_ms: 8 } }
+  - { from: switch-a, to: a04, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: switch-a, to: a05, forward: { delay_ms: 12 }, reverse: { delay_ms: 12 } }
+  - { from: switch-a, to: a06, forward: { delay_ms: 14 }, reverse: { delay_ms: 14 } }
+  - { from: switch-a, to: a07, forward: { delay_ms: 16 }, reverse: { delay_ms: 16 } }
+  - { from: switch-a, to: a08, forward: { delay_ms: 18 }, reverse: { delay_ms: 18 } }
+  - { from: switch-a, to: a09, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
+  - { from: switch-b, to: b00, forward: { delay_ms: 2 }, reverse: { delay_ms: 2 } }
+  - { from: switch-b, to: b01, forward: { delay_ms: 4 }, reverse: { delay_ms: 4 } }
+  - { from: switch-b, to: b02, forward: { delay_ms: 6 }, reverse: { delay_ms: 6 } }
+  - { from: switch-b, to: b03, forward: { delay_ms: 8 }, reverse: { delay_ms: 8 } }
+  - { from: switch-b, to: b04, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: switch-b, to: b05, forward: { delay_ms: 12 }, reverse: { delay_ms: 12 } }
+  - { from: switch-b, to: b06, forward: { delay_ms: 14 }, reverse: { delay_ms: 14 } }
+  - { from: switch-b, to: b07, forward: { delay_ms: 16 }, reverse: { delay_ms: 16 } }
+  - { from: switch-b, to: b08, forward: { delay_ms: 18 }, reverse: { delay_ms: 18 } }
+  - { from: switch-b, to: b09, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  r2: { aqm: pie, queue_limit_packets: 200 }
+
+events:
+  - { at_s: 0, type: ppbp, id: cross-a, route: cross-a, duration_s: 120, mean_mbps: 7.4, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 1 }
+  - { at_s: 0, type: ppbp, id: cross-b, route: cross-b, duration_s: 120, mean_mbps: 7.4, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 2 }
