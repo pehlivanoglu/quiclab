@@ -9,6 +9,5 @@ Deferred (not in the setup step):
 - [ ] Rejoin: a subscriber joins and leaves at most once per run.
 - [ ] Detectors (shadow detector, SBD baselines) on qvideo-server via an mvfst observer.
 - [ ] Kernel-side event capture (moqlab `tc_events.py`): `events.csv` records what quiclab applied, not tc changes made by hand in `--cli`.
-- [ ] Sender-side frame skipping / delivery timeout: today a congested path only builds sender backlog; the client playback model never skips frames.
 - [ ] BBRv3 (not in mvfst; would be a Bbr2 patch).
 - [ ] Router queue occupancy in the visualizer node panel (the CSVs are already written).

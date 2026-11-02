@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "Playback.h"
 #include "Ppbp.h"
+#include "SendQueue.h"
 
 #include <cassert>
 #include <cstdio>
@@ -56,6 +57,54 @@ int main() {
   assert(std::abs(load - pp.meanMbps) / pp.meanMbps < 0.1);
   const auto again = qvideo::ppbpBursts(pp);
   assert(again.size() == bursts.size() && again.back().startS == bursts.back().startS);
+  // Send queue: 30 frames per GOP, 1 s limit. GOP 0 waits too long.
+  {
+    qvideo::SendQueue q(1'000'000);
+    std::vector<qvideo::QueuedFrame> dropped;
+    for (uint64_t k = 0; k < 40; ++k) {
+      q.push({k, k / 30, k % 30 == 0, 1000, k * 33'333}, dropped);
+    }
+    assert(dropped.empty() && q.bytes() == 40'000);
+    q.dropStale(1'100'000, dropped);  // frame 0 is 1.1 s old: all of GOP 0 goes
+    assert(dropped.size() == 30 && q.front().index == 30 && q.front().keyframe);
+    dropped.clear();
+    q.dropStale(1'200'000, dropped);  // frame 30 is only 0.2 s old
+    assert(dropped.empty() && q.bytes() == 10'000);
+    // A drop in the middle of GOP 1 also drops its later frames as they are produced.
+    q.dropStale(2'200'000, dropped);
+    assert(dropped.size() == 10 && q.empty());
+    dropped.clear();
+    q.push({40, 1, false, 1000, 2'300'000}, dropped);
+    assert(dropped.size() == 1 && q.empty());
+    q.push({60, 2, true, 1000, 2'400'000}, dropped);
+    assert(!q.empty() && q.front().index == 60);
+    qvideo::SendQueue unlimited(0);
+    unlimited.push({0, 0, true, 1000, 0}, dropped);
+    unlimited.dropStale(100'000'000, dropped);
+    assert(!unlimited.empty());
+  }
+
+  // Playback after a sender skip: frames 5..9 were dropped, keyframe 10 says so.
+  {
+    qvideo::Playback skip(33000, 100000);
+    for (uint64_t k = 0; k < 5; ++k) {
+      skip.onFrame(k, k * 33000);
+    }
+    skip.onFrame(10, 10 * 33000, 5);
+    assert(skip.skipped() == 5 && skip.stalls() == 0);
+    assert(skip.bufferUs(10 * 33000) > 0);  // contiguous through the skip
+  }
+  // Reordering across GOP streams is not a skip: keyframe 10 first, then 8, 9.
+  {
+    qvideo::Playback reorder(33000, 100000);
+    for (uint64_t k = 0; k < 8; ++k) {
+      reorder.onFrame(k, k * 33000);
+    }
+    reorder.onFrame(10, 8 * 33000);
+    reorder.onFrame(8, 9 * 33000);
+    reorder.onFrame(9, 9 * 33000);
+    assert(reorder.skipped() == 0 && reorder.stalls() == 0);
+  }
   std::puts("qvideo selftest ok");
   return 0;
 }

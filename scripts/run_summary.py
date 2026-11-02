@@ -35,8 +35,11 @@ def subscribers(run: Path) -> dict[str, dict[str, float]]:
         frames = rows(run / "clients" / f"{sid}-frames.csv")
         cc_files = list((run / "publishers").glob(f"*/{sid}-cc.csv"))
         steady = [r for r in play if int(r["t_us"]) >= t0 + 5_000_000] or play
+        drops = list((run / "publishers").glob(f"*/{sid}-drops.csv"))
         out[sid] = {
             "stalls": int(play[-1]["stalls"]),
+            "skipped": int(play[-1].get("skipped_frames") or 0),
+            "dropped": len(rows(drops[0])) if drops else 0,
             "stall_ms": int(play[-1]["stall_ms"]),
             "goodput_mbps": statistics.fmean(int(r["goodput_bps"]) for r in steady) / 1e6,
             "max_owd_ms": max((int(r["owd_us"]) for r in frames), default=0) / 1000,

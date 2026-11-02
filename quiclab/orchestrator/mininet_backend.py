@@ -414,6 +414,7 @@ def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_u
             f"--stats_ms={publisher.stats_ms}",
             f"--workers={workers}",
             f"--start_unix_us={start_unix_us}",
+            f"--send_buffer_ms={publisher.send_buffer_ms}",
             f"--out_dir={out_dir}",
             "--logtostderr",
         ]

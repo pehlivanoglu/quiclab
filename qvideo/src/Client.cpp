@@ -50,7 +50,7 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
     framesCsv_.open(base + "-frames.csv");
     framesCsv_ << "index,keyframe,size,send_us,recv_us,owd_us,late_us\n";
     playCsv_.open(base + "-playback.csv");
-    playCsv_ << "t_us,frames,bytes,goodput_bps,buffer_ms,stalls,stall_ms,owd_ms\n";
+    playCsv_ << "t_us,frames,bytes,goodput_bps,buffer_ms,stalls,stall_ms,owd_ms,skipped_frames\n";
 
     auto qevb = std::make_shared<quic::FollyQuicEventBase>(evb_);
     auto sock = std::make_unique<quic::FollyQuicAsyncUDPSocket>(qevb);
@@ -161,7 +161,7 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
 
  private:
   void onFrame(const qvideo::FrameHeader& h, uint64_t now) {
-    const int64_t late = playback_.onFrame(h.index, now);
+    const int64_t late = playback_.onFrame(h.index, now, h.skippedBefore);
     const uint64_t owd = now > h.sendUs ? now - h.sendUs : 0;
     ++frames_;
     bytes_ += h.size;
@@ -179,7 +179,7 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
     std::ostringstream row;
     row << now << ',' << frames_ << ',' << bytes_ << ',' << uint64_t(goodput) << ','
         << playback_.bufferUs(now) / 1000 << ',' << playback_.stalls() << ','
-        << playback_.stallUs() / 1000 << ',' << owdMs << '\n';
+        << playback_.stallUs() / 1000 << ',' << owdMs << ',' << playback_.skipped() << '\n';
     playCsv_ << row.str();
     playCsv_.flush();
     framesCsv_.flush();

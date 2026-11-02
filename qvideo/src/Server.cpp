@@ -7,6 +7,7 @@
 // "encoded", so a congested path builds sender-side backlog like a live encoder.
 
 #include "Common.h"
+#include "SendQueue.h"
 
 #include <folly/Synchronized.h>
 #include <folly/init/Init.h>
@@ -24,6 +25,7 @@
 
 #include <csignal>
 #include <filesystem>
+#include <limits>
 
 DEFINE_string(host, "0.0.0.0", "listen address");
 DEFINE_int32(port, 4433, "listen UDP port");
@@ -36,6 +38,7 @@ DEFINE_double(size_sigma, 0.2, "lognormal sigma of per-frame size noise");
 DEFINE_uint64(seed, 1, "frame size seed");
 DEFINE_int32(stats_ms, 50, "sender CC stats sampling interval");
 DEFINE_int32(workers, 1, "QUIC worker threads (one EventBase each)");
+DEFINE_int32(send_buffer_ms, 1000, "sender frame queue limit in media time (GOP-aware head drop); 0 = unlimited");
 DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all clients; 0 = now");
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
 
@@ -70,6 +73,8 @@ class PacingObserver : public quic::ManagedObserver {
   uint64_t packetsPerInterval{0};
   std::chrono::microseconds interval{0};
 };
+
+constexpr std::chrono::microseconds kPumpInterval{5000};
 
 class Session : public quic::QuicSocket::ConnectionSetupCallback,
                 public quic::QuicSocket::ConnectionCallback,
@@ -147,12 +152,17 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     pacing_ = std::make_shared<PacingObserver>();
     sock_->addObserver(pacing_);
     framesCsv_.open(base + "-frames.csv");
-    framesCsv_ << "index,keyframe,size,send_us,stream\n";
+    // send_us: when the frame was produced (carried to the client for OWD);
+    // write_us: when it left the sender queue for QUIC.
+    framesCsv_ << "index,keyframe,size,send_us,write_us,stream\n";
+    dropsCsv_.open(base + "-drops.csv");
+    dropsCsv_ << "t_us,index,gop,keyframe,size,age_us\n";
+    queue_.emplace(uint64_t(FLAGS_send_buffer_ms) * 1000);
     statsCsv_.open(base + "-cc.csv");
     // cc: the controller mvfst actually runs (TransportInfo), not the flag.
     statsCsv_ << "t_us,cc,srtt_us,min_rtt_us,latest_rtt_us,cwnd_bytes,inflight_bytes,"
                  "pacing_bps,bw_est_bps,bytes_sent,bytes_acked,retx_bytes,lost_packets,"
-                 "app_bytes,backlog_bytes\n";
+                 "app_bytes,queue_bytes,queue_age_us,quic_unsent_bytes,backlog_bytes,dropped_frames\n";
 
     nextIndex_ = schedule_.firstFrame(qvideo::nowUs());
     LOG(INFO) << request_->clientId << " rate=" << params_.rateKbps << "kbps phase="
@@ -162,6 +172,15 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     statsTimer_ = folly::AsyncTimeout::make(*evb_, [this]() noexcept { onStatsTimer(); });
     scheduleFrame();
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
+    if (FLAGS_send_buffer_ms > 0) {
+      pumpTimer_ = folly::AsyncTimeout::make(*evb_, [this]() noexcept {
+        pump();
+        if (!done_) {
+          pumpTimer_->scheduleTimeoutHighRes(kPumpInterval);
+        }
+      });
+      pumpTimer_->scheduleTimeoutHighRes(kPumpInterval);
+    }
   }
 
   void scheduleFrame() {
@@ -174,19 +193,59 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (done_) {
       return;
     }
-    // Catch up on every frame whose time has passed (a late timer must not
-    // lower the encoded bitrate).
+    // Produce every frame whose time has passed (a late timer must not lower
+    // the encoded bitrate); the queue decides what reaches QUIC.
+    std::vector<qvideo::QueuedFrame> dropped;
     for (uint64_t now = qvideo::nowUs(); schedule_.timeUs(nextIndex_) <= now; ++nextIndex_) {
-      if (!sendFrame(nextIndex_)) {
-        return;
-      }
+      const uint64_t k = nextIndex_;
+      queue_->push({k, k / params_.gopFrames, k % params_.gopFrames == 0,
+                    qvideo::frameSize(params_, k), qvideo::nowUs()}, dropped);
     }
+    logDrops(dropped);
+    pump();
     scheduleFrame();
   }
 
-  bool sendFrame(uint64_t k) {
-    const bool key = k % params_.gopFrames == 0;
-    if (key) {
+  // Hand queued frames to QUIC while its unsent data is below one cwnd, so
+  // the backlog stays in the queue, where stale frames can still be dropped.
+  // Unlimited mode writes everything at once (no queue in front of QUIC).
+  void pump() {
+    if (done_) {
+      return;
+    }
+    std::vector<qvideo::QueuedFrame> dropped;
+    queue_->dropStale(qvideo::nowUs(), dropped);
+    logDrops(dropped);
+    const auto info = sock_->getTransportInfo();
+    uint64_t unsent = quicUnsent(info);
+    const uint64_t cap = FLAGS_send_buffer_ms > 0 ? std::max<uint64_t>(info.congestionWindow, 1)
+                                                  : std::numeric_limits<uint64_t>::max();
+    while (!queue_->empty() && unsent < cap) {
+      const qvideo::QueuedFrame f = queue_->front();
+      queue_->pop();
+      if (!writeFrame(f)) {
+        return;
+      }
+      unsent += f.size;
+    }
+  }
+
+  uint64_t quicUnsent(const quic::TransportInfo& info) const {
+    return appBytes_ > info.totalNewStreamBytesSent ? appBytes_ - info.totalNewStreamBytesSent : 0;
+  }
+
+  void logDrops(const std::vector<qvideo::QueuedFrame>& dropped) {
+    const uint64_t now = qvideo::nowUs();
+    for (const auto& f : dropped) {
+      dropsCsv_ << now << ',' << f.index << ',' << f.gop << ',' << int(f.keyframe) << ',' << f.size
+                << ',' << now - f.producedUs << '\n';
+    }
+    droppedFrames_ += dropped.size();
+    droppedSinceWrite_ += dropped.size();
+  }
+
+  bool writeFrame(const qvideo::QueuedFrame& f) {
+    if (f.keyframe) {
       if (stream_) {
         (void)sock_->writeChain(*stream_, quic::Buf::create(0), true);
       }
@@ -196,13 +255,18 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
         return false;
       }
       stream_ = *id;
+    } else if (!stream_) {
+      return true;  // every session starts at a keyframe, so this never happens
     }
     qvideo::FrameHeader h;
-    h.keyframe = key ? 1 : 0;
-    h.index = k;
-    h.size = qvideo::frameSize(params_, k);
+    h.keyframe = f.keyframe ? 1 : 0;
+    h.index = f.index;
+    h.size = f.size;
     h.rateKbps = params_.rateKbps;
-    h.sendUs = qvideo::nowUs();
+    h.sendUs = f.producedUs;
+    // The queue is FIFO in frame order: everything dropped since the last
+    // write lies right before this frame.
+    h.skippedBefore = uint32_t(droppedSinceWrite_);
     auto buf = quic::Buf::create(h.size);
     std::memset(buf->writableData(), 0, h.size);
     std::memcpy(buf->writableData(), &h, sizeof(h));
@@ -212,8 +276,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
       return false;
     }
     appBytes_ += h.size;
-    framesCsv_ << k << ',' << int(h.keyframe) << ',' << h.size << ',' << h.sendUs << ','
-               << *stream_ << '\n';
+    droppedSinceWrite_ = 0;
+    framesCsv_ << f.index << ',' << int(h.keyframe) << ',' << h.size << ',' << h.sendUs << ','
+               << qvideo::nowUs() << ',' << *stream_ << '\n';
     return true;
   }
 
@@ -227,19 +292,20 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
         ? *info.maybeCCState->maybeBandwidthBitsPerSec
         : 0;
     const uint64_t minRtt = info.maybeMinRtt ? info.maybeMinRtt->count() : 0;
-    const uint64_t backlog =
-        appBytes_ > info.totalNewStreamBytesSent ? appBytes_ - info.totalNewStreamBytesSent : 0;
     const uint64_t t = qvideo::nowUs();
+    const uint64_t unsent = quicUnsent(info);
     std::ostringstream row;
     row << t << ',' << quic::congestionControlTypeToString(info.congestionControlType) << ','
         << info.srtt.count() << ',' << minRtt << ','
         << info.lrtt.count() << ',' << info.congestionWindow << ',' << info.bytesInFlight << ','
         << pacingBps << ',' << bwBps << ',' << info.bytesSent << ',' << info.bytesAcked << ','
         << info.totalBytesRetransmitted << ',' << info.totalPacketsMarkedLost << ',' << appBytes_
-        << ',' << backlog << '\n';
+        << ',' << queue_->bytes() << ',' << queue_->oldestAgeUs(t) << ',' << unsent << ','
+        << queue_->bytes() + unsent << ',' << droppedFrames_ << '\n';
     statsCsv_ << row.str();
     statsCsv_.flush();
     framesCsv_.flush();
+    dropsCsv_.flush();
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
   }
 
@@ -254,6 +320,10 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (statsTimer_) {
       statsTimer_->cancelTimeout();
     }
+    if (pumpTimer_) {
+      pumpTimer_->cancelTimeout();
+    }
+    dropsCsv_.flush();
     framesCsv_.flush();
     statsCsv_.flush();
     LOG(INFO) << (request_ ? request_->clientId : std::string("?")) << " session end: " << why;
@@ -272,6 +342,11 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
   std::optional<StreamId> stream_;
   std::unique_ptr<folly::AsyncTimeout> frameTimer_;
   std::unique_ptr<folly::AsyncTimeout> statsTimer_;
+  std::unique_ptr<folly::AsyncTimeout> pumpTimer_;
+  std::optional<qvideo::SendQueue> queue_;
+  uint64_t droppedFrames_{0};
+  uint64_t droppedSinceWrite_{0};
+  std::ofstream dropsCsv_;
   std::ofstream framesCsv_;
   std::ofstream statsCsv_;
   bool done_{false};

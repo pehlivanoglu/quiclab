@@ -95,6 +95,9 @@ class PublisherConfig(_StrictBase):
     size_sigma: float = Field(default=0.2, ge=0, le=2)
     seed: int = Field(default=1, ge=0)
     stats_ms: int = Field(default=50, gt=0)
+    # Sender queue in front of QUIC, in media time: a frame older than this is
+    # dropped with the rest of its GOP (GOP-aware head drop). 0 = unlimited.
+    send_buffer_ms: int = Field(default=1000, ge=0, le=60_000)
     # QUIC worker threads (one EventBase each); unset: one per subscriber.
     workers: int | None = Field(default=None, gt=0, le=256)
 
