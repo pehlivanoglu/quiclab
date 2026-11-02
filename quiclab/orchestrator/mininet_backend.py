@@ -210,18 +210,25 @@ class MininetBackend:
             self._configure_network(net, topology, scenario, record, info)
             processes.extend(_start_router_metrics(net, topology, record, info))
             _sanity_ping(net, topology, record)
-            processes.extend(_launch_publishers(net, topology, record, info))
+            # One stream start (T0) shared by every client is also the scenario's
+            # t=0, so events land at the same point of the GOP grid every run.
+            mono_now, unix_now_ns = time.monotonic(), time.time_ns()
+            start_unix_ns = unix_now_ns + int(topology.startup.stream_start_s * 1e9)
+            record.epoch_mono_s = mono_now + topology.startup.stream_start_s
+            processes.extend(_launch_publishers(net, topology, record, start_unix_ns // 1000, info))
             if topology.startup.publisher_warmup_s > 0:
                 time.sleep(topology.startup.publisher_warmup_s)
             processes.extend(_start_iperf_servers(net, topology, scenario, record, info))
+            initial = [sid for sid in topology.subscribers if scenario.join_at(sid) == 0]
+            for sid in initial:
+                clients[sid] = _launch_subscriber(net, topology, sid, record, info)
+            _await_connected(topology, initial, record)
+            time.sleep(max(0.0, record.epoch_mono_s - time.monotonic()))
 
-            record.epoch_mono_s = time.monotonic()
             events = EventLog(run_dir / "events.csv", record.epoch_mono_s)
-            events.write("epoch", 0.0, detail=f"duration_s={scenario.duration_s:g}")
+            events.write("epoch", 0.0, detail=f"duration_s={scenario.duration_s:g} "
+                                              f"stream_start_unix_us={start_unix_ns // 1000}")
             network = LiveNetwork(topology, scenario, namespace_runner(record.pids), events)
-            for sid in topology.subscribers:
-                if scenario.join_at(sid) == 0:
-                    clients[sid] = _launch_subscriber(net, topology, sid, record, info)
             runner = ScenarioRunner(scenario, record.epoch_mono_s, events, {
                 "link": network.apply_event,
                 "aqm": network.apply_event,
@@ -382,7 +389,7 @@ def _popen(net, node_id: str, argv: list[str], log_path: Path) -> subprocess.Pop
         log.close()  # the child keeps its own descriptor
 
 
-def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, info) -> list:
+def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_unix_us: int, info) -> list:
     started = []
     for pid, publisher in topology.publishers.items():
         out_dir = record.run_dir / "publishers" / pid
@@ -401,6 +408,7 @@ def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, info) -
             f"--seed={publisher.seed}",
             f"--stats_ms={publisher.stats_ms}",
             f"--workers={workers}",
+            f"--start_unix_us={start_unix_us}",
             f"--out_dir={out_dir}",
             "--logtostderr",
         ]
@@ -427,6 +435,25 @@ def _launch_subscriber(net, topology: TopologyConfig, sid: str, record: RunRecor
     ]
     info(f"*** {sid}: {shlex.join(argv)}\n")
     return _popen(net, sid, argv, record.run_dir / "logs" / f"{sid}.log")
+
+
+def _await_connected(topology: TopologyConfig, subscribers: list[str], record: RunRecord) -> None:
+    """Every subscriber's request reached its publisher before the stream start.
+
+    The publisher opens <sub>-cc.csv when the request arrives; a client that
+    misses T0 would tune in a GOP later and break run-to-run comparability.
+    """
+    pending = set(subscribers)
+    while pending:
+        pending = {
+            sid for sid in pending
+            if not (record.run_dir / "publishers" / topology.subscribers[sid].connects_to / f"{sid}-cc.csv").exists()
+        }
+        if pending and time.monotonic() >= record.epoch_mono_s:
+            raise OrchestratorError(
+                f"{sorted(pending)} not connected before the stream start; raise startup.stream_start_s"
+            )
+        time.sleep(0.02)
 
 
 _spawn_lock = threading.Lock()

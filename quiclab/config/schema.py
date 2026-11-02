@@ -65,6 +65,15 @@ class TrafficDefaults(_StrictBase):
 class StartupConfig(_StrictBase):
     publisher_warmup_s: float = Field(default=1.0, ge=0)
     traffic_ready_timeout_s: float = Field(default=5.0, gt=0)
+    # Shared stream start (the scenario's t=0), counted from the publisher
+    # launch; every t=0 subscriber must be connected before it.
+    stream_start_s: float = Field(default=3.0, gt=0)
+
+    @model_validator(mode="after")
+    def _check(self) -> "StartupConfig":
+        if self.stream_start_s <= self.publisher_warmup_s:
+            raise ValueError("stream_start_s must leave time after publisher_warmup_s for clients to connect")
+        return self
 
 
 # ── nodes ──────────────────────────────────────────────────────────────────

@@ -68,6 +68,29 @@ inline uint32_t frameSize(const VideoParams& p, uint64_t index) {
   return std::max<uint32_t>(sizeof(FrameHeader), uint32_t(std::lround(mean * scale)));
 }
 
+// Live schedule anchored at the stream start shared by every client of a run:
+// frame k is due at startUs + phaseUs + k / fps, keyframes at k % gopFrames == 0.
+struct Schedule {
+  uint64_t startUs{0};
+  uint64_t phaseUs{0};
+  uint32_t fps{30};
+  uint32_t gopFrames{60};
+
+  uint64_t timeUs(uint64_t k) const {
+    return startUs + phaseUs + uint64_t(std::ceil(double(k) * 1e6 / fps));
+  }
+
+  // A viewer that arrives before the stream starts gets frame 0; a later one
+  // tunes in at the next keyframe.
+  uint64_t firstFrame(uint64_t nowUs) const {
+    if (nowUs <= timeUs(0)) {
+      return 0;
+    }
+    uint64_t k = uint64_t(double(nowUs - startUs - phaseUs) * fps / 1e6) + 1;
+    return k + (gopFrames - k % gopFrames) % gopFrames;
+  }
+};
+
 inline std::vector<uint32_t> parseList(const std::string& csv) {
   std::vector<uint32_t> out;
   std::stringstream ss(csv);

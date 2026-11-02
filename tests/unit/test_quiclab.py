@@ -75,6 +75,7 @@ def test_designer_schema_contract_holds() -> None:
         (lambda d: d["publishers"]["pub"].update(ladder_kbps=[500, 500]), "duplicate"),
         (lambda d: d.update(links=d["links"][:1]), "no path of links"),
         (lambda d: d["publishers"]["pub"].update(cc_algo="vegas"), "cc_algo"),
+        (lambda d: d.update(startup={"publisher_warmup_s": 2, "stream_start_s": 1.5}), "stream_start_s"),
     ],
 )
 def test_schema_rejects(mutate, message: str) -> None:

@@ -36,6 +36,7 @@ DEFINE_double(size_sigma, 0.2, "lognormal sigma of per-frame size noise");
 DEFINE_uint64(seed, 1, "frame size seed");
 DEFINE_int32(stats_ms, 50, "sender CC stats sampling interval");
 DEFINE_int32(workers, 1, "QUIC worker threads (one EventBase each)");
+DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all clients; 0 = now");
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
 
 namespace {
@@ -45,6 +46,7 @@ using quic::StreamId;
 
 struct Config {
   std::vector<uint32_t> ladder;
+  uint64_t startUs{0};
   quic::samples::FizzServerContextPtr fizz;
 };
 
@@ -136,7 +138,10 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     params_.ipRatio = FLAGS_ip_ratio;
     params_.sizeSigma = FLAGS_size_sigma;
     params_.seed = FLAGS_seed;
-    phaseUs_ = uint64_t(request_->phaseMs) * 1000;
+    schedule_.startUs = cfg_.startUs;
+    schedule_.phaseUs = uint64_t(request_->phaseMs) * 1000;
+    schedule_.fps = params_.fps;
+    schedule_.gopFrames = params_.gopFrames;
 
     const std::string base = FLAGS_out_dir + "/" + request_->clientId;
     pacing_ = std::make_shared<PacingObserver>();
@@ -149,11 +154,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
                  "pacing_bps,bw_est_bps,bytes_sent,bytes_acked,retx_bytes,lost_packets,"
                  "app_bytes,backlog_bytes\n";
 
-    // Join at the next keyframe, like a live viewer tuning in.
-    const uint64_t now = qvideo::nowUs();
-    uint64_t k = frameIndexAt(now) + 1;
-    k += (params_.gopFrames - k % params_.gopFrames) % params_.gopFrames;
-    nextIndex_ = k;
+    nextIndex_ = schedule_.firstFrame(qvideo::nowUs());
     LOG(INFO) << request_->clientId << " rate=" << params_.rateKbps << "kbps phase="
               << request_->phaseMs << "ms first_frame=" << nextIndex_;
 
@@ -163,16 +164,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
   }
 
-  uint64_t frameIndexAt(uint64_t us) const {
-    return us < phaseUs_ ? 0 : uint64_t(double(us - phaseUs_) * params_.fps / 1e6);
-  }
-  uint64_t frameTimeUs(uint64_t k) const {
-    return phaseUs_ + uint64_t(std::ceil(double(k) * 1e6 / params_.fps));
-  }
-
   void scheduleFrame() {
     const uint64_t now = qvideo::nowUs();
-    const uint64_t due = frameTimeUs(nextIndex_);
+    const uint64_t due = schedule_.timeUs(nextIndex_);
     frameTimer_->scheduleTimeoutHighRes(std::chrono::microseconds(due > now ? due - now : 0));
   }
 
@@ -182,7 +176,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     }
     // Catch up on every frame whose time has passed (a late timer must not
     // lower the encoded bitrate).
-    for (uint64_t now = qvideo::nowUs(); frameTimeUs(nextIndex_) <= now; ++nextIndex_) {
+    for (uint64_t now = qvideo::nowUs(); schedule_.timeUs(nextIndex_) <= now; ++nextIndex_) {
       if (!sendFrame(nextIndex_)) {
         return;
       }
@@ -272,7 +266,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
   std::string requestBuf_;
   std::optional<qvideo::Request> request_;
   qvideo::VideoParams params_;
-  uint64_t phaseUs_{0};
+  qvideo::Schedule schedule_;
   uint64_t nextIndex_{0};
   uint64_t appBytes_{0};
   std::optional<StreamId> stream_;
@@ -344,6 +338,7 @@ int main(int argc, char** argv) {
   }
   Config cfg;
   cfg.ladder = qvideo::parseList(FLAGS_ladder_kbps);
+  cfg.startUs = FLAGS_start_unix_us ? FLAGS_start_unix_us : qvideo::nowUs();
   if (cfg.ladder.empty() || FLAGS_fps <= 0 || FLAGS_gop_ms <= 0 || FLAGS_workers <= 0) {
     LOG(ERROR) << "invalid ladder/fps/gop/workers";
     return 2;

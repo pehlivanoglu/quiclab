@@ -60,8 +60,12 @@ tooling and a WebTransport proxygen patch; nothing qvideo uses.
   wall-clock schedule (`fps`, keyframe every `gop_ms`, I-frame mean =
   `ip_ratio` x P-frame mean, mean-preserving lognormal size noise `size_sigma`,
   deterministic in `seed`). Every client of one rendition and phase gets the
-  same frames. **One QUIC unidirectional stream per GOP.** A client joins at
-  the next keyframe. Frames are written when they are "encoded", never when the
+  same frames. **One QUIC unidirectional stream per GOP.** The schedule is
+  anchored at one stream start (T0, `--start_unix_us`): the orchestrator sets
+  T0 `startup.stream_start_s` after the publisher launch, checks that every
+  t=0 client connected before it, and makes T0 the scenario's t=0, so events
+  hit the same point of the GOP grid in every run. A client that joins later
+  tunes in at the next keyframe. Frames are written when they are "encoded", never when the
   transport is ready, so a congested path builds a sender backlog the way a
   live encoder would. CC: any mvfst controller (`bbr`, `bbr2`, `bbr2modular`,
   `copa`, `cubic`, `newreno`), pacing on, no GSO. One worker thread

@@ -36,6 +36,13 @@ int main() {
   assert(pb.stalls() == 1 && pb.stallUs() == 50000);
   assert(pb.onFrame(11, 11 * 33000 + 100000 + 50000) <= 0);
   assert(pb.stalls() == 1);
+  // Stream starts at 10 s, phase 0.5 s, 30 fps, keyframe every 60 frames.
+  const qvideo::Schedule sched{10'000'000, 500'000, 30, 60};
+  assert(sched.timeUs(0) == 10'500'000 && sched.timeUs(60) == 12'500'000);
+  assert(sched.firstFrame(9'000'000) == 0);   // connected before the start
+  assert(sched.firstFrame(10'500'000) == 0);  // exactly at frame 0
+  assert(sched.firstFrame(11'000'000) == 60); // mid-GOP: next keyframe
+  assert(sched.firstFrame(12'500'001) == 120);
   std::puts("qvideo selftest ok");
   return 0;
 }
