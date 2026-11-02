@@ -88,7 +88,7 @@ class PublisherConfig(_StrictBase):
         default_factory=lambda: [500, 1000, 2500, 5000, 8000, 12000], min_length=1
     )
     fps: int = Field(default=30, ge=1, le=120)
-    gop_ms: int = Field(default=2000, gt=0)
+    gop_ms: int = Field(default=1000, gt=0)
     # Mean I-frame size over mean P-frame size.
     ip_ratio: float = Field(default=8.0, ge=1)
     # Lognormal sigma of the per-frame size noise (mean-preserving).

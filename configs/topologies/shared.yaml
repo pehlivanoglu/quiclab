@@ -5,9 +5,9 @@ publishers:
 
 subscribers:
   sub-a: { connects_to: pub, rate_kbps: 1000 }
-  sub-b: { connects_to: pub, rate_kbps: 1000, phase_ms: 500 }
-  sub-c: { connects_to: pub, rate_kbps: 1000, phase_ms: 1000 }
-  sub-d: { connects_to: pub, rate_kbps: 1000, phase_ms: 1500 }
+  sub-b: { connects_to: pub, rate_kbps: 1000, phase_ms: 250 }
+  sub-c: { connects_to: pub, rate_kbps: 1000, phase_ms: 500 }
+  sub-d: { connects_to: pub, rate_kbps: 1000, phase_ms: 750 }
   sub-ctrl: { connects_to: pub, rate_kbps: 1000 }
 
 routers:
