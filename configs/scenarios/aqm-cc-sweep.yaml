@@ -1,0 +1,33 @@
+# Coverage run for cc-sweep.yaml: every AQM in turn on 8 Mb/s client egresses
+# (5 Mb/s video), netem jitter and loss changes, iperf3 UDP and TCP BBR.
+duration_s: 110
+
+link_defaults:
+  forward: { bandwidth_mbps: 100, delay_ms: 5 }
+  reverse: { bandwidth_mbps: 100, delay_ms: 5 }
+
+links:
+  - { from: router, to: s-bbr, forward: { bandwidth_mbps: 8, delay_ms: 10, loss_pct: 0 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: s-bbr2, forward: { bandwidth_mbps: 8, delay_ms: 10, loss_pct: 0 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: s-bbr2m, forward: { bandwidth_mbps: 8, delay_ms: 10, loss_pct: 0 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: s-copa, forward: { bandwidth_mbps: 8, delay_ms: 10, loss_pct: 0 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: s-cubic, forward: { bandwidth_mbps: 8, delay_ms: 10, loss_pct: 0 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: s-newreno, forward: { bandwidth_mbps: 8, delay_ms: 10, loss_pct: 0 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: traffic-rx, forward: { bandwidth_mbps: 8, delay_ms: 10 } }
+
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+
+events:
+  - { at_s: 15, type: aqm, router: router, aqm: dualpi2, dualpi2_target_ms: 15 }
+  - { at_s: 30, type: aqm, router: router, aqm: red, red_min_bytes: 15000, red_max_bytes: 45000 }
+  - { at_s: 45, type: aqm, router: router, aqm: pie }
+  - { at_s: 60, type: aqm, router: router, aqm: fq_codel }
+  - { at_s: 50, type: flow, kind: udp, id: udp-cross, route: cross, duration_s: 10, rate_mbps: 4 }
+  - { at_s: 65, type: link, from: router, to: s-bbr, jitter_ms: 3, label: jitter }
+  - { at_s: 65, type: link, from: router, to: s-cubic, loss_pct: 1, label: "1% loss" }
+  - { at_s: 75, type: link, from: router, to: s-bbr, jitter_ms: 0, label: "jitter off" }
+  - { at_s: 75, type: link, from: router, to: s-cubic, loss_pct: 0, label: "loss off" }
+  - { at_s: 80, type: link, from: router, to: s-copa, bandwidth_mbps: 4, label: "copa below demand" }
+  - { at_s: 85, type: flow, kind: tcp, id: tcp-bbr, route: cross, duration_s: 15, cc: bbr }
+  - { at_s: 95, type: link, from: router, to: s-copa, bandwidth_mbps: 8, label: restore }

@@ -1,0 +1,43 @@
+# One sender per mvfst congestion controller, each with its own client and
+# router egress; iperf3 endpoints on a separate router egress.
+publishers:
+  p-bbr: { cc_algo: bbr }
+  p-bbr2: { cc_algo: bbr2 }
+  p-bbr2m: { cc_algo: bbr2modular }
+  p-copa: { cc_algo: copa }
+  p-cubic: { cc_algo: cubic }
+  p-newreno: { cc_algo: newreno }
+
+subscribers:
+  s-bbr: { connects_to: p-bbr, rate_kbps: 5000 }
+  s-bbr2: { connects_to: p-bbr2, rate_kbps: 5000 }
+  s-bbr2m: { connects_to: p-bbr2m, rate_kbps: 5000 }
+  s-copa: { connects_to: p-copa, rate_kbps: 5000 }
+  s-cubic: { connects_to: p-cubic, rate_kbps: 5000 }
+  s-newreno: { connects_to: p-newreno, rate_kbps: 5000 }
+
+routers:
+  router:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+
+traffic:
+  senders: [{ id: traffic-tx }]
+  receivers: [{ id: traffic-rx }]
+  routes:
+    cross: { path: [traffic-tx, router, traffic-rx] }
+
+links:
+  - { from: p-bbr, to: router }
+  - { from: p-bbr2, to: router }
+  - { from: p-bbr2m, to: router }
+  - { from: p-copa, to: router }
+  - { from: p-cubic, to: router }
+  - { from: p-newreno, to: router }
+  - { from: router, to: s-bbr }
+  - { from: router, to: s-bbr2 }
+  - { from: router, to: s-bbr2m }
+  - { from: router, to: s-copa }
+  - { from: router, to: s-cubic }
+  - { from: router, to: s-newreno }
+  - { from: traffic-tx, to: router }
+  - { from: router, to: traffic-rx }

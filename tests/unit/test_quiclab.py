@@ -33,7 +33,11 @@ from quiclab.visualizer import (
 
 CONFIGS = Path(__file__).resolve().parents[2] / "configs"
 TOPOLOGIES = CONFIGS / "topologies"
-PAIRS = [("single.yaml", "single-step.yaml"), ("shared.yaml", "shared-cross.yaml")]
+PAIRS = [
+    ("single.yaml", "single-step.yaml"),
+    ("shared.yaml", "shared-cross.yaml"),
+    ("cc-sweep.yaml", "aqm-cc-sweep.yaml"),
+]
 
 
 def _shared() -> TopologyConfig:

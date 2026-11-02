@@ -25,8 +25,8 @@ quiclab/
 │   ├── orchestrator/scenario_runner.py  timed events -> events.csv
 │   ├── designer.py visualizer.py router_metrics.py runtime.py
 ├── visualizer/             browser assets (designer + live visualizer)
-├── configs/topologies/     single.yaml, shared.yaml
-├── configs/scenarios/      single-step.yaml, shared-cross.yaml
+├── configs/topologies/     single.yaml, shared.yaml, cc-sweep.yaml
+├── configs/scenarios/      single-step.yaml, shared-cross.yaml, aqm-cc-sweep.yaml (coverage run)
 ├── docker/Dockerfile       the one image: mininet, iperf3, iproute2 6.17, runtime libs
 └── tests/unit/             pytest, no root/Docker needed
 ```

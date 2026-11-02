@@ -144,6 +144,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     framesCsv_.open(base + "-frames.csv");
     framesCsv_ << "index,keyframe,size,send_us,stream\n";
     statsCsv_.open(base + "-cc.csv");
+    // cc: the controller mvfst actually runs (TransportInfo), not the flag.
     statsCsv_ << "t_us,cc,srtt_us,min_rtt_us,latest_rtt_us,cwnd_bytes,inflight_bytes,"
                  "pacing_bps,bw_est_bps,bytes_sent,bytes_acked,retx_bytes,lost_packets,"
                  "app_bytes,backlog_bytes\n";
@@ -236,7 +237,8 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
         appBytes_ > info.totalNewStreamBytesSent ? appBytes_ - info.totalNewStreamBytesSent : 0;
     const uint64_t t = qvideo::nowUs();
     std::ostringstream row;
-    row << t << ',' << FLAGS_cc << ',' << info.srtt.count() << ',' << minRtt << ','
+    row << t << ',' << quic::congestionControlTypeToString(info.congestionControlType) << ','
+        << info.srtt.count() << ',' << minRtt << ','
         << info.lrtt.count() << ',' << info.congestionWindow << ',' << info.bytesInFlight << ','
         << pacingBps << ',' << bwBps << ',' << info.bytesSent << ',' << info.bytesAcked << ','
         << info.totalBytesRetransmitted << ',' << info.totalPacketsMarkedLost << ',' << appBytes_
