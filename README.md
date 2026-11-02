@@ -60,14 +60,19 @@ tooling and a WebTransport proxygen patch; nothing qvideo uses.
   wall-clock schedule (`fps`, keyframe every `gop_ms`, I-frame mean =
   `ip_ratio` x P-frame mean, mean-preserving lognormal size noise `size_sigma`,
   deterministic in `seed`). Every client of one rendition and phase gets the
-  same frames. **One QUIC unidirectional stream per GOP.** The schedule is
+  same frames. **One QUIC unidirectional stream per GOP.** Frames wait in a
+  sender queue in front of QUIC and are handed over while QUIC's unsent data
+  is below one cwnd; a frame older than `send_buffer_ms` (default 1 s of
+  media) is dropped with the rest of its GOP and sending resumes at the next
+  keyframe, as a live sender discards media past its deadline. The client
+  counts such gaps as `skipped_frames`. The schedule is
   anchored at one stream start (T0, `--start_unix_us`): the orchestrator sets
   T0 `startup.stream_start_s` after the publisher launch, checks that every
   t=0 client connected before it, and makes T0 the scenario's t=0, so events
   hit the same point of the GOP grid in every run. A client that joins later
-  tunes in at the next keyframe. Frames are written when they are "encoded", never when the
+  tunes in at the next keyframe. Frames are produced on schedule whether or not the
   transport is ready, so a congested path builds a sender backlog the way a
-  live encoder would. CC: any mvfst controller (`bbr`, `bbr2`, `bbr2modular`,
+  live encoder would, bounded by `send_buffer_ms`. CC: any mvfst controller (`bbr`, `bbr2`, `bbr2modular`,
   `copa`, `cubic`, `newreno`), pacing on, no GSO. One worker thread
   (EventBase) per client by default, capped by mvfst at the CPU count; the
   kernel's SO_REUSEPORT hash assigns connections to workers, so several
@@ -125,7 +130,8 @@ All outputs are CSV (no JSON on disk).
 | `topology.yaml`, `scenario.yaml` | config copies |
 | `events.csv` | ground truth: `epoch` (t=0), every scenario event and live edit with planned `at_s`, applied time (`applied_s` from the epoch, monotonic and unix ns), target, detail, status, error; `end`, `teardown` |
 | `publishers/<pub>/<sub>-frames.csv` | every frame sent: index, keyframe, size, send time, stream |
-| `publishers/<pub>/<sub>-cc.csv` | sender CC samples every `stats_ms` |
+| `publishers/<pub>/<sub>-cc.csv` | sender CC samples every `stats_ms`, plus the sender queue (`queue_bytes`, `queue_age_us`), data QUIC has not sent yet (`quic_unsent_bytes`), their sum `backlog_bytes`, and `dropped_frames` |
+| `publishers/<pub>/<sub>-drops.csv` | every frame the sender queue dropped: index, GOP, size, age |
 | `clients/<sub>-frames.csv` | every frame received: send/recv time, OWD, lateness vs playback |
 | `clients/<sub>-playback.csv` | goodput, buffer, stalls, mean OWD every `stats_ms` |
 | `router-metrics/<router>/<iface>*.csv` | qdisc counters and queue occupancy (`queue_metrics`) |
@@ -142,7 +148,8 @@ What exists and how it is wired; no conditions. See
 `quiclab/config/schema.py`.
 
 - `publishers`: `listen_port`, `cc_algo`, `ladder_kbps`, `fps`, `gop_ms`,
-  `ip_ratio`, `size_sigma`, `seed`, `stats_ms`, `workers`.
+  `ip_ratio`, `size_sigma`, `seed`, `stats_ms`, `workers`, `send_buffer_ms`
+  (sender queue limit in media time, default 1000; 0 = unlimited).
 - `subscribers`: `connects_to` (a publisher), `rate_kbps` (on its ladder),
   `phase_ms` (keyframe phase; equal phases mean in-sync keyframes),
   `buffer_ms`, `stats_ms`.

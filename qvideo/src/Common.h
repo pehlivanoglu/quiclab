@@ -30,12 +30,14 @@ struct FrameHeader {
   uint8_t keyframe{0};
   uint8_t pad[3]{};
   uint64_t index{0};   // live frame index: floor((t - phase) / frame interval)
-  uint64_t sendUs{0};  // CLOCK_REALTIME when the frame was handed to QUIC
+  uint64_t sendUs{0};  // CLOCK_REALTIME when the frame was produced (entered the send queue)
   uint32_t size{0};    // total bytes including this header
   uint32_t rateKbps{0};
+  uint32_t skippedBefore{0};  // frames the sender queue dropped right before this one
+  uint32_t reserved{0};
 };
 #pragma pack(pop)
-static_assert(sizeof(FrameHeader) == 32);
+static_assert(sizeof(FrameHeader) == 40);
 
 struct VideoParams {
   uint32_t rateKbps{0};

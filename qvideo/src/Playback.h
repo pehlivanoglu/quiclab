@@ -15,15 +15,23 @@ class Playback {
   explicit Playback(uint64_t frameUs, uint64_t bufferUs) : frameUs_(frameUs), bufferUs_(bufferUs) {}
 
   // Returns lateness vs. the current schedule (>0: this frame stalled playback).
-  int64_t onFrame(uint64_t index, uint64_t arrivalUs) {
+  // `skippedBefore`: frames the sender dropped right before this one (it says
+  // so in the header); they count as skipped and playback moves past them.
+  // A gap without it is reordering across GOP streams: the frames still come.
+  int64_t onFrame(uint64_t index, uint64_t arrivalUs, uint64_t skippedBefore = 0) {
     if (!started_) {
       started_ = true;
       k0_ = index;
       play0Us_ = arrivalUs + bufferUs_;
       contiguous_ = index;
-    } else if (index < k0_) {
-      return 0; // older than the first played frame: never played
+    } else if (index < k0_ || index <= contiguous_) {
+      return 0; // older than the first played frame, or behind a skip: never played
     } else {
+      for (uint64_t k = index - std::min(skippedBefore, index); k < index; ++k) {
+        if (k > contiguous_ && pending_.insert(k).second) {
+          ++skipped_;
+        }
+      }
       pending_.insert(index);
       while (pending_.count(contiguous_ + 1)) {
         pending_.erase(++contiguous_);
@@ -44,7 +52,7 @@ class Playback {
   }
 
   // shortcut: reorder across GOP streams is credited at arrival, not at play
-  // time; fine while GOP streams finish in order, revisit for frame skipping.
+  // time; fine while GOP streams finish in order.
   int64_t bufferUs(uint64_t nowUs) const {
     return started_ ? std::max<int64_t>(0, int64_t(playUs(contiguous_) + frameUs_) - int64_t(nowUs))
                     : 0;
@@ -53,6 +61,7 @@ class Playback {
   bool started() const { return started_; }
   uint64_t stalls() const { return stalls_; }
   uint64_t stallUs() const { return stallUs_; }
+  uint64_t skipped() const { return skipped_; }
 
  private:
   uint64_t playUs(uint64_t index) const { return play0Us_ + (index - k0_) * frameUs_; }
@@ -67,6 +76,7 @@ class Playback {
   std::set<uint64_t> pending_;
   uint64_t stalls_{0};
   uint64_t stallUs_{0};
+  uint64_t skipped_{0};
 };
 
 } // namespace qvideo
