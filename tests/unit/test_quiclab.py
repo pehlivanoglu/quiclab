@@ -37,7 +37,10 @@ PAIRS = [
     ("single.yaml", "single-step.yaml"),
     ("shared.yaml", "shared-cross.yaml"),
     ("cc-sweep.yaml", "aqm-cc-sweep.yaml"),
-    ("flowbot-like.yaml", "flowbot-like.yaml"),
+    ("flowbot-like.yaml", "flowbot-load-070.yaml"),
+    ("flowbot-like.yaml", "flowbot-load-080.yaml"),
+    ("flowbot-like.yaml", "flowbot-load-090.yaml"),
+    ("flowbot-like.yaml", "flowbot-load-100.yaml"),
 ]
 
 
