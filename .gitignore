@@ -1,0 +1,5 @@
+.runs/
+.venv/
+qvideo/build*/
+__pycache__/
+.pytest_cache/

@@ -1,0 +1,3 @@
+[submodule "deps/moxygen"]
+	path = deps/moxygen
+	url = https://github.com/facebookexperimental/moxygen.git

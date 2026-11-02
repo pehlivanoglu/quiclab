@@ -1,0 +1,13 @@
+# Bottleneck drops below the 5 Mb/s rendition for 15 s, then recovers.
+duration_s: 45
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: sub, forward: { bandwidth_mbps: 8, delay_ms: 15 }, reverse: { delay_ms: 15 } }
+
+routers:
+  router: { aqm: fq_codel }
+
+events:
+  - { at_s: 20, type: link, from: router, to: sub, bandwidth_mbps: 4, label: "onset: 4 < 5 demand" }
+  - { at_s: 35, type: link, from: router, to: sub, bandwidth_mbps: 8, label: restore }

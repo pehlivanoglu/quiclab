@@ -1,0 +1,26 @@
+# Shared 6 Mb/s bottleneck: sub-d joins late, UDP then TCP cross traffic,
+# an AQM swap between them, and sub-c leaves near the end.
+duration_s: 90
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 6 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 50 }, reverse: { delay_ms: 50 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 6, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+
+events:
+  - { at_s: 10, type: join, subscriber: sub-d }
+  - { at_s: 30, type: flow, kind: udp, id: cross-udp, route: shared, duration_s: 15, rate_mbps: 3.5 }
+  - { at_s: 50, type: aqm, router: router, aqm: fq_codel, label: "swap AQM" }
+  - { at_s: 60, type: flow, kind: tcp, id: cross-tcp, route: shared, duration_s: 15, cc: cubic }
+  - { at_s: 80, type: leave, subscriber: sub-c }

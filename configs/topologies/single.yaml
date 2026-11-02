@@ -1,0 +1,14 @@
+# One QUIC video sender, one client behind one router.
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  sub: { connects_to: pub, rate_kbps: 5000, buffer_ms: 600 }
+
+routers:
+  router:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+
+links:
+  - { from: pub, to: router }
+  - { from: router, to: sub }

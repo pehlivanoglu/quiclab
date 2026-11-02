@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>quiclab topology</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>quiclab topology</h1>
+      <p id="summary">Loading topology...</p>
+    </div>
+    <div id="updated">Waiting for first sample</div>
+  </header>
+  <main>
+    <section id="graph-wrap">
+      <svg id="graph" role="img" aria-label="quiclab topology graph"></svg>
+    </section>
+    <div id="details-resizer" role="separator" aria-label="Resize inspector"
+         aria-orientation="vertical" aria-valuemin="280" aria-valuenow="360" tabindex="0"></div>
+    <section id="details">
+      <div id="node-details" aria-live="polite">
+        <h2>Inspector</h2>
+        <p>Select a node or link to inspect it.</p>
+      </div>
+      <h2>Links</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Edge</th>
+            <th>Throughput</th>
+            <th>Shape</th>
+          </tr>
+        </thead>
+        <tbody id="links"></tbody>
+      </table>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
