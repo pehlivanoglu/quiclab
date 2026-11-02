@@ -1,6 +1,7 @@
 // Assert-based checks of the frame model, request parsing and playback model.
 #include "Common.h"
 #include "Playback.h"
+#include "Ppbp.h"
 
 #include <cassert>
 #include <cstdio>
@@ -43,6 +44,18 @@ int main() {
   assert(sched.firstFrame(10'500'000) == 0);  // exactly at frame 0
   assert(sched.firstFrame(11'000'000) == 60); // mid-GOP: next keyframe
   assert(sched.firstFrame(12'500'001) == 120);
+  // PPBP: long-run offered load converges to the mean; a seed fixes the bursts.
+  const qvideo::PpbpParams pp{20.0, 2.0, 0.5, 0.7, 5000.0, 7};
+  const auto bursts = qvideo::ppbpBursts(pp);
+  double busy = 0;
+  for (const auto& b : bursts) {
+    assert(b.startS >= 0 && b.durationS > 0 && b.startS + b.durationS <= pp.durationS + 1e-9);
+    busy += b.durationS;
+  }
+  const double load = busy * pp.burstMbps / pp.durationS;
+  assert(std::abs(load - pp.meanMbps) / pp.meanMbps < 0.1);
+  const auto again = qvideo::ppbpBursts(pp);
+  assert(again.size() == bursts.size() && again.back().startS == bursts.back().startS);
   std::puts("qvideo selftest ok");
   return 0;
 }

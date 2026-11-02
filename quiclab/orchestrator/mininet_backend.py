@@ -69,6 +69,7 @@ _log = logging.getLogger(__name__)
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _QVIDEO_SERVER = _PROJECT_ROOT / "qvideo" / "build" / "qvideo-server"
 _QVIDEO_CLIENT = _PROJECT_ROOT / "qvideo" / "build" / "qvideo-client"
+_QTRAFFIC = _PROJECT_ROOT / "qvideo" / "build" / "qtraffic"
 _ROUTER_METRICS = _PROJECT_ROOT / "quiclab" / "router_metrics.py"
 
 _LINK_SUBNET_POOL = "10.20.0.0/16"
@@ -159,7 +160,7 @@ class MininetBackend:
     ) -> RunRecord:
         topology = load_topology(topology_path)
         scenario = load_scenario(scenario_path, topology)
-        for binary in (_QVIDEO_SERVER, _QVIDEO_CLIENT):
+        for binary in (_QVIDEO_SERVER, _QVIDEO_CLIENT, _QTRAFFIC):
             if not binary.exists():
                 raise OrchestratorError(
                     f"{binary} missing; run `python -m quiclab build qvideo` first"
@@ -219,6 +220,7 @@ class MininetBackend:
             if topology.startup.publisher_warmup_s > 0:
                 time.sleep(topology.startup.publisher_warmup_s)
             processes.extend(_start_iperf_servers(net, topology, scenario, record, info))
+            processes.extend(_start_ppbp(net, topology, scenario, record, start_unix_ns // 1000, info))
             initial = [sid for sid in topology.subscribers if scenario.join_at(sid) == 0]
             for sid in initial:
                 clients[sid] = _launch_subscriber(net, topology, sid, record, info)
@@ -233,6 +235,9 @@ class MininetBackend:
                 "link": network.apply_event,
                 "aqm": network.apply_event,
                 "flow": lambda e: _start_flow(net, topology, scenario, record, processes, e),
+                # Already waiting for T0 + at_s since setup; the row records when it began.
+                "ppbp": lambda e: (e.id, f"mean_mbps={e.mean_mbps:g} burst_mbps={e.burst_mbps:g} "
+                                         f"mean_burst_s={e.mean_burst_s:g} hurst={e.hurst:g} seed={e.seed}"),
                 "join": lambda e: _join(net, topology, e.subscriber, record, clients, info),
                 "leave": lambda e: _leave(e.subscriber, clients),
             })
@@ -475,8 +480,7 @@ def _leave(sid: str, clients: dict) -> tuple[str, str]:
 
 
 def _flow_port(topology: TopologyConfig, scenario: Scenario, flow_id: str) -> int:
-    ids = [flow.id for flow in scenario.flows()]
-    return topology.defaults.traffic.base_port + ids.index(flow_id)
+    return topology.defaults.traffic.base_port + scenario.traffic_ids().index(flow_id)
 
 
 def _start_iperf_servers(net, topology: TopologyConfig, scenario: Scenario, record: RunRecord, info) -> list:
@@ -525,6 +529,37 @@ def _start_flow(net, topology, scenario, record: RunRecord, processes: list, flo
         process = _popen(net, sender, argv, record.run_dir / "traffic" / f"{flow.id}.json")
         processes.append((sender, process))
     return flow.id, f"{flow.kind} {shlex.join(argv[1:])}"
+
+
+def _start_ppbp(net, topology: TopologyConfig, scenario: Scenario, record: RunRecord,
+                start_unix_us: int, info) -> list:
+    """PPBP receivers, then senders that sleep until T0 + at_s (exact, every run)."""
+    events = scenario.ppbp()
+    if not events:
+        return []
+    assert topology.traffic is not None
+    aliases = traffic_route_ips(topology)
+    started = []
+    for e in events:
+        path = topology.traffic.routes[e.route].path
+        port = _flow_port(topology, scenario, e.id)
+        out = record.run_dir / "traffic" / e.id
+        started.append((path[-1], _popen(net, path[-1], [
+            str(_QTRAFFIC), "--mode=recv", f"--bind={aliases[e.route][1]}", f"--port={port}", f"--out={out}",
+        ], record.run_dir / "logs" / f"{e.id}-recv.log")))
+    for e in events:
+        path = topology.traffic.routes[e.route].path
+        sender_ip, receiver_ip = aliases[e.route]
+        started.append((path[0], _popen(net, path[0], [
+            str(_QTRAFFIC), "--mode=send", f"--bind={sender_ip}", f"--dest={receiver_ip}",
+            f"--port={_flow_port(topology, scenario, e.id)}",
+            f"--start_unix_us={start_unix_us + int(e.at_s * 1e6)}", f"--duration_s={e.duration_s:g}",
+            f"--mean_mbps={e.mean_mbps:g}", f"--burst_mbps={e.burst_mbps:g}",
+            f"--mean_burst_s={e.mean_burst_s:g}", f"--hurst={e.hurst:g}", f"--seed={e.seed}",
+            f"--packet_size={e.packet_size_bytes}", f"--out={record.run_dir / 'traffic' / e.id}",
+        ], record.run_dir / "logs" / f"{e.id}-send.log")))
+    info(f"*** {len(events)} PPBP source(s) armed for their start times\n")
+    return started
 
 
 IPERF_FIELDS = (

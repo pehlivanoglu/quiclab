@@ -16,7 +16,7 @@ parts removed.
 quiclab/
 ├── deps/moxygen/           facebookexperimental/moxygen, pinned (see below)
 ├── qvideo/                 C++ sender/client (mvfst), CMake
-│   └── src/  Common.h  Playback.h  Server.cpp  Client.cpp  SelfTest.cpp
+│   └── src/  Common.h  Playback.h  Ppbp.h  Server.cpp  Client.cpp  Traffic.cpp (qtraffic)  SelfTest.cpp
 ├── quiclab/                Python package (`python -m quiclab`)
 │   ├── cli.py              design / validate / build / run
 │   ├── config/schema.py    Pydantic topology model
@@ -25,8 +25,8 @@ quiclab/
 │   ├── orchestrator/scenario_runner.py  timed events -> events.csv
 │   ├── designer.py visualizer.py router_metrics.py runtime.py
 ├── visualizer/             browser assets (designer + live visualizer)
-├── configs/topologies/     single.yaml, shared.yaml, cc-sweep.yaml
-├── configs/scenarios/      single-step.yaml, shared-cross.yaml, aqm-cc-sweep.yaml (coverage run)
+├── configs/topologies/     single.yaml, shared.yaml, cc-sweep.yaml, flowbot-like.yaml
+├── configs/scenarios/      single-step.yaml, shared-cross.yaml, aqm-cc-sweep.yaml (coverage run), flowbot-like.yaml
 ├── docker/Dockerfile       the one image: mininet, iperf3, iproute2 6.17, runtime libs
 └── tests/unit/             pytest, no root/Docker needed
 ```
@@ -130,6 +130,7 @@ All outputs are CSV (no JSON on disk).
 | `clients/<sub>-playback.csv` | goodput, buffer, stalls, mean OWD every `stats_ms` |
 | `router-metrics/<router>/<iface>*.csv` | qdisc counters and queue occupancy (`queue_metrics`) |
 | `traffic/<flow>.csv` | iperf3 per-interval result (converted from iperf3's JSON, which is deleted) |
+| `traffic/<id>-bursts.csv`, `-sent.csv`, `-recv.csv` | PPBP: every burst (offered-load truth); sent bytes and active bursts per 100 ms; received bytes, loss and one-way delay per 100 ms |
 | `logs/` | stdout/stderr of every process |
 
 Timestamps: `*_us` columns are `CLOCK_REALTIME` microseconds. `*_mono_ns` are
@@ -159,8 +160,10 @@ What the network does over one run. See `quiclab/config/scenario.py`.
   `jitter_ms`, `loss_pct`. Listed links lay their fields over the defaults;
   unlisted links get the defaults.
 - `routers`: AQM per router (`aqm`: `dualpi2`, `red`, `pie`, `fq_codel`,
-  `pfifo`; `dualpi2_target_ms`, `queue_limit_packets`, `red_min_bytes`,
-  `red_max_bytes`), applied to every router egress.
+  `pfifo`; `dualpi2_target_ms`, `red_min_bytes`, `red_max_bytes`), applied to
+  every router egress. `queue_limit_packets` sets the hard queue limit for any
+  AQM (tc `limit`; RED converts it at 1500 B per packet); unset, the kernel
+  default applies (pie 1000, fq_codel 10240, dualpi2 10000 packets).
 - `events` (each with `at_s`, optional `label`):
   - `link`: change one direction in place (`tc change`, queued packets
     survive). It can only change fields whose qdisc exists at t=0: give the
@@ -169,6 +172,13 @@ What the network does over one run. See `quiclab/config/scenario.py`.
   - `aqm`: replace a router's AQM leaf (`router`, `aqm` + parameters).
   - `flow`: start an iperf3 flow (`id`, `route`, `duration_s`; `kind: tcp`
     with `cc`, `parallel`, or `kind: udp` with `rate_mbps`, `packet_size_bytes`).
+  - `ppbp`: PPBP cross traffic from `qtraffic` (FlowBot-style): Poisson
+    burst arrivals, Pareto burst lengths (shape 3 - 2·`hurst`), `burst_mbps`
+    per active burst, long-run load `mean_mbps`, `mean_burst_s`, `seed`,
+    `packet_size_bytes`, `route`, `duration_s`. The seed fixes every burst and
+    the sender starts at exactly T0 + `at_s`, so runs repeat. Over a short run
+    the realized load of a heavy-tailed process can differ from `mean_mbps`;
+    `traffic/<id>-bursts.csv` gives the realized offered load.
   - `join` / `leave`: a subscriber connects late / stops. Subscribers without
     a `join` start at t=0; each joins and leaves at most once.
 

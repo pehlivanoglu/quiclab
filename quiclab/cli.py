@@ -109,7 +109,7 @@ def build_qvideo() -> None:
     source = _PROJECT_ROOT / "qvideo"
     _run(["cmake", "-S", str(source), "-B", str(source / "build"), "-G", "Ninja"])
     _run(["cmake", "--build", str(source / "build"), "--target",
-          "qvideo-server", "qvideo-client", "qvideo-selftest"])
+          "qvideo-server", "qvideo-client", "qvideo-selftest", "qtraffic"])
     _run([str(source / "build" / "qvideo-selftest")])
 
 
