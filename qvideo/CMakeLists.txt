@@ -20,6 +20,10 @@ add_subdirectory("${QVIDEO_MOXYGEN_DIR}/standalone" moxygen EXCLUDE_FROM_ALL)
 
 add_executable(qvideo-selftest src/SelfTest.cpp)
 
+# PPBP cross traffic: plain UDP sockets, no QUIC.
+add_executable(qtraffic src/Traffic.cpp)
+target_link_libraries(qtraffic PRIVATE gflags)
+
 add_executable(qvideo-server src/Server.cpp)
 target_link_libraries(qvideo-server PRIVATE
   mvfst_server

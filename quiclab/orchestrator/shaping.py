@@ -44,13 +44,17 @@ _HTB_QUANTUM_BYTES = 1500
 
 _RED_MIN_BYTES, _RED_MAX_BYTES = 20_000, 60_000
 _RED_AVPKT = 1200
+# RED's hard limit is in bytes; a packet limit is converted at full-size packets.
+_MTU_BYTES = 1500
 
 
-def _red_profile(min_bytes: int | None, max_bytes: int | None) -> str:
-    """RED thresholds; limit and burst follow them (tc-red(8): burst ~ (2 min + max) / (3 avpkt))."""
+def _red_profile(min_bytes: int | None, max_bytes: int | None, limit_packets: int | None = None) -> str:
+    """RED thresholds; burst follows them (tc-red(8): burst ~ (2 min + max) / (3 avpkt)).
+    The byte limit is 4x max unless a packet limit is given."""
     lo, hi = min_bytes or _RED_MIN_BYTES, max_bytes or _RED_MAX_BYTES
     burst = max(1, round((2 * lo + hi) / (3 * _RED_AVPKT)))
-    return f"limit {4 * hi} min {lo} max {hi} avpkt {_RED_AVPKT} burst {burst} probability 0.02"
+    limit = limit_packets * _MTU_BYTES if limit_packets else 4 * hi
+    return f"limit {limit} min {lo} max {hi} avpkt {_RED_AVPKT} burst {burst} probability 0.02"
 
 
 def _netem_args(spec: DirectionSpec) -> str:
@@ -117,24 +121,25 @@ def _aqm_name(
     queue_limit_packets: int | None = None,
     red_bytes: tuple[int | None, int | None] = (None, None),
 ) -> str:
+    limit = f" limit {queue_limit_packets}" if queue_limit_packets else ""
     if aqm == AqmKind.pfifo:
         # No ECN: a FIFO only drops at its tail.
-        return f"pfifo limit {queue_limit_packets}" if queue_limit_packets else "pfifo"
+        return f"pfifo{limit}"
     if aqm == AqmKind.dualpi2:
         target = (
             f" target {dualpi2_target_ms:g}ms"
             if dualpi2_target_ms is not None
             else ""
         )
-        return f"dualpi2{target}"
+        return f"dualpi2{limit}{target}"
     if aqm == AqmKind.red:
         bandwidth = (
             f" bandwidth {spec.bandwidth_mbps:g}mbit"
             if spec.bandwidth_mbps is not None
             else ""
         )
-        return f"red {_red_profile(*red_bytes)}{bandwidth} ecn"
-    return f"{aqm.value} ecn"
+        return f"red {_red_profile(*red_bytes, queue_limit_packets)}{bandwidth} ecn"
+    return f"{aqm.value}{limit} ecn"
 
 
 def live_aqm_commands(

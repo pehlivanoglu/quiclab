@@ -37,6 +37,7 @@ PAIRS = [
     ("single.yaml", "single-step.yaml"),
     ("shared.yaml", "shared-cross.yaml"),
     ("cc-sweep.yaml", "aqm-cc-sweep.yaml"),
+    ("flowbot-like.yaml", "flowbot-like.yaml"),
 ]
 
 
@@ -109,7 +110,8 @@ def test_router_metrics_follow_receiver_side_egresses() -> None:
     [
         (lambda d: d["links"].append({"from": "sub-a", "to": "switch"}), "declared from/to order"),
         (lambda d: d["routers"].update(nope={}), "not a topology router"),
-        (lambda d: d["routers"]["router"].update(aqm="fq_codel"), "queue_limit_packets requires"),
+        (lambda d: d["routers"]["router"].update(aqm=None), "queue_limit_packets requires an aqm"),
+        (lambda d: d["routers"]["router"].update(aqm="red", queue_limit_packets=30), "must exceed red_max_bytes"),
         (lambda d: d["events"].append({"at_s": 95, "type": "leave", "subscriber": "sub-a"}), "after duration_s"),
         (lambda d: (d.pop("link_defaults"), d["events"].append(
             {"at_s": 5, "type": "link", "from": "pub", "to": "router", "direction": "reverse",
@@ -274,3 +276,21 @@ def test_visualizer_snapshot_roles() -> None:
     assert nodes["pub"]["role"] == "publisher" and nodes["pub"]["cc_algo"] == "bbr2"
     assert nodes["sub-b"]["rate_kbps"] == 1000
     assert nodes["traffic-rx"]["role"] == "traffic-receiver"
+
+
+@pytest.mark.parametrize(
+    ("aqm", "expected"),
+    [
+        ("pfifo", "pfifo limit 300"),
+        ("pie", "pie limit 300 ecn"),
+        ("fq_codel", "fq_codel limit 300 ecn"),
+        ("dualpi2", "dualpi2 limit 300"),
+        ("red", "red limit 450000 "),
+    ],
+)
+def test_queue_limit_reaches_every_aqm(aqm: str, expected: str) -> None:
+    from quiclab.config.schema import AqmKind, DirectionSpec
+    from quiclab.orchestrator.shaping import shaping_commands
+
+    commands = shaping_commands("r-eth0", DirectionSpec(bandwidth_mbps=50), AqmKind(aqm), None, 300)
+    assert expected in commands[-1]

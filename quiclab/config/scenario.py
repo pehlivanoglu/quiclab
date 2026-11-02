@@ -31,6 +31,7 @@ class RouterQueue(_StrictBase):
 
     aqm: AqmKind | None = None
     dualpi2_target_ms: float | None = Field(default=None, gt=0)
+    # Hard queue limit for every AQM (packets; RED converts at 1500 B).
     queue_limit_packets: int | None = Field(default=None, gt=0, le=100_000)
     # RED thresholds in bytes (default 20 kB / 60 kB); scale them with the
     # link's BDP, or a fast link drops at a fraction of a millisecond of queue.
@@ -41,12 +42,15 @@ class RouterQueue(_StrictBase):
     def _check_aqm_parameters(self) -> "RouterQueue":
         if self.dualpi2_target_ms is not None and self.aqm != AqmKind.dualpi2:
             raise ValueError("dualpi2_target_ms requires aqm: dualpi2")
-        if self.queue_limit_packets is not None and self.aqm != AqmKind.pfifo:
-            raise ValueError("queue_limit_packets requires aqm: pfifo")
+        if self.queue_limit_packets is not None and self.aqm is None:
+            raise ValueError("queue_limit_packets requires an aqm")
         if (self.red_min_bytes is not None or self.red_max_bytes is not None) and self.aqm != AqmKind.red:
             raise ValueError("red_min_bytes / red_max_bytes require aqm: red")
         if (self.red_min_bytes or 20_000) >= (self.red_max_bytes or 60_000):
             raise ValueError("red_min_bytes must be below red_max_bytes")
+        if (self.aqm == AqmKind.red and self.queue_limit_packets is not None
+                and self.queue_limit_packets * 1500 <= (self.red_max_bytes or 60_000)):
+            raise ValueError("red queue_limit_packets x 1500 B must exceed red_max_bytes")
         return self
 
 
@@ -139,6 +143,23 @@ class UdpFlowEvent(_FlowEvent):
 FlowEvent = Annotated[TcpFlowEvent | UdpFlowEvent, Field(discriminator="kind")]
 
 
+class PpbpEvent(_Event):
+    """PPBP cross traffic (qtraffic): Poisson burst arrivals, Pareto burst
+    lengths (shape 3 - 2*hurst), `burst_mbps` per active burst; long-run load
+    `mean_mbps`. The seed fixes every burst, so runs repeat exactly."""
+
+    type: Literal["ppbp"]
+    id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$")
+    route: str
+    duration_s: float = Field(gt=0)
+    mean_mbps: float = Field(gt=0)
+    burst_mbps: float = Field(gt=0)
+    mean_burst_s: float = Field(default=0.5, gt=0)
+    hurst: float = Field(default=0.8, gt=0.5, lt=1)
+    seed: int = Field(default=1, ge=0)
+    packet_size_bytes: int = Field(default=1200, ge=64, le=1472)
+
+
 class JoinEvent(_Event):
     """Subscriber connects now instead of at t=0."""
 
@@ -154,7 +175,7 @@ class LeaveEvent(_Event):
 
 
 Event = Annotated[
-    LinkEvent | AqmEvent | FlowEvent | JoinEvent | LeaveEvent,
+    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | JoinEvent | LeaveEvent,
     Field(discriminator="type"),
 ]
 
@@ -181,6 +202,13 @@ class Scenario(_StrictBase):
 
     def flows(self) -> list[TcpFlowEvent | UdpFlowEvent]:
         return [e for e in self.events if e.type == "flow"]
+
+    def ppbp(self) -> list[PpbpEvent]:
+        return [e for e in self.events if e.type == "ppbp"]
+
+    def traffic_ids(self) -> list[str]:
+        """iperf3 flows and PPBP processes share one port range, in file order."""
+        return [e.id for e in self.events if e.type in ("flow", "ppbp")]
 
     def join_at(self, subscriber: str) -> float:
         return next((e.at_s for e in self.events if e.type == "join" and e.subscriber == subscriber), 0.0)
@@ -228,7 +256,7 @@ class Scenario(_StrictBase):
             elif event.type == "aqm":
                 if event.router not in topology.routers:
                     raise ValueError(f"{where}: {event.router!r} is not a topology router")
-            elif event.type == "flow":
+            elif event.type in ("flow", "ppbp"):
                 if event.route not in routes:
                     raise ValueError(f"{where}: flow {event.id!r} uses unknown traffic route {event.route!r}")
                 if event.id in flow_ids:
