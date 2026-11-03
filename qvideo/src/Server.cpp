@@ -45,7 +45,7 @@ DEFINE_int32(send_buffer_ms, 1000, "sender frame queue limit in media time (GOP-
 DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all clients; 0 = now");
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
 DEFINE_bool(record_acks, true, "write per-ACK detector inputs (<client>-acks.csv, -sent.csv)");
-DEFINE_bool(owd, true, "write exact one-way delay per 10 ms (<client>-owd.csv) from ACK receive timestamps");
+DEFINE_bool(owd, true, "write exact one-way delay per 5 ms (<client>-owd.csv) from ACK receive timestamps");
 
 namespace {
 
@@ -111,7 +111,7 @@ const char* bbrPhase(const quic::QuicConnectionStateBase* conn) {
   }
 }
 
-// Exact one-way delay of the video's own QUIC packets, in 10 ms bins of send
+// Exact one-way delay of the video's own QUIC packets, in 5 ms bins of send
 // time. The client reports each packet's receive time in its ACKs (relative
 // to its connection start, which it sends in the request); sender and client
 // share one CLOCK_MONOTONIC, so receive - send is the true OWD (propagation +
@@ -119,7 +119,7 @@ const char* bbrPhase(const quic::QuicConnectionStateBase* conn) {
 // so late ACKs still land; packets_sent - packets_timed = lost or untimed.
 class OwdRecorder : public quic::ManagedObserver {
  public:
-  static constexpr int64_t kBinUs = 10000;
+  static constexpr int64_t kBinUs = 5000;  // FlowBot's OWD sampling step
   static constexpr int64_t kHoldUs = 10000000;
 
   OwdRecorder(const std::string& base, int64_t basisUs)
@@ -163,7 +163,7 @@ class OwdRecorder : public quic::ManagedObserver {
   }
 
   // Writes every bin older than kHoldUs (all bins when final), as a gap-free
-  // 10 ms grid: bins without packets have empty OWD fields.
+  // 5 ms grid: bins without packets have empty OWD fields.
   void flush(bool final) {
     const int64_t limit = final ? std::numeric_limits<int64_t>::max()
                                 : (monoUs(quic::Clock::now()) - kHoldUs) / kBinUs;

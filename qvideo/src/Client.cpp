@@ -31,6 +31,7 @@ DEFINE_int32(buffer_ms, 600, "playback buffer before first frame plays");
 DEFINE_int32(stats_ms, 100, "playback sampling interval");
 DEFINE_int32(duration_s, 0, "stop after this many seconds (0 = until signalled)");
 DEFINE_string(out_dir, "/tmp/qvideo-client", "logs");
+DEFINE_int32(ping_ms, 50, "send a QUIC PING this often (0 = never); see pingTimer_");
 
 namespace {
 
@@ -86,6 +87,18 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
 
     statsTimer_ = folly::AsyncTimeout::make(*evb_, [this]() noexcept { onStats(); });
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
+    if (FLAGS_ping_ms > 0) {
+      // A receiver that only sends ACKs never gets its own ACKs acknowledged,
+      // so mvfst never retires old ACK ranges: every loss adds one (up to
+      // 1024) until the ranges fill the ACK packet and leave no room for the
+      // receive timestamps the sender's OWD log needs. A periodic PING is
+      // ack-eliciting; the server's ACK of it lets the client retire them.
+      pingTimer_ = folly::AsyncTimeout::make(*evb_, [this]() noexcept {
+        transport_->sendPing(std::chrono::milliseconds(0));
+        pingTimer_->scheduleTimeout(FLAGS_ping_ms);
+      });
+      pingTimer_->scheduleTimeout(FLAGS_ping_ms);
+    }
     if (FLAGS_duration_s > 0) {
       stopTimer_ = folly::AsyncTimeout::make(*evb_, [this]() noexcept { stop("duration reached"); });
       stopTimer_->scheduleTimeout(std::chrono::seconds(FLAGS_duration_s));
@@ -107,6 +120,9 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
     }
     if (stopTimer_) {
       stopTimer_->cancelTimeout();
+    }
+    if (pingTimer_) {
+      pingTimer_->cancelTimeout();
     }
     if (transport_) {
       transport_->close(std::nullopt);
@@ -211,6 +227,7 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
   std::map<StreamId, std::string> streams_;
   qvideo::Playback playback_;
   std::unique_ptr<folly::AsyncTimeout> statsTimer_;
+  std::unique_ptr<folly::AsyncTimeout> pingTimer_;
   std::unique_ptr<folly::AsyncTimeout> stopTimer_;
   std::ofstream framesCsv_;
   std::ofstream playCsv_;
