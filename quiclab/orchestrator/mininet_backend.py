@@ -238,6 +238,7 @@ class MininetBackend:
                 # Already waiting for T0 + at_s since setup; the row records when it began.
                 "ppbp": lambda e: (e.id, f"mean_mbps={e.mean_mbps:g} burst_mbps={e.burst_mbps:g} "
                                          f"mean_burst_s={e.mean_burst_s:g} hurst={e.hurst:g} seed={e.seed}"),
+                "bursts": lambda e: (e.id, f"bursts={len(e.bursts)}"),
                 "join": lambda e: _join(net, topology, e.subscriber, record, clients, info),
                 "leave": lambda e: _leave(e.subscriber, clients),
             })
@@ -555,11 +556,13 @@ def _start_ppbp(net, topology: TopologyConfig, scenario: Scenario, record: RunRe
             str(_QTRAFFIC), "--mode=send", f"--bind={sender_ip}", f"--dest={receiver_ip}",
             f"--port={_flow_port(topology, scenario, e.id)}",
             f"--start_unix_us={start_unix_us + int(e.at_s * 1e6)}", f"--duration_s={e.duration_s:g}",
-            f"--mean_mbps={e.mean_mbps:g}", f"--burst_mbps={e.burst_mbps:g}",
-            f"--mean_burst_s={e.mean_burst_s:g}", f"--hurst={e.hurst:g}", f"--seed={e.seed}",
+            *([f"--schedule={','.join(f'{b.start_s:g}:{b.duration_s:g}:{b.rate_mbps:g}' for b in e.bursts)}"]
+              if e.type == "bursts" else
+              [f"--mean_mbps={e.mean_mbps:g}", f"--burst_mbps={e.burst_mbps:g}",
+               f"--mean_burst_s={e.mean_burst_s:g}", f"--hurst={e.hurst:g}", f"--seed={e.seed}"]),
             f"--packet_size={e.packet_size_bytes}", f"--out={record.run_dir / 'traffic' / e.id}",
         ], record.run_dir / "logs" / f"{e.id}-send.log")))
-    info(f"*** {len(events)} PPBP source(s) armed for their start times\n")
+    info(f"*** {len(events)} qtraffic source(s) armed for their start times\n")
     return started
 
 
