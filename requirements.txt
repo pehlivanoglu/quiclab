@@ -2,3 +2,9 @@ pydantic>=2.7,<3
 click>=8.1,<9
 PyYAML>=6.0,<7
 matplotlib>=3.8,<4  # scripts/det_plot.py
+# scripts/sbd_baselines.py (vendored SBD baselines DCW / rmcatSBD / dcSBD; pandas < 3, see baselines/sbd/README.md)
+pandas>=2.2,<2.3
+scipy>=1.11
+PyWavelets>=1.5
+networkx>=3.0
+seaborn>=0.13
