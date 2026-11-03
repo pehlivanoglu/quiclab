@@ -22,7 +22,9 @@
 #include <quic/server/QuicServer.h>
 #include <quic/server/QuicServerTransport.h>
 #include <quic/server/ThreadedQuicServer.h>
+#include <quic/state/StateData.h>
 
+#include <atomic>
 #include <csignal>
 #include <filesystem>
 #include <limits>
@@ -41,6 +43,7 @@ DEFINE_int32(workers, 1, "QUIC worker threads (one EventBase each)");
 DEFINE_int32(send_buffer_ms, 1000, "sender frame queue limit in media time (GOP-aware head drop); 0 = unlimited");
 DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all clients; 0 = now");
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
+DEFINE_bool(record_acks, true, "write per-ACK detector inputs (<client>-acks.csv, -sent.csv)");
 
 namespace {
 
@@ -75,6 +78,150 @@ class PacingObserver : public quic::ManagedObserver {
 };
 
 constexpr std::chrono::microseconds kPumpInterval{5000};
+
+// Processing order across all connections, so an offline replay interleaves
+// sends and ACKs of every flow exactly as they happened.
+std::atomic<uint64_t> gSeq{0};
+
+int64_t monoUs(quic::TimePoint time) {
+  return std::chrono::duration_cast<std::chrono::microseconds>(time.time_since_epoch()).count();
+}
+
+const char* bbrPhase(const quic::QuicConnectionStateBase* conn) {
+  if (!conn || !conn->congestionController) {
+    return "unknown";
+  }
+  quic::CongestionControllerStats stats{};
+  conn->congestionController->getStats(stats);
+  switch (conn->congestionController->type()) {
+    case quic::CongestionControlType::BBR2:
+    case quic::CongestionControlType::BBR2Modular: {
+      static const char* const kNames[] = {"startup", "drain", "probe_bw_down", "probe_bw_cruise",
+                                           "probe_bw_refill", "probe_bw_up", "probe_rtt"};
+      return stats.bbr2Stats.state < 7 ? kNames[stats.bbr2Stats.state] : "unknown";
+    }
+    case quic::CongestionControlType::BBR: {
+      static const char* const kNames[] = {"startup", "drain", "probe_bw", "probe_rtt"};
+      return stats.bbrStats.state < 4 ? kNames[stats.bbrStats.state] : "unknown";
+    }
+    default:
+      return "unknown";
+  }
+}
+
+// Read-only per-ACK record of what the CC sees, in the raw sample format of
+// the moq-testbed shadow detector replay (moqx_shadow_replay), so detectors
+// run offline on the exact network history. Times are CLOCK_MONOTONIC us
+// (the router metrics and events.csv share that clock).
+class AckRecorder : public quic::ManagedObserver {
+ public:
+  AckRecorder(const std::string& base, std::function<uint64_t()> backlogBytes)
+      : quic::ManagedObserver(EventSetBuilder()
+                                  .enable(Events::packetsWrittenEvents)
+                                  .enable(Events::acksProcessedEvents)
+                                  .enable(Events::lossEvents)
+                                  .build()),
+        backlogBytes_(std::move(backlogBytes)) {
+    acks_.open(base + "-acks.csv");
+    acks_ << "mono_us,sent_mono_us,rtt_us,min_rtt_us,srtt_us,rate_valid,app_limited,send_bps,ack_bps,"
+             "bbr_bw_bps,cwnd_bytes,inflight_bytes,stream_buffer_bytes,bytes_acked_total,"
+             "bytes_sent_at_send,phase,newly_lost,relay_saturated,seq\n";
+    sent_.open(base + "-sent.csv");
+    sent_ << "send_mono_us,bytes,seq\n";
+  }
+
+  void packetsWritten(quic::QuicSocketLite*, const PacketsWrittenEvent& event) noexcept override {
+    uint64_t bytes = 0;
+    int64_t sendUs = 0;
+    event.invokeForEachNewOutstandingPacketOrdered([&](const auto& packet) {
+      if (packet.packet.header.getPacketNumberSpace() != quic::PacketNumberSpace::AppData) {
+        return;
+      }
+      bytes += packet.metadata.encodedSize;
+      sendUs = monoUs(packet.metadata.time);
+    });
+    if (bytes) {
+      sent_ << sendUs << ',' << bytes << ',' << ++gSeq << '\n';
+    }
+  }
+
+  void packetLossDetected(quic::QuicSocketLite*, const LossEvent& event) noexcept override {
+    for (const auto& packet : event.lostPackets) {
+      lost_ += packet.pnSpace == quic::PacketNumberSpace::AppData;
+    }
+  }
+
+  void acksProcessed(quic::QuicSocketLite* socket, const AcksProcessedEvent& event) noexcept override {
+    const auto info = socket->getTransportInfo();
+    const auto* conn = socket->getState();
+    const char* phase = bbrPhase(conn);
+    const uint64_t backlog = backlogBytes_();
+    for (const auto& ack : event.ackEvents) {
+      if (ack.implicit || ack.packetNumberSpace != quic::PacketNumberSpace::AppData) {
+        continue;
+      }
+      const auto* largest = ack.getLargestNewlyAckedPacket();
+      if (!largest) {
+        continue;
+      }
+      const auto& sent = largest->outstandingPacketMetadata;
+      std::optional<int64_t> rtt;
+      if (ack.rttSampleNoAckDelay) {
+        rtt = ack.rttSampleNoAckDelay->count();
+      } else if (ack.rttSample) {
+        rtt = ack.rttSample->count();
+      }
+      // BBR's delivery-rate sample: bytes delivered since the packet acked
+      // last when this one was sent, send and ack intervals reported apart.
+      bool rateValid = false;
+      double sendBps = 0, ackBps = 0;
+      if (largest->lastAckedPacketInfo) {
+        const auto& last = *largest->lastAckedPacketInfo;
+        const int64_t sendUs = monoUs(sent.time) - monoUs(last.sentTime);
+        int64_t ackUs = monoUs(ack.adjustedAckTime) - monoUs(last.adjustedAckTime);
+        if (ackUs <= 0) {
+          ackUs = monoUs(ack.ackTime) - monoUs(last.ackTime);
+        }
+        const uint64_t sendBytes =
+            sent.totalBytesSent >= last.totalBytesSent ? sent.totalBytesSent - last.totalBytesSent : 0;
+        const uint64_t delivered =
+            ack.totalBytesAcked >= last.totalBytesAcked ? ack.totalBytesAcked - last.totalBytesAcked : 0;
+        if (sendUs > 0 && ackUs > 0 && delivered > 0) {
+          rateValid = true;
+          sendBps = sendBytes * 8e6 / double(sendUs);
+          ackBps = delivered * 8e6 / double(ackUs);
+        }
+      }
+      double bwBps = 0;
+      uint64_t cwnd = info.congestionWindow;
+      if (ack.ccState) {
+        if (ack.ccState->maybeBandwidthBitsPerSec) {
+          bwBps = double(*ack.ccState->maybeBandwidthBitsPerSec);
+        }
+        cwnd = ack.ccState->congestionWindowBytes;
+      }
+      acks_ << monoUs(ack.ackTime) << ',' << monoUs(sent.time) << ','
+            << (rtt ? std::to_string(*rtt) : std::string()) << ','
+            << (info.maybeMinRtt ? info.maybeMinRtt->count() : 0) << ',' << info.srtt.count() << ','
+            << rateValid << ',' << ack.largestNewlyAckedPacketAppLimited << ',' << uint64_t(sendBps) << ','
+            << uint64_t(ackBps) << ',' << uint64_t(bwBps) << ',' << cwnd << ',' << info.bytesInFlight << ','
+            << backlog << ',' << ack.totalBytesAcked << ',' << sent.totalBytesSent << ',' << phase << ','
+            << lost_ << ",0," << ++gSeq << '\n';
+      lost_ = 0;
+    }
+  }
+
+  void flush() {
+    acks_.flush();
+    sent_.flush();
+  }
+
+ private:
+  std::function<uint64_t()> backlogBytes_;
+  std::ofstream acks_;
+  std::ofstream sent_;
+  uint32_t lost_{0};
+};
 
 class Session : public quic::QuicSocket::ConnectionSetupCallback,
                 public quic::QuicSocket::ConnectionCallback,
@@ -158,6 +305,13 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     dropsCsv_.open(base + "-drops.csv");
     dropsCsv_ << "t_us,index,gop,keyframe,size,age_us\n";
     queue_.emplace(uint64_t(FLAGS_send_buffer_ms) * 1000);
+    if (FLAGS_record_acks) {
+      // Sender-side backlog not yet on the wire: frame queue + QUIC unsent.
+      acks_ = std::make_shared<AckRecorder>(base, [this] {
+        return queue_->bytes() + quicUnsent(sock_->getTransportInfo());
+      });
+      sock_->addObserver(acks_);
+    }
     statsCsv_.open(base + "-cc.csv");
     // cc: the controller mvfst actually runs (TransportInfo), not the flag.
     statsCsv_ << "t_us,cc,srtt_us,min_rtt_us,latest_rtt_us,cwnd_bytes,inflight_bytes,"
@@ -306,6 +460,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     statsCsv_.flush();
     framesCsv_.flush();
     dropsCsv_.flush();
+    if (acks_) {
+      acks_->flush();
+    }
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
   }
 
@@ -326,6 +483,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     dropsCsv_.flush();
     framesCsv_.flush();
     statsCsv_.flush();
+    if (acks_) {
+      acks_->flush();
+    }
     LOG(INFO) << (request_ ? request_->clientId : std::string("?")) << " session end: " << why;
   }
 
@@ -333,6 +493,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
   const Config& cfg_;
   std::shared_ptr<quic::QuicSocket> sock_;
   std::shared_ptr<PacingObserver> pacing_;
+  std::shared_ptr<AckRecorder> acks_;
   std::string requestBuf_;
   std::optional<qvideo::Request> request_;
   qvideo::VideoParams params_;
