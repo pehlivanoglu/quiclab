@@ -25,6 +25,8 @@ int main() {
   assert(qvideo::frameSize(p, 123) == qvideo::frameSize(p, 123));
 
   assert(qvideo::parseRequest("QV1 sub-1 2500 0"));
+  assert(qvideo::parseRequest("QV1 sub-1 2500 0 123456")->recvBasisUs == 123456);
+  assert(!qvideo::parseRequest("QV1 sub-1 2500 0 -5"));
   assert(!qvideo::parseRequest("QV1 ../x 2500 0"));
   assert(!qvideo::parseRequest("QV1 sub 0 0"));
   assert(!qvideo::parseRequest("XX1 sub 2500 0"));

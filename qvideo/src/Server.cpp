@@ -28,6 +28,7 @@
 #include <csignal>
 #include <filesystem>
 #include <limits>
+#include <map>
 
 DEFINE_string(host, "0.0.0.0", "listen address");
 DEFINE_int32(port, 4433, "listen UDP port");
@@ -44,6 +45,7 @@ DEFINE_int32(send_buffer_ms, 1000, "sender frame queue limit in media time (GOP-
 DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all clients; 0 = now");
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
 DEFINE_bool(record_acks, true, "write per-ACK detector inputs (<client>-acks.csv, -sent.csv)");
+DEFINE_bool(owd, true, "write exact one-way delay per 10 ms (<client>-owd.csv) from ACK receive timestamps");
 
 namespace {
 
@@ -108,6 +110,95 @@ const char* bbrPhase(const quic::QuicConnectionStateBase* conn) {
       return "unknown";
   }
 }
+
+// Exact one-way delay of the video's own QUIC packets, in 10 ms bins of send
+// time. The client reports each packet's receive time in its ACKs (relative
+// to its connection start, which it sends in the request); sender and client
+// share one CLOCK_MONOTONIC, so receive - send is the true OWD (propagation +
+// transmission + queuing), not an estimate. Bins are written once 10 s old,
+// so late ACKs still land; packets_sent - packets_timed = lost or untimed.
+class OwdRecorder : public quic::ManagedObserver {
+ public:
+  static constexpr int64_t kBinUs = 10000;
+  static constexpr int64_t kHoldUs = 10000000;
+
+  OwdRecorder(const std::string& base, int64_t basisUs)
+      : quic::ManagedObserver(EventSetBuilder()
+                                  .enable(Events::packetsWrittenEvents)
+                                  .enable(Events::acksProcessedEvents)
+                                  .build()),
+        basisUs_(basisUs) {
+    const int64_t mono = monoUs(quic::Clock::now());
+    unixOffsetUs_ = int64_t(qvideo::nowUs()) - mono;
+    csv_.open(base + "-owd.csv");
+    csv_ << "t_us,bin_mono_us,packets_sent,packets_timed,owd_min_us,owd_mean_us,owd_max_us\n";
+  }
+
+  void packetsWritten(quic::QuicSocketLite*, const PacketsWrittenEvent& event) noexcept override {
+    event.invokeForEachNewOutstandingPacketOrdered([&](const auto& packet) {
+      if (packet.packet.header.getPacketNumberSpace() == quic::PacketNumberSpace::AppData) {
+        ++bins_[monoUs(packet.metadata.time) / kBinUs].sent;
+      }
+    });
+  }
+
+  void acksProcessed(quic::QuicSocketLite*, const AcksProcessedEvent& event) noexcept override {
+    for (const auto& ack : event.ackEvents) {
+      if (ack.implicit || ack.packetNumberSpace != quic::PacketNumberSpace::AppData) {
+        continue;
+      }
+      for (const auto& packet : ack.ackedPackets) {
+        if (!packet.receiveRelativeTimeStampUsec) {
+          continue;
+        }
+        const int64_t sentUs = monoUs(packet.outstandingPacketMetadata.time);
+        const int64_t owd = basisUs_ + packet.receiveRelativeTimeStampUsec->count() - sentUs;
+        auto& b = bins_[sentUs / kBinUs];
+        b.minUs = b.timed ? std::min(b.minUs, owd) : owd;
+        b.maxUs = b.timed ? std::max(b.maxUs, owd) : owd;
+        b.sumUs += owd;
+        ++b.timed;
+      }
+    }
+  }
+
+  // Writes every bin older than kHoldUs (all bins when final), as a gap-free
+  // 10 ms grid: bins without packets have empty OWD fields.
+  void flush(bool final) {
+    const int64_t limit = final ? std::numeric_limits<int64_t>::max()
+                                : (monoUs(quic::Clock::now()) - kHoldUs) / kBinUs;
+    while (!bins_.empty() && bins_.begin()->first < limit) {
+      const auto [bin, b] = *bins_.begin();
+      for (int64_t gap = next_ ? next_ : bin; gap < bin; ++gap) {
+        csv_ << gap * kBinUs + unixOffsetUs_ << ',' << gap * kBinUs << ",0,0,,,\n";
+      }
+      csv_ << bin * kBinUs + unixOffsetUs_ << ',' << bin * kBinUs << ',' << b.sent << ',' << b.timed << ',';
+      if (b.timed) {
+        csv_ << b.minUs << ',' << b.sumUs / b.timed << ',' << b.maxUs;
+      } else {
+        csv_ << ",,";
+      }
+      csv_ << '\n';
+      next_ = bin + 1;
+      bins_.erase(bins_.begin());
+    }
+    csv_.flush();
+  }
+
+ private:
+  struct Bin {
+    uint32_t sent{0};
+    uint32_t timed{0};
+    int64_t sumUs{0};
+    int64_t minUs{0};
+    int64_t maxUs{0};
+  };
+  int64_t basisUs_;
+  int64_t unixOffsetUs_{0};
+  int64_t next_{0};
+  std::map<int64_t, Bin> bins_;
+  std::ofstream csv_;
+};
 
 // Read-only per-ACK record of what the CC sees, in the raw sample format of
 // the moq-testbed shadow detector replay (moqx_shadow_replay), so detectors
@@ -312,6 +403,10 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
       });
       sock_->addObserver(acks_);
     }
+    if (FLAGS_owd && request_->recvBasisUs > 0) {
+      owd_ = std::make_shared<OwdRecorder>(base, request_->recvBasisUs);
+      sock_->addObserver(owd_);
+    }
     statsCsv_.open(base + "-cc.csv");
     // cc: the controller mvfst actually runs (TransportInfo), not the flag.
     statsCsv_ << "t_us,cc,srtt_us,min_rtt_us,latest_rtt_us,cwnd_bytes,inflight_bytes,"
@@ -463,6 +558,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (acks_) {
       acks_->flush();
     }
+    if (owd_) {
+      owd_->flush(false);
+    }
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
   }
 
@@ -486,6 +584,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (acks_) {
       acks_->flush();
     }
+    if (owd_) {
+      owd_->flush(true);
+    }
     LOG(INFO) << (request_ ? request_->clientId : std::string("?")) << " session end: " << why;
   }
 
@@ -494,6 +595,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
   std::shared_ptr<quic::QuicSocket> sock_;
   std::shared_ptr<PacingObserver> pacing_;
   std::shared_ptr<AckRecorder> acks_;
+  std::shared_ptr<OwdRecorder> owd_;
   std::string requestBuf_;
   std::optional<qvideo::Request> request_;
   qvideo::VideoParams params_;
@@ -586,6 +688,17 @@ int main(int argc, char** argv) {
   ts.defaultCongestionController = *cc;
   ts.pacingEnabled = true;
   ts.idleTimeout = std::chrono::seconds(30);
+  if (FLAGS_owd) {
+    // Ask clients for per-packet receive timestamps in their ACKs (OwdRecorder).
+    ts.maybeAckReceiveTimestampsConfigSentToPeer =
+        quic::AckReceiveTimestampsConfig{.maxReceiveTimestampsPerAck = 64, .receiveTimestampsExponent = 0};
+    ts.maxReceiveTimestampsPerAckStored = 64;
+    // IETF draft-02 format: the legacy mvfst format only reports a gap-free
+    // suffix of packets and drops to ~0 % coverage once there is loss.
+    ts.enableIetfAckReceiveTimestamps = true;
+    ts.advertiseLegacyAckReceiveTimestamps = false;
+    ts.sendDraft02AckReceiveTimestamps = true;
+  }
   // No GSO: router queues must see wire-sized packets, not 64 KB super-packets.
   ts.batchingMode = quic::QuicBatchingMode::BATCHING_MODE_NONE;
 

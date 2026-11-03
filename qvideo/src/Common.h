@@ -111,6 +111,9 @@ struct Request {
   std::string clientId;
   uint32_t rateKbps{0};
   uint32_t phaseMs{0};
+  // Client's QUIC connection start (CLOCK_MONOTONIC us): the basis of the
+  // receive timestamps in its ACKs. 0 = not sent (no OWD log).
+  int64_t recvBasisUs{0};
 };
 
 inline bool validClientId(const std::string& id) {
@@ -134,6 +137,13 @@ inline std::optional<Request> parseRequest(const std::string& line) {
   }
   r.rateKbps = uint32_t(rate);
   r.phaseMs = uint32_t(phase);
+  long long basis = 0;
+  if (in >> basis) {  // optional 5th field
+    if (basis <= 0) {
+      return std::nullopt;
+    }
+    r.recvBasisUs = basis;
+  }
   return r;
 }
 

@@ -71,6 +71,16 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
     ts.advertisedInitialUniStreamFlowControlWindow = 64 << 20;
     ts.advertisedInitialMaxStreamsUni = 1 << 20;
     ts.idleTimeout = std::chrono::seconds(30);
+    // Report every packet's receive time in ACKs (legacy mvfst ACK_RECEIVE_TIMESTAMPS,
+    // 1 us resolution), so the sender can log exact one-way delay.
+    ts.maybeAckReceiveTimestampsConfigSentToPeer =
+        quic::AckReceiveTimestampsConfig{.maxReceiveTimestampsPerAck = 64, .receiveTimestampsExponent = 0};
+    ts.maxReceiveTimestampsPerAckStored = 64;
+    // IETF draft-02 format: the legacy mvfst format only reports a gap-free
+    // suffix of packets and drops to ~0 % coverage once there is loss.
+    ts.enableIetfAckReceiveTimestamps = true;
+    ts.advertiseLegacyAckReceiveTimestamps = false;
+    ts.sendDraft02AckReceiveTimestamps = true;
     transport_->setTransportSettings(ts);
     transport_->start(this, this);
 
@@ -112,8 +122,12 @@ class Client : public quic::QuicSocket::ConnectionSetupCallback,
       stop("cannot open request stream");
       return;
     }
+    // Receive timestamps in our ACKs count from our connection start (steady
+    // clock = CLOCK_MONOTONIC, shared with the sender in this testbed).
+    const int64_t basisUs = std::chrono::duration_cast<std::chrono::microseconds>(
+        transport_->getTransportInfo().connectionTime.time_since_epoch()).count();
     const std::string req = "QV1 " + FLAGS_id + " " + std::to_string(FLAGS_rate_kbps) + " " +
-        std::to_string(FLAGS_phase_ms) + "\n";
+        std::to_string(FLAGS_phase_ms) + " " + std::to_string(basisUs) + "\n";
     (void)transport_->writeChain(*id, quic::Buf::copyBuffer(req.data(), req.size()), true);
     LOG(INFO) << FLAGS_id << " connected, requested " << FLAGS_rate_kbps << " kbps";
   }
