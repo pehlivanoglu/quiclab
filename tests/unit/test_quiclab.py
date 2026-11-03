@@ -125,6 +125,12 @@ def test_router_metrics_follow_receiver_side_egresses() -> None:
                                         "route": "shared", "duration_s": 1, "rate_mbps": 1}), "duplicate flow"),
         (lambda d: d["events"].append({"at_s": 80, "type": "flow", "kind": "tcp", "id": "late",
                                         "route": "shared", "duration_s": 20}), "past duration_s"),
+        (lambda d: d["events"].append({"at_s": 85, "type": "bursts", "id": "b", "route": "shared",
+                                        "bursts": [{"start_s": 1, "duration_s": 5, "rate_mbps": 2}]}),
+         "past duration_s"),
+        (lambda d: d["events"].append({"at_s": 5, "type": "bursts", "id": "b", "route": "nope",
+                                        "bursts": [{"start_s": 0, "duration_s": 1, "rate_mbps": 2}]}),
+         "unknown traffic route"),
         (lambda d: d["events"].append({"at_s": 5, "type": "leave", "subscriber": "sub-d"}), "leaves before it joins"),
         (lambda d: d["events"].append({"at_s": 5, "type": "join", "subscriber": "ghost"}), "not a topology subscriber"),
     ],
@@ -134,6 +140,16 @@ def test_scenario_rejects(mutate, message: str) -> None:
     mutate(raw)
     with pytest.raises(ValueError, match=message):
         Scenario.model_validate(raw).check_against(_shared())
+
+
+def test_bursts_event_is_a_qtraffic_source() -> None:
+    raw = _scenario_raw("shared-cross.yaml")
+    raw["events"].append({"at_s": 10, "type": "bursts", "id": "b", "route": "shared", "bursts": [
+        {"start_s": 0, "duration_s": 1, "rate_mbps": 3}, {"start_s": 5, "duration_s": 4, "rate_mbps": 8}]})
+    scenario = Scenario.model_validate(raw)
+    scenario.check_against(_shared())
+    (bursts,) = [e for e in scenario.ppbp() if e.type == "bursts"]
+    assert bursts.duration_s == 9 and "b" in scenario.traffic_ids()
 
 
 def test_scenario_initial_conditions_merge_defaults() -> None:

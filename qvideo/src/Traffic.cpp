@@ -1,8 +1,8 @@
-// qtraffic: PPBP cross traffic over UDP (see Ppbp.h).
+// qtraffic: PPBP cross traffic over UDP (see Ppbp.h), or a fixed burst schedule.
 //
-//   send: precomputes every burst from the seed (written to <out>-bursts.csv,
-//         the offered-load truth), waits for --start_unix_us, then paces
-//         packets at the aggregate rate of the active bursts.
+//   send: precomputes every burst, from the seed or from --schedule (written to
+//         <out>-bursts.csv, the offered-load truth), waits for --start_unix_us,
+//         then paces packets at the aggregate rate of the active bursts.
 //   recv: sink; per 100 ms writes packets, bytes, sequence gaps (loss) and
 //         one-way delay (sender and receiver share one kernel clock).
 
@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 DEFINE_string(mode, "", "send or recv");
 DEFINE_string(bind, "0.0.0.0", "local address");
@@ -36,6 +37,7 @@ DEFINE_double(hurst, 0.8, "send: Hurst parameter, 0.5 < H < 1");
 DEFINE_uint64(seed, 1, "send: burst process seed");
 DEFINE_int32(packet_size, 1200, "send: UDP payload bytes");
 DEFINE_string(out, "", "CSV path prefix");
+DEFINE_string(schedule, "", "send: fixed bursts start_s:duration_s:rate_mbps,... instead of PPBP");
 
 namespace {
 
@@ -81,22 +83,41 @@ int udpSocket(const std::string& bindIp, int bindPort) {
   return fd;
 }
 
+// "start:duration:rate,..." -> bursts; empty on any malformed or non-positive entry.
+std::vector<qvideo::Burst> parseSchedule(const std::string& text) {
+  std::vector<qvideo::Burst> bursts;
+  std::istringstream in(text);
+  std::string item;
+  while (std::getline(in, item, ',')) {
+    qvideo::Burst b{};
+    char c1 = 0, c2 = 0;
+    std::istringstream fields(item);
+    if (!(fields >> b.startS >> c1 >> b.durationS >> c2 >> b.rateMbps) || c1 != ':' || c2 != ':' ||
+        b.startS < 0 || b.durationS <= 0 || b.rateMbps <= 0) {
+      return {};
+    }
+    bursts.push_back(b);
+  }
+  return bursts;
+}
+
 int runSend() {
-  const qvideo::PpbpParams params{FLAGS_mean_mbps, FLAGS_burst_mbps, FLAGS_mean_burst_s,
-                                  FLAGS_hurst, FLAGS_duration_s, FLAGS_seed};
-  const auto bursts = qvideo::ppbpBursts(params);
+  const auto bursts = FLAGS_schedule.empty()
+      ? qvideo::ppbpBursts({FLAGS_mean_mbps, FLAGS_burst_mbps, FLAGS_mean_burst_s, FLAGS_hurst,
+                            FLAGS_duration_s, FLAGS_seed})
+      : parseSchedule(FLAGS_schedule);
   {
     std::ofstream out(FLAGS_out + "-bursts.csv");
     out << "burst,start_s,duration_s,rate_mbps\n";
     for (size_t i = 0; i < bursts.size(); ++i) {
-      out << i << ',' << bursts[i].startS << ',' << bursts[i].durationS << ',' << FLAGS_burst_mbps << '\n';
+      out << i << ',' << bursts[i].startS << ',' << bursts[i].durationS << ',' << bursts[i].rateMbps << '\n';
     }
   }
-  // Offered rate as a step function: +1 active burst at a start, -1 at an end.
-  std::vector<std::pair<uint64_t, int>> steps;
+  // Offered rate as a step function: + a burst's rate at its start, - at its end.
+  std::vector<std::pair<uint64_t, double>> steps;
   for (const auto& b : bursts) {
-    steps.emplace_back(uint64_t(b.startS * 1e6), 1);
-    steps.emplace_back(uint64_t((b.startS + b.durationS) * 1e6), -1);
+    steps.emplace_back(uint64_t(b.startS * 1e6), b.rateMbps);
+    steps.emplace_back(uint64_t((b.startS + b.durationS) * 1e6), -b.rateMbps);
   }
   std::sort(steps.begin(), steps.end());
 
@@ -115,15 +136,17 @@ int runSend() {
   sleepUntil(start);
   size_t next = 0;
   int active = 0;
+  double offeredMbps = 0;
   double credit = 0;
   uint64_t seq = 0, binBytes = 0, binErrors = 0, binStart = start, last = start;
   for (uint64_t tick = start; tick < end && !stopRequested; tick += kTickUs) {
     sleepUntil(tick);
     const uint64_t now = qvideo::nowUs();
     while (next < steps.size() && start + steps[next].first <= now) {
-      active += steps[next++].second;
+      active += steps[next].second > 0 ? 1 : -1;
+      offeredMbps = std::max(0.0, offeredMbps + steps[next++].second);
     }
-    const double rateBps = active * FLAGS_burst_mbps * 1e6;
+    const double rateBps = offeredMbps * 1e6;
     // Credit at most 10 ms behind: a late tick catches up, a stall does not flood.
     credit = std::min(credit + rateBps / 8 * double(now - last) / 1e6, rateBps / 8 * 0.01 + FLAGS_packet_size);
     last = now;
@@ -138,7 +161,7 @@ int runSend() {
       credit -= FLAGS_packet_size;
     }
     if (now - binStart >= kBinUs) {
-      sent << now << ',' << active << ',' << active * FLAGS_burst_mbps << ',' << binBytes << ','
+      sent << now << ',' << active << ',' << offeredMbps << ',' << binBytes << ','
            << binErrors << '\n';
       binStart = now;
       binBytes = binErrors = 0;
@@ -196,11 +219,15 @@ int main(int argc, char** argv) {
   if (FLAGS_mode == "recv") {
     return runRecv();
   }
-  if (FLAGS_mode != "send" || FLAGS_dest.empty() || FLAGS_mean_mbps <= 0 || FLAGS_burst_mbps <= 0 ||
-      FLAGS_mean_burst_s <= 0 || FLAGS_hurst <= 0.5 || FLAGS_hurst >= 1 || FLAGS_duration_s <= 0 ||
-      FLAGS_packet_size < int(sizeof(Header)) || FLAGS_packet_size > 1472) {
-    std::cerr << "send needs --dest and valid --mean_mbps/--burst_mbps/--mean_burst_s/"
-                 "--hurst (0.5..1)/--duration_s/--packet_size\n";
+  const bool ppbpOk = FLAGS_mean_mbps > 0 && FLAGS_burst_mbps > 0 && FLAGS_mean_burst_s > 0 &&
+                      FLAGS_hurst > 0.5 && FLAGS_hurst < 1;
+  const bool scheduleOk = !FLAGS_schedule.empty() && !parseSchedule(FLAGS_schedule).empty();
+  if (FLAGS_mode != "send" || FLAGS_dest.empty() || FLAGS_duration_s <= 0 ||
+      FLAGS_packet_size < int(sizeof(Header)) || FLAGS_packet_size > 1472 ||
+      (FLAGS_schedule.empty() ? !ppbpOk : !scheduleOk)) {
+    std::cerr << "send needs --dest, --duration_s, --packet_size and either a valid --schedule "
+                 "(start_s:duration_s:rate_mbps,...) or --mean_mbps/--burst_mbps/--mean_burst_s/"
+                 "--hurst (0.5..1)\n";
     return 2;
   }
   return runSend();

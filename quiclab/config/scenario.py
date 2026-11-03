@@ -160,6 +160,28 @@ class PpbpEvent(_Event):
     packet_size_bytes: int = Field(default=1200, ge=64, le=1472)
 
 
+class Burst(_StrictBase):
+    start_s: float = Field(ge=0)  # from the event's at_s
+    duration_s: float = Field(gt=0)
+    rate_mbps: float = Field(gt=0)
+
+
+class BurstsEvent(_Event):
+    """Fixed UDP bursts (qtraffic --schedule): each burst sends at its rate
+    from at_s + start_s for duration_s, timed on the stream clock like PPBP,
+    so burst starts are exact ground truth. Overlapping bursts add up."""
+
+    type: Literal["bursts"]
+    id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$")
+    route: str
+    bursts: list[Burst] = Field(min_length=1)
+    packet_size_bytes: int = Field(default=1200, ge=64, le=1472)
+
+    @property
+    def duration_s(self) -> float:
+        return max(b.start_s + b.duration_s for b in self.bursts)
+
+
 class JoinEvent(_Event):
     """Subscriber connects now instead of at t=0."""
 
@@ -175,7 +197,7 @@ class LeaveEvent(_Event):
 
 
 Event = Annotated[
-    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | JoinEvent | LeaveEvent,
+    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | BurstsEvent | JoinEvent | LeaveEvent,
     Field(discriminator="type"),
 ]
 
@@ -203,12 +225,13 @@ class Scenario(_StrictBase):
     def flows(self) -> list[TcpFlowEvent | UdpFlowEvent]:
         return [e for e in self.events if e.type == "flow"]
 
-    def ppbp(self) -> list[PpbpEvent]:
-        return [e for e in self.events if e.type == "ppbp"]
+    def ppbp(self) -> list[PpbpEvent | BurstsEvent]:
+        """qtraffic sources: PPBP and fixed bursts."""
+        return [e for e in self.events if e.type in ("ppbp", "bursts")]
 
     def traffic_ids(self) -> list[str]:
         """iperf3 flows and PPBP processes share one port range, in file order."""
-        return [e.id for e in self.events if e.type in ("flow", "ppbp")]
+        return [e.id for e in self.events if e.type in ("flow", "ppbp", "bursts")]
 
     def join_at(self, subscriber: str) -> float:
         return next((e.at_s for e in self.events if e.type == "join" and e.subscriber == subscriber), 0.0)
@@ -256,7 +279,7 @@ class Scenario(_StrictBase):
             elif event.type == "aqm":
                 if event.router not in topology.routers:
                     raise ValueError(f"{where}: {event.router!r} is not a topology router")
-            elif event.type in ("flow", "ppbp"):
+            elif event.type in ("flow", "ppbp", "bursts"):
                 if event.route not in routes:
                     raise ValueError(f"{where}: flow {event.id!r} uses unknown traffic route {event.route!r}")
                 if event.id in flow_ids:

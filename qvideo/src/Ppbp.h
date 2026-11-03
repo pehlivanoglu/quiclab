@@ -24,6 +24,7 @@ struct PpbpParams {
 struct Burst {
   double startS;
   double durationS;  // after cutting at durationS
+  double rateMbps;
 };
 
 inline std::vector<Burst> ppbpBursts(const PpbpParams& p) {
@@ -40,7 +41,7 @@ inline std::vector<Burst> ppbpBursts(const PpbpParams& p) {
     const double begin = std::max(0.0, t);
     const double end = std::min(p.durationS, t + length);
     if (end > begin) {
-      bursts.push_back({begin, end - begin});
+      bursts.push_back({begin, end - begin, p.burstMbps});
     }
   }
   return bursts;
