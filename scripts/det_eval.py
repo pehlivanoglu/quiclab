@@ -12,7 +12,7 @@ detector (moqx_shadow_replay) over the sender's per-ACK record
 truth.csv, alarms.csv, detections.csv.
 
 Truth (moq-testbed shadow_report rules): per hop, FIFO-like queues (pfifo,
-red, pie, dualpi2's classic queue) give every flow u = offered / capacity;
+red, pie) give every flow u = offered / capacity;
 fq_codel gives each flow its max-min fair share. A subscriber's u is the
 worst hop on its path. u >= 1 congested, u < 0.85 clear, between ambiguous
 (not scored). Congested episodes closer than MERGE_GAP_S merge; shorter than
@@ -469,12 +469,24 @@ def burst_truth(run: Run) -> list[dict]:
     for i, e in enumerate(links):
         if not e["label"].startswith("burst u="):
             continue
-        end = next(float(x["applied_s"]) for x in links[i + 1:] if x["label"] == "burst-end")
-        start = float(e["applied_s"])
         hop = tuple(e["target"].split(":")[0].split("->"))
-        out.append({"start": start, "end": end, "kind": "capacity", "hop": hop,
-                    "rate_mbps": value_at(caps[hop], start + 0.01)})
+        end = next(float(x["applied_s"]) for x in links[i + 1:]
+                   if x["label"] == "burst-end" and tuple(x["target"].split(":")[0].split("->")) == hop)
+        start = float(e["applied_s"])
+        # Label "burst u=<u> d=<d> [client]": designed severity (a ramp's peak).
+        fields = dict(f.split("=") for f in e["label"].split()[1:] if "=" in f)
+        out.append({"start": start, "end": end, "kind": "ramp" if "ramp" in run.path.name else "capacity",
+                    "hop": hop, "rate_mbps": value_at(caps[hop], start + 0.01),
+                    "u_label": float(fields["u"]), "d_label": float(fields["d"])})
+    applied = {e["target"]: float(e["applied_s"]) for e in run.events if e["event"] == "flow"}
     for ev in run.scenario.get("events", []):
+        if ev["type"] == "flow" and ev.get("kind") == "tcp" and ev["id"] in applied:
+            path = run.topology["traffic"]["routes"][ev["route"]]["path"]
+            hops = list(zip(path, path[1:]))
+            start = applied[ev["id"]]
+            out.append({"start": start, "end": start + float(ev["duration_s"]), "kind": "tcp",
+                        "hop": min(hops, key=lambda h: value_at(caps[h], start)), "rate_mbps": math.inf,
+                        "u_label": 0.0, "d_label": float(ev["duration_s"])})
         if ev["type"] != "bursts":
             continue
         path = run.topology["traffic"]["routes"][ev["route"]]["path"]
@@ -490,8 +502,8 @@ def burst_truth(run: Run) -> list[dict]:
         # Only the video behind this hop loads it.
         load = sum(d for s, d in demand.items() if b["hop"] in paths[s]) + (b["rate_mbps"] if b["kind"] == "udp" else 0)
         b["u_agg"] = round(load / cap, 3)
-        b["u_cell"] = round(b["u_agg"], 1)
-        b["d_cell"] = round(b["end"] - b["start"])
+        b["u_cell"] = b.get("u_label", round(b["u_agg"], 1))
+        b["d_cell"] = b.get("d_label", round(b["end"] - b["start"], 1))
     return sorted(out, key=lambda b: b["start"])
 
 
@@ -532,11 +544,14 @@ def score_bursts(run: Run, events: list[dict], bursts: list[dict]) -> None:
         for i, b in enumerate(bursts):
             u_c = utilization(run, demand, caps, cross, paths, (b["start"] + b["end"]) / 2)[sid]
             cls = "hit" if u_c >= CONGESTED_U else "unaffected" if u_c < CLEAR_U else "uncertain"
+            if b["kind"] == "tcp":
+                cls = "uncertain"  # elastic TCP: the model cannot say; needs measured per-client truth
             windows.append((b["start"], b["end"] + BURST_RECOVERY_S, cls, i))
             row = {"subscriber": sid, "burst": i, "start": round(b["start"], 3), "end": round(b["end"], 3),
                    "kind": b["kind"], "u_cell": b["u_cell"], "d_cell": b["d_cell"], "u_agg": b["u_agg"],
                    "u_client": round(u_c, 3), "class": cls}
             r = router.get(b["hop"])
+            row["router_qmax_ms"] = row["router_drops"] = ""
             if r:  # measured check: did the bottleneck queue or drop during the burst?
                 inside = [k for k, t in enumerate(r["t"]) if b["start"] <= t <= b["end"] + 1.0]
                 row["router_qmax_ms"] = round(max((r["queue_ms"][k] for k in inside), default=0), 1)
@@ -582,7 +597,7 @@ def summarize_bursts(run_dirs: list[Path], detectors: list[str], cell: tuple | N
         alarms += rows(r / "detector" / "burst_alarms.csv")
         calm += sum(float(x["calm_s"]) for x in rows(r / "detector" / "burst_exposure.csv"))
     if cell:
-        hits = [b for b in hits if (float(b["u_cell"]), int(b["d_cell"])) == cell]
+        hits = [b for b in hits if (float(b["u_cell"]), float(b["d_cell"])) == cell]
     out = []
     for name in detectors:
         lat = [float(b[f"{name}_ms"]) for b in hits if b[f"{name}_ms"]]
@@ -618,16 +633,17 @@ def burst_report(run_dirs: list[Path], detectors: list[str] | None = None) -> tu
         for row in rows_:
             lines.append("| " + " | ".join("-" if v is None else str(v) for k, v in row.items() if k != "hits") + " |")
             table.append({"aqm": aqm, "scenario": scn, "cell": "all", "runs": len(dirs), **row})
-        lines += ["", "Recall (any) / median latency (ms) per severity:", "",
-                  "| detector | " + " | ".join(f"u{u} {dd}s" for u in (1.1, 1.3, 2.0) for dd in (1, 2, 4)) + " |",
-                  "|---" * 10 + "|"]
+        grid = sorted({(float(b["u_cell"]), float(b["d_cell"])) for r in dirs
+                       for b in rows(r / "detector" / "bursts.csv")})
+        lines += ["", "Recall (any) / median latency (ms) per severity (u = 0: elastic TCP):", "",
+                  "| detector | " + " | ".join(f"u{u:g} {dd:g}s" for u, dd in grid) + " |",
+                  "|---" * (len(grid) + 1) + "|"]
         for name in detectors:
             cells_ = []
-            for u in (1.1, 1.3, 2.0):
-                for dd in (1, 2, 4):
-                    (c,) = summarize_bursts(dirs, [name], (u, dd))
-                    cells_.append("-" if not c["hits"] else f"{c['recall_any']} / {c['lat_p50_ms']}")
-                    table.append({"aqm": aqm, "scenario": scn, "cell": f"u{u}-{dd}s", "runs": len(dirs), **c})
+            for u, dd in grid:
+                (c,) = summarize_bursts(dirs, [name], (u, dd))
+                cells_.append("-" if not c["hits"] else f"{c['recall_any']} / {c['lat_p50_ms']}")
+                table.append({"aqm": aqm, "scenario": scn, "cell": f"u{u:g}-{dd:g}s", "runs": len(dirs), **c})
             lines.append(f"| {name} | " + " | ".join(cells_) + " |")
         lines.append("")
     return "\n".join(lines), table
