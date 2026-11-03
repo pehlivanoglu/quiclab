@@ -1,6 +1,6 @@
 # Detector scenario 2: constant-rate UDP cross traffic on the 16 Mb/s
 # bottleneck (video ~11.5 Mb/s). FIFO-like AQMs share the overload with every
-# flow; fq_codel / dualpi2 isolate it, so only clients above the fair share
+# flow; fq_codel isolates it, so only clients above the fair share
 # are congested (the truth model applies max-min for fq).
 duration_s: 140
 

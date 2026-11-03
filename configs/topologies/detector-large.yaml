@@ -1,0 +1,45 @@
+# Sender-side per-client congestion detection, larger case: eight clients with
+# renditions up to 12 Mb/s (~45 Mb/s of video) behind one shared bottleneck
+# (router -> switch), one control client on its own uncongested path, and
+# cross-traffic endpoints across the bottleneck. Used with det-burst-large.yaml.
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  sub-a: { connects_to: pub, rate_kbps: 1000 }
+  sub-b: { connects_to: pub, rate_kbps: 2500, phase_ms: 125 }
+  sub-c: { connects_to: pub, rate_kbps: 2500, phase_ms: 250 }
+  sub-d: { connects_to: pub, rate_kbps: 5000, phase_ms: 375 }
+  sub-e: { connects_to: pub, rate_kbps: 5000, phase_ms: 500 }
+  sub-f: { connects_to: pub, rate_kbps: 8000, phase_ms: 625 }
+  sub-g: { connects_to: pub, rate_kbps: 8000, phase_ms: 750 }
+  sub-h: { connects_to: pub, rate_kbps: 12000, phase_ms: 875 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500 }
+
+routers:
+  router:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+
+switches:
+  switch: {}
+
+traffic:
+  senders: [{ id: traffic-tx }]
+  receivers: [{ id: traffic-rx }]
+  routes:
+    shared: { path: [traffic-tx, router, switch, traffic-rx] }
+
+links:
+  - { from: pub, to: router }
+  - { from: router, to: switch }
+  - { from: switch, to: sub-a }
+  - { from: switch, to: sub-b }
+  - { from: switch, to: sub-c }
+  - { from: switch, to: sub-d }
+  - { from: switch, to: sub-e }
+  - { from: switch, to: sub-f }
+  - { from: switch, to: sub-g }
+  - { from: switch, to: sub-h }
+  - { from: switch, to: traffic-rx }
+  - { from: traffic-tx, to: router }
+  - { from: router, to: sub-ctrl }

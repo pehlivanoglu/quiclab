@@ -1,0 +1,27 @@
+# Event benchmark base for detector-large.yaml: calm bottleneck of 70 Mb/s for
+# ~46 Mb/s of video (u ~0.66), client RTTs 20-110 ms, queue ~1 BDP
+# (400 packets ~ 70 ms at 70 Mb/s). scripts/det_matrix.py --topology large adds
+# the events and sets duration_s.
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 1000 }
+  reverse: { bandwidth_mbps: 1000 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 1000, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 70 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
+  - { from: switch, to: sub-e, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-f, forward: { delay_ms: 35 }, reverse: { delay_ms: 35 } }
+  - { from: switch, to: sub-g, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: switch, to: sub-h, forward: { delay_ms: 50 }, reverse: { delay_ms: 50 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 400 }
+
+events: []
