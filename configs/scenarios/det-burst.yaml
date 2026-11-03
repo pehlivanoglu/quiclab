@@ -1,0 +1,24 @@
+# Detector burst benchmark base: calm bottleneck (17.5 Mb/s for ~11.3 Mb/s of
+# video, u ~0.65). scripts/det_matrix.py adds the bursts (scenarios burstcap:
+# capacity drops; burstudp: fixed UDP bursts through qtraffic), a seeded random
+# order of the severity grid u {1.1, 1.3, 2.0} x {1, 2, 4} s, 10-15 s apart, so
+# every burst start is exact ground truth. Duration is set by the generator.
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 17.5 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+
+events: []

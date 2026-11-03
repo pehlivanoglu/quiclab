@@ -1,0 +1,35 @@
+# Detector scenario 1: bottleneck capacity steps. Video demand ~11.5 Mb/s on a
+# 16 Mb/s bottleneck (u ~0.7); onsets of different severity (u 1.05..2.0) and
+# length (1 s .. 10 s), plus clear-to-clear changes that must not alarm.
+duration_s: 150
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 16 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+# det_matrix.py replaces the AQM; ~1 BDP queue (16 Mb/s x ~70 ms).
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+
+events:
+  - { at_s: 20, type: link, from: router, to: switch, bandwidth_mbps: 10.5, label: "onset u~1.1" }
+  - { at_s: 30, type: link, from: router, to: switch, bandwidth_mbps: 16, label: relief }
+  - { at_s: 45, type: link, from: router, to: switch, bandwidth_mbps: 7.5, label: "onset u~1.5" }
+  - { at_s: 55, type: link, from: router, to: switch, bandwidth_mbps: 16, label: relief }
+  - { at_s: 70, type: link, from: router, to: switch, bandwidth_mbps: 22, label: "negative" }
+  - { at_s: 80, type: link, from: router, to: switch, bandwidth_mbps: 14, label: "negative u~0.82" }
+  - { at_s: 90, type: link, from: router, to: switch, bandwidth_mbps: 5.75, label: "onset u~2 for 1 s" }
+  - { at_s: 91, type: link, from: router, to: switch, bandwidth_mbps: 16, label: relief }
+  - { at_s: 100, type: link, from: router, to: switch, bandwidth_mbps: 5.75, label: "onset u~2 for 3 s" }
+  - { at_s: 103, type: link, from: router, to: switch, bandwidth_mbps: 16, label: relief }
+  - { at_s: 115, type: link, from: router, to: switch, bandwidth_mbps: 11, label: "onset u~1.05" }
+  - { at_s: 125, type: link, from: router, to: switch, bandwidth_mbps: 16, label: relief }
