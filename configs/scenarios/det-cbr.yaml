@@ -1,0 +1,30 @@
+# Detector scenario 2: constant-rate UDP cross traffic on the 16 Mb/s
+# bottleneck (video ~11.5 Mb/s). FIFO-like AQMs share the overload with every
+# flow; fq_codel / dualpi2 isolate it, so only clients above the fair share
+# are congested (the truth model applies max-min for fq).
+duration_s: 140
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 16 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+# det_matrix.py replaces the AQM; ~1 BDP queue (16 Mb/s x ~70 ms).
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+
+events:
+  - { at_s: 20, type: flow, kind: udp, id: cbr-6, route: shared, duration_s: 10, rate_mbps: 6 }
+  - { at_s: 40, type: flow, kind: udp, id: cbr-12, route: shared, duration_s: 10, rate_mbps: 12 }
+  - { at_s: 60, type: flow, kind: udp, id: cbr-2, route: shared, duration_s: 10, rate_mbps: 2 }
+  - { at_s: 80, type: flow, kind: udp, id: cbr-20s, route: shared, duration_s: 2, rate_mbps: 20 }
+  - { at_s: 95, type: flow, kind: udp, id: cbr-5, route: shared, duration_s: 15, rate_mbps: 5 }
+  - { at_s: 120, type: flow, kind: udp, id: cbr-9, route: shared, duration_s: 5, rate_mbps: 9 }

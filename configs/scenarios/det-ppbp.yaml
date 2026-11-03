@@ -1,0 +1,25 @@
+# Detector scenario 3: bursty self-similar PPBP cross traffic (one UDP flow,
+# Hurst 0.8, 2 Mb/s bursts of 0.5 s mean) at mean load ~0.95 of the 16 Mb/s
+# bottleneck; congestion comes and goes with the traffic. Truth uses the
+# realized offered load (traffic/<id>-sent.csv), not the nominal mean.
+duration_s: 140
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 16 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+# det_matrix.py replaces the AQM; ~1 BDP queue (16 Mb/s x ~70 ms).
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+
+events:
+  - { at_s: 0, type: ppbp, id: ppbp, route: shared, duration_s: 140, mean_mbps: 3.7, burst_mbps: 2, mean_burst_s: 0.5, hurst: 0.8, seed: 1 }
