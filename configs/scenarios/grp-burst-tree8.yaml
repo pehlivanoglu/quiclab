@@ -1,0 +1,37 @@
+# Event benchmark base for detector-tree8.yaml: calm bottlenecks at u ~0.65.
+# Video demand (wire x1.03): leaf 3.6 Mb/s -> 5.5 Mb/s links, X / Y 7.2 Mb/s
+# -> 11 Mb/s, root 14.4 Mb/s -> 22 Mb/s; client RTTs 20-100 ms; queues ~1 BDP
+# (root 160 packets ~ 87 ms at 22 Mb/s, X/Y 80 ~ 87 ms at 11, leaf 40 ~ 87 ms
+# at 5.5). scripts/grouping_campaign.py adds the events and sets duration_s.
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: rr, forward: { bandwidth_mbps: 1000, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: rr, to: r0, forward: { bandwidth_mbps: 22 } }
+  - { from: r0, to: r1, forward: { bandwidth_mbps: 11 } }
+  - { from: r0, to: r2, forward: { bandwidth_mbps: 11 } }
+  - { from: r1, to: switch-a, forward: { bandwidth_mbps: 5.5 } }
+  - { from: r1, to: switch-b, forward: { bandwidth_mbps: 5.5 } }
+  - { from: r2, to: switch-c, forward: { bandwidth_mbps: 5.5 } }
+  - { from: r2, to: switch-d, forward: { bandwidth_mbps: 5.5 } }
+  - { from: switch-a, to: a1, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch-a, to: a2, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
+  - { from: switch-b, to: b1, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: switch-b, to: b2, forward: { delay_ms: 25 }, reverse: { delay_ms: 25 } }
+  - { from: switch-c, to: c1, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch-c, to: c2, forward: { delay_ms: 35 }, reverse: { delay_ms: 35 } }
+  - { from: switch-d, to: d1, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch-d, to: d2, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: rr, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  rr: { aqm: pfifo, queue_limit_packets: 160 }
+  r0: { aqm: pfifo, queue_limit_packets: 80 }
+  r1: { aqm: pfifo, queue_limit_packets: 40 }
+  r2: { aqm: pfifo, queue_limit_packets: 40 }
+
+events: []
