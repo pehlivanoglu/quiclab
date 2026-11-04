@@ -19,6 +19,19 @@ worst hop on its path. u >= 1 congested, u < 0.85 clear, between ambiguous
 MIN_EPISODE_S are ignored; episodes whose integral of (u - 1) dt is below
 MIN_EXCESS_S are minor (not scored, alarms in them excluded). PPBP uses its realized offered load (1 s mean).
 
+Measured truth (<run>/detector/measured/, when the run has the OWD oracle
+publishers/<pub>/<sub>-owd.csv): per client, from its own packets' exact
+one-way delay. Standing queue = the smallest OWD above propagation over a
+window (propagation = the client's minimum OWD between forward delay changes
+on its path). Congested when the standing queue over OWD_STANDING_S is >=
+Q_CONGESTED_MS or >= LOSS_CONGESTED of its packets are lost over
+LOSS_WINDOW_S; clear when even the OWD_TRANSIENT_S standing queue is below
+Q_CONGESTED_MS and loss below LOSS_CLEAR; else ambiguous, as is time without
+OWD samples or near a delay change. No severity
+filter: the thresholds are the severity. Episodes closer than
+MEASURED_MERGE_S merge (the flush after congestion is its recovery). Scored
+with the same rules.
+
 Scoring: an onset is caught by a detector when an alarm starts in
 [t0 - PRE_ONSET_LEAD_S, min(episode end, t0 + SEARCH_S)]; latency is
 max(0, alarm - t0). An alarm start is a TP when it is the first in such a
@@ -61,6 +74,22 @@ PRE_ONSET_LEAD_S = 1.0
 SEARCH_S = 10.0
 DEADLINES_MS = (250, 500, 1000, 2000)
 FQ_AQMS = {"fq_codel"}
+# Measured truth. Calibrated on owd-ping-check det-burstcap-pfifo-r1 (large,
+# bursts 85-176 ms) and two base-topology smoke runs, where colliding keyframes
+# of several clients queue 20-34 ms for 0.2-0.3 s at u 0.65: a queue must last
+# OWD_STANDING_S to count as congestion; clear means not even a queue lasting
+# OWD_TRANSIENT_S (between: ambiguous, neither onset nor false-alarm exposure).
+OWD_STANDING_S = 0.5
+OWD_TRANSIENT_S = 0.2
+Q_CONGESTED_MS = 10.0
+LOSS_WINDOW_S = 1.0
+LOSS_CONGESTED, LOSS_CLEAR = 0.10, 0.03  # 1-2 % random loss stays clear
+LOSS_MIN_PACKETS = 50
+DELAY_CHANGE_S = 0.25  # around a propagation change netem mixes old and new delays
+# Queue within this long after an episode is its recovery (senders flushing
+# what they held back), not a new onset; same as BURST_RECOVERY_S.
+MEASURED_MERGE_S = 2.0
+SHUTDOWN_S = 1.0  # last second: clients close before acking their last packets
 
 # m4 live setting (moq-testbed configs/matrix/shadow-m4.yaml).
 PARAMS = {
@@ -299,6 +328,125 @@ def build_truth(run: Run) -> tuple[list[dict], dict[str, list[tuple[float, str]]
     return episodes, bands
 
 
+def measured_bands(pts: list[tuple[float, float | None, int, int]], changes: list[float]) -> list[tuple[float, str]]:
+    """Band per OWD bin. pts: (t, owd_min_ms or None, packets_sent, packets_timed)
+    in time order; changes: times of forward delay changes on the path."""
+    bounds = [-math.inf, *sorted(changes), math.inf]
+    base = {}
+    for k in range(len(bounds) - 1):
+        # Guard at both ends: packets stamped just before a change can leave after it.
+        seg = [v for t, v, _, _ in pts if bounds[k] + 0.1 <= t < bounds[k + 1] - 0.1 and v is not None] or \
+              [v for t, v, _, _ in pts if bounds[k] <= t < bounds[k + 1] and v is not None]
+        base[k] = min(seg) if seg else None
+    seg = [next(k for k in range(len(bounds) - 1) if bounds[k] <= t < bounds[k + 1]) for t, *_ in pts]
+    csent, ctimed = [0], [0]
+    for _, _, sent, timed in pts:
+        csent.append(csent[-1] + sent)
+        ctimed.append(ctimed[-1] + timed)
+    out, j, jt, lo, hi, n = [], 0, 0, 0, 0, len(pts)
+    for i, (t, owd, sent_i, timed_i) in enumerate(pts):
+        if (owd is None and not sent_i) or any(abs(t - c) < DELAY_CHANGE_S for c in changes):
+            out.append((t, "none"))  # nothing sent in this bin, or netem in transition: no information
+            continue
+        # Standing queues look forward from a bin that has a sample, so a queue's
+        # onset is when it started, not a window later.
+        while j < n and pts[j][0] < t + OWD_STANDING_S:
+            j += 1
+        while jt < n and pts[jt][0] < t + OWD_TRANSIENT_S:
+            jt += 1
+        k = seg[i]
+        def standing_until(end: int) -> float | None:
+            if owd is None or base[k] is None:
+                return None
+            qs = [pts[m][1] - base[k] for m in range(i, end) if pts[m][1] is not None and seg[m] == k]
+            return min(qs) if qs else None
+        standing, transient = standing_until(j), standing_until(jt)
+        # Loss rate over a centred window, counted only at bins that lost packets
+        # themselves (an onset is the first lost packet, never earlier).
+        while lo < n and pts[lo][0] < t - LOSS_WINDOW_S / 2:
+            lo += 1
+        while hi < n and pts[hi][0] < t + LOSS_WINDOW_S / 2:
+            hi += 1
+        sent, timed = csent[hi] - csent[lo], ctimed[hi] - ctimed[lo]
+        # No receive timestamp from here on in the window: an oracle gap (the
+        # client stopped timestamping), not loss.
+        gap = ctimed[hi] - ctimed[i] == 0
+        loss = 1 - min(timed, sent) / sent if sent >= LOSS_MIN_PACKETS and not gap else None
+        lost_here = sent_i > timed_i
+        if (standing is not None and standing >= Q_CONGESTED_MS) or (
+                lost_here and loss is not None and loss >= LOSS_CONGESTED):
+            band = "congested"
+        elif transient is not None and transient < Q_CONGESTED_MS and (loss or 0) < LOSS_CLEAR:
+            band = "clear"
+        else:
+            band = "ambiguous"
+        out.append((t, band))
+    return out
+
+
+def delay_changes(run: Run, sid: str) -> list[float]:
+    """Times the forward propagation delay of a hop on the client's path changed."""
+    path = set(path_hops(run, run.pub, sid))
+    delay = {(link["from"], link["to"]): (link.get("forward") or {}).get("delay_ms")
+             for link in run.scenario.get("links", [])}
+    out = []
+    for e in run.events:
+        if e["event"] != "link" or e["status"] != "applied" or not e["target"].endswith(":forward"):
+            continue
+        hop = tuple(e["target"].split(":")[0].split("->"))
+        fields = dict(f.split("=") for f in e["detail"].split() if "=" in f)
+        if hop in path and "delay_ms" in fields and float(fields["delay_ms"]) != delay.get(hop):
+            out.append(float(e["applied_s"]))
+            delay[hop] = float(fields["delay_ms"])
+    return out
+
+
+def measured_truth(run: Run) -> tuple[list[dict], dict[str, list[tuple[float, str]]]] | None:
+    """Same shape as build_truth, from the OWD oracle; None without it."""
+    if not all(run.sender_file(s, "owd").exists() for s in run.subs):
+        return None
+    episodes, grids = [], {}
+    n_grid = int(run.duration / GRID_S)
+    for s in run.subs:
+        pts = []
+        for r in rows(run.sender_file(s, "owd")):
+            t = run.t_mono_us(int(r["bin_mono_us"]))
+            if 0 <= t <= run.duration - SHUTDOWN_S:
+                pts.append((t, int(r["owd_min_us"]) / 1000 if r["owd_min_us"] else None,
+                            int(r["packets_sent"]), int(r["packets_timed"])))
+        bins = measured_bands(pts, delay_changes(run, s))
+        # Grid cell: congested if any bin is, clear only if every bin is (and there is one).
+        cells: list[list[str]] = [[] for _ in range(n_grid)]
+        for t, band in bins:
+            if band != "none" and 0 <= int(t / GRID_S) < n_grid:
+                cells[int(t / GRID_S)].append(band)
+        grids[s] = [(i * GRID_S, "congested" if "congested" in c else "clear" if c and set(c) == {"clear"}
+                     else "ambiguous") for i, c in enumerate(cells)]
+        spans, start, last = [], None, None
+        for t, band in bins:
+            if band == "none":
+                continue
+            if band == "congested":
+                start = t if start is None else start
+                last = t
+            elif start is not None and band == "clear":
+                spans.append([start, last + OWD_STANDING_S])
+                start = None
+        if start is not None:
+            spans.append([start, min(run.duration, last + OWD_STANDING_S)])
+        merged = []
+        for a, b in spans:
+            if merged and a - merged[-1][1] < MEASURED_MERGE_S:
+                merged[-1][1] = b
+            else:
+                merged.append([a, b])
+        for a, b in merged:
+            if a >= WARMUP_S:
+                episodes.append({"subscriber": s, "t0": round(a, 3), "end": round(b, 3),
+                                 "duration_s": round(b - a, 3), "scored": 1})
+    return episodes, grids
+
+
 def router_series(run: Run, iface_csv: Path, caps: list[tuple[float, float]]) -> dict[str, list[float]]:
     """Bottleneck egress per sample: queue delay at the current capacity, rates, drops + marks."""
     out = defaultdict(list)
@@ -328,13 +476,18 @@ def bottleneck(run: Run, sid: str, caps) -> tuple[tuple[str, str], Path | None]:
     """The client's lowest-capacity hop and the router-metrics CSV of its egress."""
     hops = path_hops(run, run.pub, sid)
     hop = min(hops, key=lambda h: value_at(caps[h], 0))
+    return hop, hop_metrics_file(run, hop)
+
+
+def hop_metrics_file(run: Run, hop: tuple[str, str]) -> Path | None:
+    """Router-metrics CSV of the egress interface of a hop, if recorded."""
     topology = load_topology(run.path / "topology.yaml")
     for edge in edge_interfaces(topology):
         iface = edge.a_iface if (edge.a, edge.b) == hop else edge.b_iface if (edge.b, edge.a) == hop else None
         if iface:
             path = run.path / "router-metrics" / hop[0] / f"{iface}.csv"
-            return hop, path if path.exists() else None
-    return hop, None
+            return path if path.exists() else None
+    return None
 
 
 # ── detector replay ──────────────────────────────────────────────────────
@@ -404,7 +557,24 @@ def score(run_dir: Path, overrides: dict | None = None, tag: str = "detector") -
         for name, (variant, ev) in DETECTORS.items():
             if e["variant"] == variant and e["event"] == ev:
                 starts[(name, e["subscriber"])].append(e["t"])
+    out = run_dir / tag
+    write_csv(out / "events.csv", events)
+    n_alarms = score_onsets(run, episodes, bands, starts, out)
+    bursts = burst_truth(run)
+    if bursts:
+        score_bursts(run, events, bursts, out)
+    measured = measured_truth(run) if tag == "detector" else None
+    if measured:
+        score_onsets(run, *measured, starts, out / "measured")
+        if bursts:
+            score_bursts(run, events, bursts, out / "measured", measured[1])
+    scored = sum(ep["scored"] for ep in episodes)
+    print(f"{run_dir.name}: aqm={run.aqm} onsets={scored} minor={len(episodes) - scored} alarms={n_alarms}"
+          + (f" measured_onsets={len(measured[0])}" if measured else ""))
 
+
+def score_onsets(run: Run, episodes: list[dict], bands: dict, starts: dict, out: Path) -> int:
+    """Onset and false-alarm scoring against one truth; returns shadow's alarm count."""
     detections = []
     windows, minor = defaultdict(list), defaultdict(list)
     for ep in episodes:
@@ -437,17 +607,11 @@ def score(run_dir: Path, overrides: dict | None = None, tag: str = "detector") -
             alarms.append({"detector": name, "subscriber": sid, "t": t, "label": label, "band": band})
 
     clear_s = {s: sum(GRID_S for t, b in bands[s] if b == "clear" and t >= WARMUP_S) for s in run.subs}
-    scored = sum(ep["scored"] for ep in episodes)
-    out = run_dir / tag
     write_csv(out / "truth.csv", episodes)
     write_csv(out / "detections.csv", detections)
     write_csv(out / "alarms.csv", sorted(alarms, key=lambda a: (a["detector"], a["subscriber"], a["t"])))
     write_csv(out / "exposure.csv", [{"subscriber": s, "clear_s": round(v, 1)} for s, v in clear_s.items()])
-    write_csv(out / "events.csv", events)
-    if bursts := burst_truth(run):
-        score_bursts(run, events, bursts)
-    print(f"{run_dir.name}: aqm={run.aqm} onsets={scored} minor={len(episodes) - scored} "
-          f"alarms={sum(a['detector'] == 'shadow' for a in alarms)}")
+    return sum(a["detector"] == "shadow" for a in alarms)
 
 
 # ── burst benchmark (det-burstcap / det-burstudp) ────────────────────────
@@ -517,9 +681,12 @@ def alarm_episodes(starts: list[float]) -> list[float]:
     return out
 
 
-def score_bursts(run: Run, events: list[dict], bursts: list[dict]) -> None:
+def score_bursts(run: Run, events: list[dict], bursts: list[dict], out: Path,
+                 measured: dict[str, list[tuple[float, str]]] | None = None) -> None:
     """Per client and burst: hit (model u_c >= 1 at mid-burst), unaffected
-    (u_c < CLEAR_U) or uncertain. A hit is caught by the first alarm episode
+    (u_c < CLEAR_U) or uncertain. With measured (grid bands from
+    measured_truth): hit if the client is congested anywhere in [start, end +
+    1 s], unaffected if clear throughout, else uncertain (TCP included). A hit is caught by the first alarm episode
     starting in [start, end + BURST_RECOVERY_S]; latency from the burst start.
     Alarm episodes: tp (first in a hit window), dup (later in it), uncertain
     (warm-up or an uncertain burst's window), fp (anywhere else: calm time and
@@ -527,10 +694,7 @@ def score_bursts(run: Run, events: list[dict], bursts: list[dict]) -> None:
     demand = {s: demand_bps(run, s) for s in run.subs}
     caps, cross = capacity_series(run), cross_series(run)
     paths = {s: path_hops(run, run.pub, s) for s in run.subs}
-    hop_files = {}
-    for s in run.subs:
-        hop, path = bottleneck(run, s, caps)
-        hop_files[hop] = path
+    hop_files = {b["hop"]: hop_metrics_file(run, b["hop"]) for b in bursts}
     router = {hop: router_series(run, path, caps[hop]) for hop, path in hop_files.items() if path}
     starts = defaultdict(list)
     for e in events:
@@ -544,8 +708,12 @@ def score_bursts(run: Run, events: list[dict], bursts: list[dict]) -> None:
         for i, b in enumerate(bursts):
             u_c = utilization(run, demand, caps, cross, paths, (b["start"] + b["end"]) / 2)[sid]
             cls = "hit" if u_c >= CONGESTED_U else "unaffected" if u_c < CLEAR_U else "uncertain"
-            if b["kind"] == "tcp":
-                cls = "uncertain"  # elastic TCP: the model cannot say; needs measured per-client truth
+            if measured is not None:
+                inside = [band for t, band in measured[sid] if b["start"] <= t <= b["end"] + 1.0]
+                cls = ("hit" if "congested" in inside else "unaffected" if inside and set(inside) == {"clear"}
+                       else "uncertain")
+            elif b["kind"] == "tcp":
+                cls = "uncertain"  # elastic TCP: the model cannot say; the measured truth can
             windows.append((b["start"], b["end"] + BURST_RECOVERY_S, cls, i))
             row = {"subscriber": sid, "burst": i, "start": round(b["start"], 3), "end": round(b["end"], 3),
                    "kind": b["kind"], "u_cell": b["u_cell"], "d_cell": b["d_cell"], "u_agg": b["u_agg"],
@@ -583,19 +751,19 @@ def score_bursts(run: Run, events: list[dict], bursts: list[dict]) -> None:
                     label = "dup" if win[3] in used else "tp"
                     used.add(win[3])
                 alarm_rows.append({"detector": name, "subscriber": sid, "t": round(t, 3), "label": label})
-    out = run.path / "detector"
     write_csv(out / "bursts.csv", truth_rows)
     write_csv(out / "burst_alarms.csv", alarm_rows)
     write_csv(out / "burst_exposure.csv", exposure)
 
 
-def summarize_bursts(run_dirs: list[Path], detectors: list[str], cell: tuple | None = None) -> list[dict]:
+def summarize_bursts(run_dirs: list[Path], detectors: list[str], cell: tuple | None = None,
+                     tag: str = "detector") -> list[dict]:
     """cell: (u_cell, d_cell) to restrict recall/latency to one severity."""
     hits, alarms, calm = [], [], 0.0
     for r in run_dirs:
-        hits += [b for b in rows(r / "detector" / "bursts.csv") if b["class"] == "hit"]
-        alarms += rows(r / "detector" / "burst_alarms.csv")
-        calm += sum(float(x["calm_s"]) for x in rows(r / "detector" / "burst_exposure.csv"))
+        hits += [b for b in rows(r / tag / "bursts.csv") if b["class"] == "hit"]
+        alarms += rows(r / tag / "burst_alarms.csv")
+        calm += sum(float(x["calm_s"]) for x in rows(r / tag / "burst_exposure.csv"))
     if cell:
         hits = [b for b in hits if (float(b["u_cell"]), float(b["d_cell"])) == cell]
     out = []
@@ -619,14 +787,15 @@ def summarize_bursts(run_dirs: list[Path], detectors: list[str], cell: tuple | N
     return out
 
 
-def burst_report(run_dirs: list[Path], detectors: list[str] | None = None) -> tuple[str, list[dict]]:
+def burst_report(run_dirs: list[Path], detectors: list[str] | None = None,
+                 tag: str = "detector") -> tuple[str, list[dict]]:
     detectors = detectors or ["shadow", "shadow_verified", "shadow_m4", "gcc", "bbr"]
     cells = defaultdict(list)
     for r in run_dirs:
         cells[(Run(r).aqm, scenario_name(r))].append(r)
     lines, table = [], []
     for (aqm, scn), dirs in sorted(cells.items()):
-        rows_ = summarize_bursts(dirs, detectors)
+        rows_ = summarize_bursts(dirs, detectors, tag=tag)
         lines += [f"### {aqm} / {scn} ({len(dirs)} runs, {rows_[0]['hits']} client-bursts hit)", "",
                   "| detector | " + " | ".join(k for k in rows_[0] if k not in {"detector", "hits"}) + " |",
                   "|---" * (len(rows_[0]) - 1) + "|"]
@@ -634,14 +803,14 @@ def burst_report(run_dirs: list[Path], detectors: list[str] | None = None) -> tu
             lines.append("| " + " | ".join("-" if v is None else str(v) for k, v in row.items() if k != "hits") + " |")
             table.append({"aqm": aqm, "scenario": scn, "cell": "all", "runs": len(dirs), **row})
         grid = sorted({(float(b["u_cell"]), float(b["d_cell"])) for r in dirs
-                       for b in rows(r / "detector" / "bursts.csv")})
+                       for b in rows(r / tag / "bursts.csv")})
         lines += ["", "Recall (any) / median latency (ms) per severity (u = 0: elastic TCP):", "",
                   "| detector | " + " | ".join(f"u{u:g} {dd:g}s" for u, dd in grid) + " |",
                   "|---" * (len(grid) + 1) + "|"]
         for name in detectors:
             cells_ = []
             for u, dd in grid:
-                (c,) = summarize_bursts(dirs, [name], (u, dd))
+                (c,) = summarize_bursts(dirs, [name], (u, dd), tag)
                 cells_.append("-" if not c["hits"] else f"{c['recall_any']} / {c['lat_p50_ms']}")
                 table.append({"aqm": aqm, "scenario": scn, "cell": f"u{u:g}-{dd:g}s", "runs": len(dirs), **c})
             lines.append(f"| {name} | " + " | ".join(cells_) + " |")
@@ -732,7 +901,7 @@ def main(argv: list[str]) -> None:
         for d in dirs:
             score(d, overrides, tag)
     elif cmd == "bursts":
-        print(burst_report(dirs, detectors)[0])
+        print(burst_report(dirs, detectors, tag)[0])
     else:
         print(report(dirs, detectors, tag, by_scenario)[0])
 

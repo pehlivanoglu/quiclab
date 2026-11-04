@@ -1,0 +1,56 @@
+# Split + serial bottlenecks for the sender-side detector: every shared client
+# crosses an upstream bottleneck r1 -> r2, then one of two separate downstream
+# bottlenecks, r2 -> switch-a (a1-a3) or r2 -> switch-b (b1-b3). A burst on a
+# downstream link must alarm only its group, one on the upstream link both
+# groups; upstream + a at once puts group a behind two congested hops in
+# series. sub-ctrl hangs off r1 (never congested). One cross-traffic route per
+# bottleneck. Used with the det-burst-split.yaml scenarios (det_matrix --topology split).
+
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  a1: { connects_to: pub, rate_kbps: 1000 }
+  a2: { connects_to: pub, rate_kbps: 2500, phase_ms: 250 }
+  a3: { connects_to: pub, rate_kbps: 5000, phase_ms: 500 }
+  b1: { connects_to: pub, rate_kbps: 1000, phase_ms: 125 }
+  b2: { connects_to: pub, rate_kbps: 2500, phase_ms: 375 }
+  b3: { connects_to: pub, rate_kbps: 5000, phase_ms: 625 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500, phase_ms: 750 }
+
+routers:
+  r1:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+  r2:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+
+switches:
+  switch-a: {}
+  switch-b: {}
+
+traffic:
+  senders: [{ id: tx }, { id: tx-a }, { id: tx-b }]
+  receivers: [{ id: rx }, { id: rx-a }, { id: rx-b }]
+  routes:
+    shared: { path: [tx, r1, r2, rx] }
+    cross-a: { path: [tx-a, r2, switch-a, rx-a] }
+    cross-b: { path: [tx-b, r2, switch-b, rx-b] }
+
+links:
+  - { from: pub, to: r1 }
+  - { from: r1, to: r2 }
+  - { from: r2, to: switch-a }
+  - { from: r2, to: switch-b }
+  - { from: switch-a, to: a1 }
+  - { from: switch-a, to: a2 }
+  - { from: switch-a, to: a3 }
+  - { from: switch-b, to: b1 }
+  - { from: switch-b, to: b2 }
+  - { from: switch-b, to: b3 }
+  - { from: r1, to: sub-ctrl }
+  - { from: tx, to: r1 }
+  - { from: r2, to: rx }
+  - { from: tx-a, to: r2 }
+  - { from: switch-a, to: rx-a }
+  - { from: tx-b, to: r2 }
+  - { from: switch-b, to: rx-b }
