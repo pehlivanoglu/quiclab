@@ -10,6 +10,13 @@ Detector and baselines:
 - [ ] FlowBot itself as a baseline (its repo needs torch / pytorch_lightning, a fixed `models.Pipeline` import and sklearn 0.24 pickles).
 - [ ] Live detectors on qvideo-server via an mvfst observer (today everything is replayed offline from `-acks.csv`).
 
+Grouping (ECG, `grouping/`, brief `grouping-implementation-v01.md`; results in `grouping/README.md`):
+
+- [ ] Decide v1.2 defaults from the synthetic sweep: `theta_J = theta_cov = 0.6` (one miss in three tolerated); a solo penalty scaled by the flow's background rate (the noisy S5 flow joins, then is expelled by its own noise); pairs need two co-occurrences before they take part in case B / GLOBAL.
+- [ ] Run the adapter on the split-topology campaign once it exists (single-bottleneck runs can only show "one leaf + sub-ctrl out" and SOLO on `isolate`).
+- [ ] Shadow replay should emit the backdated onset itself (today the adapter recovers it from `queue_delay_ms` ≥ 10 ms; spread p50 ≈ 80 ms, p90 ≈ 300 ms within a burst).
+- [ ] Phase 2 priming (`Onset.primed`, `ObsSample.intervened` are carried but unused), Phase 4 slow path / weak tree.
+
 Testbed:
 
 - [ ] ECN / L4S: enable ECN on qvideo-server egress (mvfst `enableEcnOnEgress`/`useL4sEcn`, `l4sCETarget`), router ECN marking per AQM, and record CE marks per flow.
