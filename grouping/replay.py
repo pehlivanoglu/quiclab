@@ -27,9 +27,10 @@ class Result:
     final: dict = field(default_factory=dict)                        # snapshot at last event close
     engine: Engine | None = None
 
-    def pairs(self) -> dict[tuple[str, str], str]:
-        """Pairwise decision at the close of the last event: SAME / DIFFERENT / UNCERTAIN."""
-        snap = self.final
+    def pairs(self, snap: dict | None = None) -> dict[tuple[str, str], str]:
+        """Pairwise decision at a snapshot (default: close of the last event):
+        SAME / DIFFERENT / UNCERTAIN."""
+        snap = self.final if snap is None else snap
         A = self.cfg["A"]
         out = {}
         flows = sorted(snap["flows"])
@@ -40,6 +41,11 @@ class Result:
             else:
                 out[(f, g)] = "SAME" if a["node"] == b["node"] else "DIFFERENT"
         return out
+
+    def pairs_t(self) -> list[dict]:
+        """Pairwise decisions after every event close: [{t, pairs: {"f|g": dec}}]."""
+        return [{"t": s["t"], "pairs": {f"{f}|{g}": v for (f, g), v in self.pairs(s).items()}}
+                for s in self.snapshots]
 
     def to_json(self) -> dict:
         return {"cfg": self.cfg, "cases": dict(self.cases), "events": self.events, "leaves": self.leaves,

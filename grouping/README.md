@@ -14,9 +14,19 @@ grouping/
   replay.py      run(records) -> Result, metrics (§8.4), pass criteria (§8.2), L plot
   invariants.py  §8.3 invariants checked after every event
 scripts/grouping_synth.py     scenarios x profiles x seeds (+ sweeps) -> table.md, metrics, L plots
-scripts/grouping_adapter.py   quiclab run -> onset log (shadow alarms) -> engine -> metrics, spread
+scripts/grouping_adapter.py   quiclab run -> onset log (shadow / OWD oracle / burst truth) -> engine -> metrics, spread
+scripts/grouping_baselines.py SBD baselines (DCW, rmcatSBD, dcSBD) scored as grouping methods next to ECG
+scripts/grouping_campaign.py  campaigns K1-K6: plan, run one after another, report per campaign when it finishes
+configs/topologies/detector-tree8.yaml + configs/scenarios/grp-burst-tree8.yaml   K6 three-level tree (9 clients)
+configs/topologies/detector-rev.yaml   detector.yaml + a cross-traffic route on the ACK path (K3 revcross)
 tests/unit/test_grouping.py   52 tests (alignment, clustering, weights, cases, scenarios, determinism)
+tests/unit/test_grouping_tools.py  hierarchical pair truth, baseline scoring
+tests/unit/test_grouping_campaign.py  planner: every type validates, seeded, windows vs events, join/leave rules
 ```
+
+Grouping-only tooling: these scripts read `<run>/detector`, `<run>/publishers`
+and `<run>/baselines` and write only under `<run>/grouping*/`. The shadow
+detector is frozen (det_eval `TUNED`); nothing here changes it.
 
 ## Running
 
@@ -30,14 +40,21 @@ tests/unit/test_grouping.py   52 tests (alignment, clustering, weights, cases, s
 # real runs: shadow alarms -> ECG, plus the per-burst onset-spread measurement
 .venv/bin/python scripts/grouping_adapter.py .runs/<campaign>/det-burstcap-pfifo-r1 --set theta_J=0.6 theta_cov=0.6
 .venv/bin/python scripts/grouping_adapter.py ".runs/<campaign>/det-*-r1" --spread-only
-.venv/bin/python -m pytest -q tests/unit/test_grouping.py
+# oracle onsets: perfect delay detector on the OWD log / the burst truth itself
+.venv/bin/python scripts/grouping_adapter.py RUN --onsets owd --set theta_J=0.6 theta_cov=0.6
+.venv/bin/python scripts/grouping_adapter.py RUN --onsets truth --set theta_J=0.6 theta_cov=0.6
+# SBD baselines next to the three ECG variants, same truth
+.venv/bin/python scripts/grouping_baselines.py RUN...
+.venv/bin/python -m pytest -q tests/unit/test_grouping.py tests/unit/test_grouping_tools.py
 ```
 
 Outputs of the synthetic run land in `.runs/<ts>_grouping-synth/`: `table.md`,
 `results.json`, and per cell `<S>/<profile>/seed<k>-{metrics.json,L.png}`
-(`-evidence.jsonl` for seed 0). The adapter writes `<run>/grouping/`:
-`onsets.jsonl` (the log the engine consumed), `truth.json`, `spread.csv`,
-`evidence.jsonl`, `metrics.json`, `L.png`.
+(`-evidence.jsonl` for seed 0). The adapter writes `<run>/grouping/` (shadow)
+or `<run>/grouping-owd/`, `<run>/grouping-truth/`: `onsets.jsonl` (the log
+the engine consumed), `truth.json`, `spread.csv`, `evidence.jsonl`,
+`metrics.json`, `pairs_t.json` (pairwise decision after every event close),
+`L.png`. The baseline scorer writes `<run>/grouping/baselines.json`.
 
 ## Reading the L plots
 
@@ -100,6 +117,108 @@ single shared bottleneck + control client; see `metrics.json` under each run):
   which is the intended semantics. `isolate` runs produce only SOLO/PRIVATE
   events and no leaf. These topologies cannot test the hierarchy: that needs
   the split topology campaign (TODO).
+
+## Testbed step 1: oracle onsets, split topology, SBD baselines
+
+Three Mechanism-A sources separate the grouping rules from the detector
+(`--onsets`): **shadow** (frozen tuned detector, alarms backdated as above),
+**owd** (a perfect delay detector: `det_eval.measured_bands` on the exact OWD
+log, a standing queue ≥ 10 ms for ≥ 0.5 s is an episode; no delay, no misses,
+the real cross-flow spread stays; windows without receive timestamps are
+unobservable), **truth** (every hit client fires at the burst start; aligned
+spread 0: the tree logic alone). The difference truth → owd is the cost of
+real onset spread and partial events, owd → shadow the cost of the detector.
+
+Truth has two pair relations now. `pairs`: both hit by a common burst (share
+some link). `pairs_leaf`: same *tightest* group, the intersection of every hit
+set containing the client, so on the split topology `leaf(a1) = {a1,a2,a3}`
+and the a–b pairs are DIFFERENT although upstream bursts hit both. ECG SAME
+(same confirmed leaf) is scored against `pairs_leaf` (headline) and `pairs`.
+
+`scripts/grouping_baselines.py` scores DCW, rmcatSBD and dcSBD (oracle OWD
+input, `scripts/sbd_baselines.py`) on the same truth: *final* grouping = pair
+grouped in ≥ half of the burst windows; `t_correct` = first time the running
+grouping (ECG: tree at an event close; SBD: majority over the windows so far)
+equals `pairs_leaf` on every pair and stays so for 5 s; window-level
+precision/recall and the fraction of pairs grouped in calm windows (SBD's own
+terms).
+
+Runs with full OWD coverage (after the client PING fix) are only
+`2026-11-03_2121_split-smoke/det-splitcap-pfifo-r1` (split: 3 + 3 clients,
+bursts up / a / b / a+up, 30 bursts) and
+`2026-11-03_1236_owd-ping-check/det-burstcap-pfifo-r1` (large, 8 clients).
+The newscn-base and large campaigns lose OWD timestamps on the high-rate
+clients mid-run (sub-g/h at ~63 s), so the owd source and the baselines are
+not meaningful there until those campaigns are rerun.
+
+| run | method | leaf P / R | t_correct (s) | cases / notes |
+|---|---|---|---|---|
+| split | ECG shadow | 1.0 / 1.0 | 245.6 | A 11, C 4, GLOBAL 9, SOLO 5 |
+| split | ECG owd | 1.0 / 1.0 | 153.5 | A 13, C 6, GLOBAL 10 |
+| split | ECG truth | 1.0 / 1.0 | 245.5 | A 10, C 4, GLOBAL 9 |
+| split | DCW | 1.0 / 1.0 | 37.5 | windows P 0.80 R 0.62, 30 % of pairs grouped in calm windows |
+| split | rmcatSBD / dcSBD | – / 0.0 | never | window recall 0.05 / 0.08: 1–4 s bursts are below their history |
+| large | ECG shadow / owd / truth | 1.0 / 1.0 | 47.5 / 47.4 / 32.1 | one leaf of eight, ctrl out |
+| large | DCW | 1.0 / 1.0 | 16.5 | 26 % of pairs grouped in calm windows |
+| large | rmcatSBD / dcSBD | – / 0.0 | never | window recall 0.09 / 0.14 |
+
+What the split run shows (all three sources agree, so it is the rules, not
+the detector): the final tree is right — two leaves {a1,a2,a3}, {b1,b2,b3},
+every upstream burst GLOBAL, a-only / b-only bursts case A. It is slow
+because the scenario's first three bursts were all upstream: ECG correctly
+built one six-flow leaf, and the first a-only bursts were case C
+(sub-pattern) until `s_split_weight = 8` was reached (4 events). **During
+those four events the silent b flows took the minority-rule `w⁻` and fell
+below A**, and after the split they needed three b-only bursts to re-confirm
+(first SAME for b pairs at 245 s; with the owd source 153 s). Rule
+responsible: the Case C update applies the minority rule to the silent
+members although the event is being recorded as a sub-pattern. A v1.2
+candidate: when an event is recorded as a sub-pattern, do not charge the
+silent members (or charge them only once the split is rejected). Not applied.
+DCW is faster on this run because it groups instantaneously from the OWD
+oracle, at the price of grouping 30 % of pairs in calm windows and of having
+no hierarchy at all.
+
+## Campaigns K1–K6 (`scripts/grouping_campaign.py`)
+
+Shadow frozen, BBR only, rep = seed (same sequence on every AQM), calm u ≈ 0.65,
+capacity drops unless noted, gaps U(10, 15) s. One command runs them back to
+back and writes `<campaign>/<K>/report.md` the moment a campaign's last run
+is done (adapter with the three onset sources, θ = 0.6, then the SBD scorer):
+
+```bash
+.venv/bin/python scripts/grouping_campaign.py --plan                  # YAMLs + budget, runs nothing
+.venv/bin/python scripts/grouping_campaign.py --ks K1,K2,K3,K5,K6 --reps 3    # in tmux; ~10.5 h + setup
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --skip-existing   # resume
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --set theta_J=0.7 theta_cov=0.7
+```
+
+| K | topology | types | AQMs | runs (3 reps) | what it decides |
+|---|---|---|---|---|---|
+| K1 hier | split (3+3) | cells u {1.3, 2} × d {1, 2, 4} × {up, a, b, a+b, a+b@0.5, a+b@1, a+b@2, a+up} | 4 uniform + mixa (r1 pfifo / r2 fq_codel) + mixb | 18 × 12.7 min | hierarchy (A / B / GLOBAL), false GLOBAL on simultaneous independent events, δ_max / hold on offsets, serial bottleneck |
+| K2 part | detector | Poisson on/off UDP, u ∈ {1.05, 1.1, 1.15, 1.3} per run, on U(1, 4) s (15 % U(10, 20)), off U(5, 20) | pfifo, fq_codel | 24 × 5 min | share of a leaf that alarms at light load → θ; long episodes |
+| K3 rev | detector / detector-rev | revasym (reverse delays 5/40/80/120), revjit5/10/20, revcross (ACK-path bursts only, reverse link 10 Mb/s), revcrossmix | pfifo, fq_codel | 36 × 3–6 min | alignment error, false onsets from jitter, correlated false onsets from reverse congestion |
+| K5 mixed | detector | shared cap bursts + per-client access drops shuffled; sub-d joins at 60 s, sub-b leaves at 240 s | 4 | 12 × 6 min | private events leave the leaf alone, Case D→A for the joiner, the leaver's decay |
+| K6 depth | tree8 (4 × 2) | {A, B, C, D, X, Y, root, A+C} | pfifo, fq_codel | 6 × 12.7 min | two-flow leaves, two-level LCA, A+C simultaneous |
+
+Per-router AQM is all the schema offers, so "mixed AQM" on the split topology
+means upstream vs downstream (r1 vs r2), not branch a vs branch b.
+
+Truth for these runs is not det_eval's model: each run carries its stimulus
+windows (`<run>/grouping/windows.json`, from the plan) and a client counts as
+hit in a window when the OWD oracle shows a standing queue inside
+[start, end + 2 s] **and** the plan expected that client (`expected` = the
+clients behind the stimulated link; empty for reverse-path stimuli). The
+second condition is needed for a+b / A+C: two links congested at the same
+instant are indistinguishable on the oracle alone. `truth_of` picks this
+source whenever `windows.json` exists, else `bursts.csv`, else topology.
+Rechecked on the split-smoke run with plan-style windows: same final tree,
+same P/R, same t_correct as with `bursts.csv`. The report adds a case matrix
+(ECG event case × stimulus cell), which is the K1/K6 headline: `a+b` cells
+must not be GLOBAL, `up`/`root` must.
+
+det_eval.score still runs after every run (best effort, for the detector's
+own tables); nothing here changes detector code or outputs.
 
 ## Ambiguities in the brief and how they were resolved
 

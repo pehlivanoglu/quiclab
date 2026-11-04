@@ -1,0 +1,40 @@
+# detector.yaml plus a cross-traffic route in the reverse direction of the
+# shared bottleneck (traffic-rtx behind the switch -> router -> traffic-rrx),
+# for the grouping campaign K3 "revcross": congestion on the ACK path only.
+# Video side identical to detector.yaml.
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  sub-a: { connects_to: pub, rate_kbps: 1000 }
+  sub-b: { connects_to: pub, rate_kbps: 2500, phase_ms: 250 }
+  sub-c: { connects_to: pub, rate_kbps: 2500, phase_ms: 500 }
+  sub-d: { connects_to: pub, rate_kbps: 5000, phase_ms: 750 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500 }
+
+routers:
+  router:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+
+switches:
+  switch: {}
+
+traffic:
+  senders: [{ id: traffic-tx }, { id: traffic-rtx }]
+  receivers: [{ id: traffic-rx }, { id: traffic-rrx }]
+  routes:
+    shared: { path: [traffic-tx, router, switch, traffic-rx] }
+    rshared: { path: [traffic-rtx, switch, router, traffic-rrx] }
+
+links:
+  - { from: pub, to: router }
+  - { from: router, to: switch }
+  - { from: switch, to: sub-a }
+  - { from: switch, to: sub-b }
+  - { from: switch, to: sub-c }
+  - { from: switch, to: sub-d }
+  - { from: switch, to: traffic-rx }
+  - { from: traffic-tx, to: router }
+  - { from: router, to: sub-ctrl }
+  - { from: switch, to: traffic-rtx }
+  - { from: router, to: traffic-rrx }

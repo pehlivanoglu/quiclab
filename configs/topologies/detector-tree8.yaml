@@ -1,0 +1,54 @@
+# Grouping depth test (grouping campaign K6): a three-level tree of
+# bottlenecks. root link rr -> r0 carries every shared client; r0 -> r1 (X)
+# carries leaves A and B, r0 -> r2 (Y) leaves C and D; each leaf link
+# r1 -> switch-a ... r2 -> switch-d carries two clients. sub-ctrl hangs off rr
+# (never congested). Capacity drops only (no cross traffic), so no traffic
+# endpoints. Used with grp-burst-tree8.yaml (scripts/grouping_campaign.py).
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  a1: { connects_to: pub, rate_kbps: 1000 }
+  a2: { connects_to: pub, rate_kbps: 2500, phase_ms: 100 }
+  b1: { connects_to: pub, rate_kbps: 1000, phase_ms: 200 }
+  b2: { connects_to: pub, rate_kbps: 2500, phase_ms: 300 }
+  c1: { connects_to: pub, rate_kbps: 1000, phase_ms: 400 }
+  c2: { connects_to: pub, rate_kbps: 2500, phase_ms: 500 }
+  d1: { connects_to: pub, rate_kbps: 1000, phase_ms: 600 }
+  d2: { connects_to: pub, rate_kbps: 2500, phase_ms: 700 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500, phase_ms: 800 }
+
+routers:
+  rr:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+  r0:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+  r1:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+  r2:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+
+switches:
+  switch-a: {}
+  switch-b: {}
+  switch-c: {}
+  switch-d: {}
+
+links:
+  - { from: pub, to: rr }
+  - { from: rr, to: r0 }
+  - { from: r0, to: r1 }
+  - { from: r0, to: r2 }
+  - { from: r1, to: switch-a }
+  - { from: r1, to: switch-b }
+  - { from: r2, to: switch-c }
+  - { from: r2, to: switch-d }
+  - { from: switch-a, to: a1 }
+  - { from: switch-a, to: a2 }
+  - { from: switch-b, to: b1 }
+  - { from: switch-b, to: b2 }
+  - { from: switch-c, to: c1 }
+  - { from: switch-c, to: c2 }
+  - { from: switch-d, to: d1 }
+  - { from: switch-d, to: d2 }
+  - { from: rr, to: sub-ctrl }
