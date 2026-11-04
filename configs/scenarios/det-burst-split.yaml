@@ -1,0 +1,29 @@
+# Event benchmark base for detector-split.yaml: calm bottlenecks at u ~0.65,
+# upstream r1 -> r2 27 Mb/s for ~17.5 Mb/s of video, downstream r2 -> switch-a /
+# switch-b 13.5 Mb/s for ~8.8 Mb/s each; client RTTs 20-110 ms; queues ~1 BDP
+# (r1 160 packets ~ 57 ms at 27 Mb/s, r2 80 packets ~ 57 ms at 13.5 Mb/s).
+# scripts/det_matrix.py --topology split adds the events and sets duration_s.
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: r1, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: r1, to: r2, forward: { bandwidth_mbps: 27 } }
+  - { from: r2, to: switch-a, forward: { bandwidth_mbps: 13.5 } }
+  - { from: r2, to: switch-b, forward: { bandwidth_mbps: 13.5 } }
+  - { from: switch-a, to: a1, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch-a, to: a2, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
+  - { from: switch-a, to: a3, forward: { delay_ms: 40 }, reverse: { delay_ms: 40 } }
+  - { from: switch-b, to: b1, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: switch-b, to: b2, forward: { delay_ms: 25 }, reverse: { delay_ms: 25 } }
+  - { from: switch-b, to: b3, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: r1, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  r1: { aqm: pfifo, queue_limit_packets: 160 }
+  r2: { aqm: pfifo, queue_limit_packets: 80 }
+
+events: []
