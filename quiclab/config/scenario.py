@@ -9,6 +9,8 @@ Validated against one topology (`load_scenario`):
   - routers name declared routers; AQM parameters match the AQM kind
   - live link events cannot add HTB or netem (that would flush queues): the
     initial conditions must already declare bandwidth_mbps / netem fields
+  - link events cannot change the capacity of a switch egress: congestion
+    belongs on router egresses, switches only distribute
   - flows use declared traffic routes; flow ids are unique
   - each subscriber joins and leaves at most once, leave after join
   - every event happens within duration_s
@@ -27,7 +29,8 @@ from quiclab.exceptions import ConfigError
 
 
 class RouterQueue(_StrictBase):
-    """AQM leaf on every egress of one router."""
+    """AQM leaf on every egress of one router; `egress` replaces it (whole
+    queue, no field merge) on the egresses it names, by neighbor node id."""
 
     aqm: AqmKind | None = None
     dualpi2_target_ms: float | None = Field(default=None, gt=0)
@@ -37,9 +40,20 @@ class RouterQueue(_StrictBase):
     # link's BDP, or a fast link drops at a fraction of a millisecond of queue.
     red_min_bytes: int | None = Field(default=None, gt=0)
     red_max_bytes: int | None = Field(default=None, gt=0)
+    egress: dict[str, "RouterQueue"] | None = None
+
+    def on(self, neighbor: str) -> "RouterQueue":
+        """The queue on this router's egress toward `neighbor`."""
+        return (self.egress or {}).get(neighbor, self)
+
+    def queues(self) -> list["RouterQueue"]:
+        """The router-wide queue and every egress override."""
+        return [self, *(self.egress or {}).values()]
 
     @model_validator(mode="after")
     def _check_aqm_parameters(self) -> "RouterQueue":
+        if any(q.egress is not None for q in (self.egress or {}).values()):
+            raise ValueError("an egress queue cannot have its own egress overrides")
         if self.dualpi2_target_ms is not None and self.aqm != AqmKind.dualpi2:
             raise ValueError("dualpi2_target_ms requires aqm: dualpi2")
         if self.queue_limit_packets is not None and self.aqm is None:
@@ -108,7 +122,8 @@ class LinkEvent(_Event):
 
 
 class AqmEvent(_Event, RouterQueue):
-    """Replace the AQM leaf on every egress of `router`."""
+    """Replace the AQM leaf on every egress of `router` (and any earlier
+    egress overrides, unless this event declares its own)."""
 
     type: Literal["aqm"]
     router: str
@@ -248,9 +263,20 @@ class Scenario(_StrictBase):
             if key in seen:
                 raise ValueError(f"scenario link {list(key)!r} listed twice")
             seen.add(key)
-        for rid in self.routers:
+        neighbors: dict[str, set[str]] = {}
+        for link in topology.links:
+            neighbors.setdefault(link.from_, set()).add(link.to)
+            neighbors.setdefault(link.to, set()).add(link.from_)
+
+        def check_egress(rid: str, queue: RouterQueue, where: str) -> None:
+            unknown = sorted(set(queue.egress or {}) - neighbors.get(rid, set()))
+            if unknown:
+                raise ValueError(f"{where}: egress {unknown!r} are not neighbors of router {rid!r}")
+
+        for rid, queue in self.routers.items():
             if rid not in topology.routers:
                 raise ValueError(f"scenario router {rid!r} is not a topology router")
+            check_egress(rid, queue, f"scenario router {rid!r}")
 
         routes = topology.traffic.routes if topology.traffic is not None else {}
         flow_ids: set[str] = set()
@@ -264,6 +290,10 @@ class Scenario(_StrictBase):
                 if (event.from_, event.to) not in declared:
                     raise ValueError(f"{where}: link {[event.from_, event.to]!r} is not a topology link "
                                      "in its declared from/to order")
+                egress_node = event.from_ if event.direction == "forward" else event.to
+                if event.bandwidth_mbps is not None and egress_node in topology.switches:
+                    raise ValueError(f"{where}: changes the capacity of an egress of switch {egress_node!r}; "
+                                     "congestion belongs on a router egress")
                 forward, reverse = self.initial_link(event.from_, event.to)
                 spec = forward if event.direction == "forward" else reverse
                 # Live edits keep the qdisc tree; they cannot add HTB or netem.
@@ -279,6 +309,7 @@ class Scenario(_StrictBase):
             elif event.type == "aqm":
                 if event.router not in topology.routers:
                     raise ValueError(f"{where}: {event.router!r} is not a topology router")
+                check_egress(event.router, event, where)
             elif event.type in ("flow", "ppbp", "bursts"):
                 if event.route not in routes:
                     raise ValueError(f"{where}: flow {event.id!r} uses unknown traffic route {event.route!r}")

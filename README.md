@@ -16,7 +16,7 @@ parts removed.
 quiclab/
 ├── deps/moxygen/           facebookexperimental/moxygen, pinned (see below)
 ├── qvideo/                 C++ sender/client (mvfst), CMake
-│   └── src/  Common.h  Playback.h  Ppbp.h  Server.cpp  Client.cpp  Traffic.cpp (qtraffic)  SelfTest.cpp
+│   └── src/  Common.h  Playback.h  Ppbp.h  SendQueue.h  Server.cpp  Client.cpp  Traffic.cpp (qtraffic)  SelfTest.cpp
 ├── quiclab/                Python package (`python -m quiclab`)
 │   ├── cli.py              design / validate / build / run
 │   ├── config/schema.py    Pydantic topology model
@@ -25,8 +25,23 @@ quiclab/
 │   ├── orchestrator/scenario_runner.py  timed events -> events.csv
 │   ├── designer.py visualizer.py router_metrics.py runtime.py
 ├── visualizer/             browser assets (designer + live visualizer)
-├── configs/topologies/     single.yaml, shared.yaml, cc-sweep.yaml, flowbot-like.yaml
-├── configs/scenarios/      single-step.yaml, shared-cross.yaml, aqm-cc-sweep.yaml (coverage run), flowbot-load-{070,080,090,100}.yaml
+├── configs/topologies/
+│   ├── single.yaml  shared.yaml  cc-sweep.yaml  flowbot-like.yaml        standalone runs
+│   └── detector.yaml  detector-large.yaml  detector-split.yaml           det_matrix, grouping campaigns
+│       detector-access.yaml                                              private bottlenecks (isolate, K5)
+│       detector-rev.yaml  detector-tree8.yaml                            grouping campaigns (K3 revcross, K6)
+├── configs/scenarios/
+│   ├── single-step.yaml  shared-cross.yaml  aqm-cc-sweep.yaml (coverage run)  flowbot-load-{070,080,090,100}.yaml
+│   ├── det-capacity.yaml  det-cbr.yaml  det-ppbp.yaml                    fixed detector scenarios
+│   └── det-burst.yaml  det-burst-large.yaml  det-burst-split.yaml  det-burst-access.yaml
+│       grp-burst-tree8.yaml  grp-burst-rev.yaml
+│                                                                         bases: the generators add the events
+├── scripts/
+│   ├── det_matrix.py  det_eval.py  det_plot.py                           detector matrix, scoring, figures
+│   ├── grouping_campaign.py  grouping_adapter.py  grouping_baselines.py  grouping_synth.py   grouping K1-K6
+│   └── sbd_baselines.py  owd_estimate.py  run_summary.py
+├── grouping/               ECG shared-bottleneck grouping (see grouping/README.md)
+├── baselines/sbd/          vendored SBD baselines DCW, rmcatSBD, dcSBD
 ├── docker/Dockerfile       the one image: mininet, iperf3, iproute2 6.17, runtime libs
 └── tests/unit/             pytest, no root/Docker needed
 ```
@@ -157,6 +172,10 @@ What exists and how it is wired; no conditions. See
   `phase_ms` (keyframe phase; equal phases mean in-sync keyframes),
   `buffer_ms`, `stats_ms`.
 - `routers` (`queue_metrics`), `switches`, `links` (`from`, `to` only).
+  Congestion belongs on router egresses: to put clients in one queue, send them
+  through one router egress into a switch, which only distributes. A scenario
+  `link` event cannot change the capacity of a switch egress. A client that needs
+  a private bottleneck gets its own access router (`detector-access.yaml`).
 - `traffic`: iperf3 `senders`, `receivers` and named `routes`. Each route gets
   its own /32 alias pair, so its flows follow exactly the declared path.
 
@@ -174,12 +193,15 @@ What the network does over one run. See `quiclab/config/scenario.py`.
   every router egress. `queue_limit_packets` sets the hard queue limit for any
   AQM (tc `limit`; RED converts it at 1500 B per packet); unset, the kernel
   default applies (pie 1000, fq_codel 10240, dualpi2 10000 packets).
+  `egress: { <neighbor>: { aqm: ..., ... } }` replaces the whole queue on the
+  egresses it names, e.g. a different AQM per downstream branch.
 - `events` (each with `at_s`, optional `label`):
   - `link`: change one direction in place (`tc change`, queued packets
     survive). It can only change fields whose qdisc exists at t=0: give the
     direction a `bandwidth_mbps`, and `delay_ms` or `loss_pct: 0`, to keep it
     editable.
-  - `aqm`: replace a router's AQM leaf (`router`, `aqm` + parameters).
+  - `aqm`: replace a router's AQM leaf on every egress (`router`, `aqm` +
+    parameters); earlier `egress` overrides end unless the event declares its own.
   - `flow`: start an iperf3 flow (`id`, `route`, `duration_s`; `kind: tcp`
     with `cc`, `parallel`, or `kind: udp` with `rate_mbps`, `packet_size_bytes`).
   - `ppbp`: PPBP cross traffic from `qtraffic` (FlowBot-style): Poisson

@@ -38,8 +38,8 @@ Observability: sent.csv -> bytes in the trailing 200 ms >= obs_fraction *
 rendition * 0.2 s (sent_rate mode) or acks.csv -> inflight >= 0.5 cwnd and
 not app-limited (cwnd mode), per 20 ms window; in_episode from the episodes.
 Truth: pairs are "same" when both clients are hit by at least one common
-burst (detector/bursts.csv); without bursts.csv, the topology's first router
-egress (det_eval's group_of) is used.
+burst (detector/bursts.csv); without bursts.csv, the topology's leaf queue
+(det_eval.leaf_queues) is used.
 """
 
 from __future__ import annotations
@@ -273,13 +273,15 @@ def congested_bins(run: d.Run, sid: str) -> np.ndarray:
 
 def measured_bursts(run: d.Run, windows: list[dict]) -> list[dict]:
     """Burst records (same shape as bursts.csv's) from the campaign's stimulus
-    windows and the OWD oracle: a client is hit when it has a congested bin in
-    [start, end + BURST_RECOVERY_S]. `expected` is what the plan intended."""
+    windows and the OWD oracle: a client is hit when the plan expected it (the
+    clients behind the stimulated link) and it has a congested bin in
+    [start, end + BURST_RECOVERY_S]. The oracle alone cannot tell two links
+    congested at the same time apart."""
     cong = {s: congested_bins(run, s) for s in run.subs}
     out = []
     for i, w in enumerate(windows):
         lo, hi = w["start"], w["end"] + d.BURST_RECOVERY_S
-        hit = sorted(s for s in run.subs if ((cong[s] >= lo) & (cong[s] <= hi)).any())
+        hit = sorted(s for s in w.get("expected", []) if ((cong[s] >= lo) & (cong[s] <= hi)).any())
         out.append({"burst": i, "start": w["start"], "end": w["end"], "hit": hit, "uncertain": [],
                     "kind": w.get("kind"), "target": w.get("target"), "expected": w.get("expected", [])})
     return out
@@ -287,7 +289,7 @@ def measured_bursts(run: d.Run, windows: list[dict]) -> list[dict]:
 
 def truth_of(run: d.Run) -> dict:
     paths = {s: d.path_hops(run, run.pub, s) for s in run.subs}
-    group_of = {s: f"{p[1][0]}->{p[1][1]}" if len(p) > 1 else s for s, p in paths.items()}
+    group_of = {s: g or s for s, g in d.leaf_queues(run.topology, paths).items()}
     truth = {"run": run.path.name, "subs": run.subs, "topology_group": group_of, "bursts": [], "pairs": {}}
     bursts_csv = run.path / "detector" / "bursts.csv"
     windows_json = run.path / "grouping" / "windows.json"
@@ -315,7 +317,7 @@ def truth_of(run: d.Run) -> dict:
         # (reverse-path stimuli): every pair is then DIFFERENT.
         for s in run.subs:
             same[s] = {x for x in run.subs if group_of[x] == group_of[s] and group_of[s] != s}
-        truth["source"] = "topology (same first router egress)"
+        truth["source"] = "topology (same leaf queue)"
         truth["bursts"] = []
     leaf = leaf_groups([set(b["hit"]) for b in truth["bursts"] if b["hit"]], same, run.subs)
     truth["leaf"] = {s: sorted(l) for s, l in leaf.items()}

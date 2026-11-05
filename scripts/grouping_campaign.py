@@ -22,21 +22,26 @@ unless said otherwise; gaps U(10, 15) s):
   K1 hier   split topology: cells u {1.3, 2.0} x d {1, 2, 4} x targets
             up | a | b | a+b (same instant) | a+b@0.5 | a+b@1 | a+b@2 (b later)
             | a+up (serial). AQMs: 4 uniform + mixa (r1 pfifo, r2 fq_codel)
-            + mixb (r1 fq_codel, r2 pfifo). Hierarchy, false GLOBAL on
-            simultaneous independent events, delta_max / hold on offsets.
-  K2 part   detector topology: Poisson on/off UDP on the shared link at one
-            severity per run, u in {1.05, 1.1, 1.15, 1.3}; on U(1, 4) s (15 %
-            of them U(10, 20) s), off U(5, 20) s. pfifo, fq_codel. Partial
-            events: which share of a leaf alarms at light load (theta).
+            + mixb (r1 fq_codel, r2 pfifo) + mixab (r1 pfifo; branches differ
+            on r2: switch-a pfifo, switch-b fq_codel). Hierarchy, false GLOBAL
+            on simultaneous independent events, delta_max / hold on offsets.
+  K2 part   detector topology: Poisson on/off capacity drops on the shared
+            link at one severity per run, u in {1.05, 1.1, 1.15, 1.3}; on
+            U(1, 4) s (15 % of them U(10, 20) s), off U(5, 20) s. pfifo (one
+            shared queue: every client is hit), fq_codel (per-flow queues: only
+            clients above their fair share are hit, so u sets the hit set; UDP
+            would not congest any client there). Partial events: which share of
+            a leaf alarms at light load (theta).
   K3 rev    detector topology: revasym (reverse delays 5/40/80/120 ms per
-            client, forward unchanged) and revjit5/10/20 (reverse jitter on
+            client, forward unchanged) and revjit10 (10 ms reverse jitter on
             every access link) with cap bursts; detector-rev topology:
-            revcross (UDP bursts on the ACK path only, reverse link 10 Mb/s,
-            no forward congestion) and revcrossmix (the same interleaved with
-            forward cap bursts). pfifo, fq_codel.
-  K5 mixed  detector topology: cap bursts on the shared link + access-link
-            drops per client (private) in one shuffled sequence; sub-d joins
-            at 60 s, sub-b leaves at 240 s. 4 AQMs.
+            revcross (UDP bursts on the ACK path only, router egress r1 -> r0
+            at 10 Mb/s, no forward congestion) and revcrossmix (the same
+            interleaved with forward cap bursts). pfifo (ACKs share the queue
+            with the bursts), fq_codel (ACKs isolated: a no-reverse-queue control).
+  K5 mixed  detector-access topology: cap bursts on the shared link + access
+            router egress drops per client (private) in one shuffled sequence;
+            sub-d joins at 60 s, sub-b leaves at 240 s. 4 AQMs.
   K6 depth  tree8 topology: targets A | B | C | D | X (A+B) | Y (C+D) | root
             | A+C (same instant). pfifo, fq_codel.
 """
@@ -75,13 +80,16 @@ dm.TOPOLOGIES.setdefault("tree8", ("detector-tree8.yaml", "grp-burst-tree8.yaml"
     "root": ("rr", "r0", None), "X": ("r0", "r1", None), "Y": ("r0", "r2", None),
     "A": ("r1", "switch-a", None), "B": ("r1", "switch-b", None), "C": ("r2", "switch-c", None),
     "D": ("r2", "switch-d", None)}, "root"))
-dm.TOPOLOGIES.setdefault("rev", ("detector-rev.yaml", "det-burst.yaml", {"main": ("router", "switch", "shared")}, "main"))
+dm.TOPOLOGIES.setdefault("rev", ("detector-rev.yaml", "grp-burst-rev.yaml", {"main": ("r1", "switch", "shared")}, "main"))
 
 U_CAP, D_CAP = (1.3, 2.0), (1, 2, 4)
 UNIFORM = list(dm.AQMS)
-MIXED = {"mixa": {"r1": "pfifo", "r2": "fq_codel"}, "mixb": {"r1": "fq_codel", "r2": "pfifo"}}
+MIXED = {"mixa": {"r1": "pfifo", "r2": "fq_codel"}, "mixb": {"r1": "fq_codel", "r2": "pfifo"},
+         "mixab": {"r1": "pfifo", "r2": "pfifo"}}
+# On top of MIXED: router -> neighbor -> AQM of that one egress.
+MIXED_EGRESS = {"mixab": {"r2": {"switch-a": "pfifo", "switch-b": "fq_codel"}}}
 REV_ASYM_MS = (5, 40, 80, 120)
-REV_LINK_MBPS = 10.0
+REV_LINK, REV_LINK_MBPS = ("r0", "r1"), 10.0     # its reverse direction is the router egress r1 -> r0
 K2_U = (1.05, 1.1, 1.15, 1.3)
 K2_ON, K2_ON_LONG, K2_OFF, K2_P_LONG, K2_T_END = (1.0, 4.0), (10.0, 20.0), (5.0, 20.0), 0.15, 300.0
 JOIN_T, LEAVE_T, JOIN_SUB, LEAVE_SUB = 60.0, 240.0, "sub-d", "sub-b"
@@ -91,10 +99,10 @@ ONSET_SOURCES = ("shadow", "owd", "truth")
 # K -> topology, AQM ids, run types.
 CAMPAIGNS = {
     "K1": {"topology": "split", "aqms": UNIFORM + list(MIXED), "types": ["hier"]},
-    "K2": {"topology": "base", "aqms": ["pfifo", "fq_codel"], "types": [f"part{int(u * 100)}" for u in K2_U]},
+    "K2": {"topology": "base", "aqms": ["pfifo", "fq_codel"], "types": [f"part{round(u * 100)}" for u in K2_U]},
     "K3": {"topology": "base", "aqms": ["pfifo", "fq_codel"],
-           "types": ["revasym", "revjit5", "revjit10", "revjit20", "revcross", "revcrossmix"]},
-    "K5": {"topology": "base", "aqms": UNIFORM, "types": ["mixed"]},
+           "types": ["revasym", "revjit10", "revcross", "revcrossmix"]},
+    "K5": {"topology": "access", "aqms": UNIFORM, "types": ["mixed"]},
     "K6": {"topology": "tree8", "aqms": ["pfifo", "fq_codel"], "types": ["depth"]},
 }
 TYPE_TOPOLOGY = {"revcross": "rev", "revcrossmix": "rev"}   # types that need another topology than the campaign's
@@ -151,16 +159,14 @@ def plan_depth(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
 def plan_part(n: dict, seed: int, u: float) -> tuple[list[dict], list[dict], float]:
     rng = random.Random(seed)
     h = n["hops"][n["default"]]
-    rate = round(u * h["base"] - h["demand"], 3)
-    bursts, windows, t = [], [], dm.WARMUP_S
+    events, windows, t = [], [], dm.WARMUP_S
     while True:
         on = rng.uniform(*(K2_ON_LONG if rng.random() < K2_P_LONG else K2_ON))
         if t + on > K2_T_END - dm.TAIL_S:
             break
-        bursts.append({"start_s": round(t, 3), "duration_s": round(on, 3), "rate_mbps": rate})
-        windows.append(_window(t, t + on, "udp", n["default"], f"u={u}", list(h["clients"])))
+        events += _cap_event(n, n["default"], t, u, on, f"burst u={u} d={on:.3f}")
+        windows.append(_window(t, t + on, "cap", n["default"], f"u={u}", list(h["clients"])))
         t += on + rng.uniform(*K2_OFF)
-    events = [{"at_s": 0, "type": "bursts", "id": "udp-onoff", "route": h["route"], "bursts": bursts}]
     return events, windows, K2_T_END
 
 
@@ -252,21 +258,25 @@ def apply_links(data: dict, rtype: str, n: dict) -> None:
                 rev["delay_ms"] = REV_ASYM_MS[shared.index(link["to"]) % len(REV_ASYM_MS)]
             elif rtype.startswith("revjit"):
                 rev["jitter_ms"] = float(rtype[6:])
-        hop = n["hops"][n["default"]]["link"]
-        if rtype in ("revcross", "revcrossmix") and (link["from"], link["to"]) == (hop["from"], hop["to"]):
-            link.setdefault("reverse", {})["bandwidth_mbps"] = REV_LINK_MBPS
+    if rtype in ("revcross", "revcrossmix"):
+        data["links"].append({"from": REV_LINK[0], "to": REV_LINK[1], "reverse": {"bandwidth_mbps": REV_LINK_MBPS}})
 
 
 def apply_aqm(data: dict, aqm: str, n: dict) -> None:
-    per_router = MIXED.get(aqm, {})
+    def queue(name: str, limit: int | None) -> dict:
+        out = {"aqm": name, "queue_limit_packets": limit, **dm.AQMS[name]}
+        if name == "red":
+            out.update(dm.red_thresholds(n, limit))
+        return out
+
+    per_router, per_egress = MIXED.get(aqm, {}), MIXED_EGRESS.get(aqm, {})
     for rid, router in data["routers"].items():
         name = per_router.get(rid, aqm if aqm in dm.AQMS else "pfifo")
         limit = router.get("queue_limit_packets")
         router.clear()
-        router.update({"aqm": name, "queue_limit_packets": limit, **dm.AQMS[name]})
-        if name == "red":
-            bytes_per_ms = min(h["base"] for h in n["hops"].values()) * 1e6 / 8 / 1000
-            router.update({"red_min_bytes": int(15 * bytes_per_ms), "red_max_bytes": int(45 * bytes_per_ms)})
+        router.update(queue(name, limit))
+        if rid in per_egress:
+            router["egress"] = {peer: queue(q, limit) for peer, q in per_egress[rid].items()}
 
 
 def topology_of(k: str, rtype: str) -> str:
@@ -337,7 +347,7 @@ def run_campaign(k: str, kdir: Path, reps: int, skip_existing: bool, dry: bool) 
             shutil.copy(kdir / "_gen" / f"{rid}-windows.json", run_dir / "grouping" / "windows.json")
             try:
                 det_eval.score(run_dir)
-            except Exception as e:  # the detector's own report is best effort here
+            except (Exception, SystemExit) as e:  # best effort here; score again later with det_eval.py score
                 print(f"   det_eval.score failed on {rid}: {e!r}", flush=True)
             manifest["runs"][rid] = f"done {datetime.datetime.now():%Y-%m-%dT%H:%M:%S}"
         man_path.write_text(yaml.safe_dump(manifest, sort_keys=False))
@@ -356,6 +366,8 @@ def score_run(run_dir: Path, cfg: Config) -> dict:
                       spread_only=False)
         try:
             out["ecg"][src] = ga.process(run_dir, cfg, a)
+        except SystemExit as e:  # shadow onsets without the replay binary: the other sources still count
+            out["ecg"][src] = {"error": str(e)}
         except Exception as e:
             out["ecg"][src] = {"error": repr(e)}
             traceback.print_exc()
@@ -474,6 +486,9 @@ def main(argv: list[str]) -> None:
     unknown = [k for k in ks if k not in CAMPAIGNS]
     if unknown:
         sys.exit(f"unknown campaigns {unknown}; known: {sorted(CAMPAIGNS)}")
+    if not a.plan and not a.report_only and not det_eval.REPLAY.exists():
+        print(f"WARNING: {det_eval.REPLAY} missing: no shadow onsets. The owd and truth sources still work; "
+              "afterwards run det_eval.py score on the runs, then --report-only.", flush=True)
     campaign = a.campaign or RUNS / f"{datetime.datetime.now():%Y-%m-%d_%H%M}_{a.name}"
     campaign.mkdir(parents=True, exist_ok=True)
     print(f"campaign: {campaign}", flush=True)

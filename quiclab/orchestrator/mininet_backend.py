@@ -364,17 +364,24 @@ class MininetBackend:
                         )
 
         info("*** Applying initial link conditions and AQMs from the scenario\n")
-        for edge, link in zip(edges, topology.links):
-            forward, reverse = scenario.initial_link(link.from_, link.to)
-            for nid, iface, spec in ((edge.a, edge.a_iface, forward), (edge.b, edge.b_iface, reverse)):
-                node = net.get(nid)
-                queue = scenario.router_queue(nid) if nid in topology.routers else RouterQueue()
-                for cmd in shaping_commands(iface, spec, queue.aqm, queue.dualpi2_target_ms,
-                                            queue.queue_limit_packets,
-                                            (queue.red_min_bytes, queue.red_max_bytes)):
-                    status, out = _node_command_status(node, cmd)
-                    if status:
-                        raise OrchestratorError(f"{nid}: {cmd!r} failed: {out or f'exit {status}'}")
+        for nid, cmd in initial_shaping_commands(topology, scenario):
+            status, out = _node_command_status(net.get(nid), cmd)
+            if status:
+                raise OrchestratorError(f"{nid}: {cmd!r} failed: {out or f'exit {status}'}")
+
+
+def initial_shaping_commands(topology: TopologyConfig, scenario: Scenario) -> list[tuple[str, str]]:
+    """(node, tc command) for every link direction's t=0 conditions and AQM."""
+    commands = []
+    for edge, link in zip(edge_interfaces(topology), topology.links):
+        forward, reverse = scenario.initial_link(link.from_, link.to)
+        for nid, peer, iface, spec in ((edge.a, edge.b, edge.a_iface, forward),
+                                       (edge.b, edge.a, edge.b_iface, reverse)):
+            queue = scenario.router_queue(nid).on(peer) if nid in topology.routers else RouterQueue()
+            commands += [(nid, cmd) for cmd in shaping_commands(
+                iface, spec, queue.aqm, queue.dualpi2_target_ms, queue.queue_limit_packets,
+                (queue.red_min_bytes, queue.red_max_bytes))]
+    return commands
 
 
 def _write_etc_hosts(record: RunRecord) -> None:
@@ -726,14 +733,15 @@ def apply_live_router_aqm(
     def apply(value: RouterQueue, current: RouterQueue) -> None:
         for index, edge in enumerate(edge_interfaces(topology)):
             if edge.a == router_id:
-                iface, spec = edge.a_iface, specs[(index, "forward")]
+                peer, iface, spec = edge.b, edge.a_iface, specs[(index, "forward")]
             elif edge.b == router_id:
-                iface, spec = edge.b_iface, specs[(index, "reverse")]
+                peer, iface, spec = edge.a, edge.b_iface, specs[(index, "reverse")]
             else:
                 continue
+            new = value.on(peer)
             for command in live_aqm_commands(
-                iface, spec, value.aqm, current.aqm, value.dualpi2_target_ms,
-                value.queue_limit_packets, (value.red_min_bytes, value.red_max_bytes),
+                iface, spec, new.aqm, current.on(peer).aqm, new.dualpi2_target_ms,
+                new.queue_limit_packets, (new.red_min_bytes, new.red_max_bytes),
             ):
                 status, output = run(router_id, command)
                 if status:
@@ -811,7 +819,7 @@ def _spec_text(spec: DirectionSpec) -> str:
 
 def _queue_text(queue: RouterQueue) -> str:
     return " ".join(
-        f"{k}={v.value if hasattr(v, 'value') else v}" for k, v in queue.model_dump().items() if v is not None
+        f"{k}={v}" for k, v in queue.model_dump(mode="json", exclude_none=True).items()
     ) or "aqm=default"
 
 
@@ -861,7 +869,8 @@ def _node_command_status(node, command: str) -> tuple[int, str]:
 
 def _modprobe_modules(topology: TopologyConfig, scenario: Scenario) -> None:
     """Best-effort modprobe (host /lib/modules is mounted) before tc needs them."""
-    queues = [*scenario.routers.values(), *(e.queue() for e in scenario.events if e.type == "aqm")]
+    queues = [q for r in (*scenario.routers.values(), *(e.queue() for e in scenario.events if e.type == "aqm"))
+              for q in r.queues()]
     modules = {f"sch_{q.aqm.value}" for q in queues if q.aqm}
     modules.discard("sch_pfifo")  # built into sch_fifo
     modules |= {"sch_htb", "sch_netem"}

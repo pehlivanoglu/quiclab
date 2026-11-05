@@ -174,6 +174,19 @@ def path_hops(run: Run, src: str, dst: str) -> list[tuple[str, str]]:
     return list(zip(nodes, nodes[1:]))
 
 
+def leaf_queues(topology: dict, paths: dict[str, list[tuple[str, str]]]) -> dict[str, str]:
+    """Per client "from->to" of its deepest router egress shared with another
+    client ("" if none): the tightest queue the client shares by construction.
+    Split: r2->switch-a / r2->switch-b, not their common r1->r2."""
+    users = defaultdict(int)
+    for hops in paths.values():
+        for hop in hops:
+            users[hop] += 1
+    return {s: next((f"{a}->{b}" for a, b in reversed(hops)
+                     if a in topology["routers"] and users[(a, b)] > 1), "")
+            for s, hops in paths.items()}
+
+
 def capacity_series(run: Run) -> dict[tuple[str, str], list[tuple[float, float]]]:
     """Forward bandwidth per directed hop: [(t, Mb/s)], initial value at t=0."""
     default = (run.scenario.get("link_defaults") or {}).get("forward", {}).get("bandwidth_mbps", math.inf)
@@ -500,11 +513,8 @@ def replay(run: Run, params: dict, samples_to: Path | None = None) -> list[dict]
     if not REPLAY.exists():
         sys.exit(f"replay binary missing: {REPLAY} (build moq-testbed target moqx_shadow_replay)")
     paths = {s: path_hops(run, run.pub, s) for s in run.subs}
-    # Group = clients sharing their first router egress (topology ground truth).
-    group_of = {s: f"{p[1][0]}->{p[1][1]}" if len(p) > 1 else "" for s, p in paths.items()}
-    sizes = defaultdict(int)
-    for g in group_of.values():
-        sizes[g] += 1
+    # Group = clients sharing their leaf queue (topology ground truth).
+    group_of = leaf_queues(run.topology, paths)
     with tempfile.TemporaryDirectory() as tmp:
         manifest = Path(tmp) / "manifest.tsv"
         lines = []
@@ -512,8 +522,7 @@ def replay(run: Run, params: dict, samples_to: Path | None = None) -> list[dict]
             acks = run.sender_file(s, "acks")
             if not acks.exists():
                 sys.exit(f"{acks} missing: the run predates per-ACK recording")
-            group = group_of[s] if sizes[group_of[s]] > 1 else ""
-            lines.append("\t".join([s, s, group, s, str(acks), str(run.sender_file(s, "sent"))]))
+            lines.append("\t".join([s, s, group_of[s], s, str(acks), str(run.sender_file(s, "sent"))]))
         manifest.write_text("\n".join(lines) + "\n")
         argv = [str(REPLAY), "--manifest", str(manifest), "--output", tmp]
         if samples_to is None:

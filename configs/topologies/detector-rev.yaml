@@ -1,7 +1,9 @@
-# detector.yaml plus a cross-traffic route in the reverse direction of the
-# shared bottleneck (traffic-rtx behind the switch -> router -> traffic-rrx),
-# for the grouping campaign K3 "revcross": congestion on the ACK path only.
-# Video side identical to detector.yaml.
+# Reverse-path congestion for the grouping campaign K3 "revcross": the ACKs of
+# the shared clients and a cross-traffic route share the router egress r1 -> r0,
+# so the congested queue (and its AQM) sits on a router, not a switch port.
+# Forward: pub -> r0 -> r1 -> switch -> clients, with r1 -> switch the shared
+# bottleneck as in detector.yaml. sub-ctrl branches off r0: its ACKs never
+# cross r1 -> r0. Used with grp-burst-rev.yaml.
 publishers:
   pub: { cc_algo: bbr }
 
@@ -13,7 +15,9 @@ subscribers:
   sub-ctrl: { connects_to: pub, rate_kbps: 2500 }
 
 routers:
-  router:
+  r0:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+  r1:
     queue_metrics: { enabled: true, interval_ms: 25 }
 
 switches:
@@ -23,18 +27,19 @@ traffic:
   senders: [{ id: traffic-tx }, { id: traffic-rtx }]
   receivers: [{ id: traffic-rx }, { id: traffic-rrx }]
   routes:
-    shared: { path: [traffic-tx, router, switch, traffic-rx] }
-    rshared: { path: [traffic-rtx, switch, router, traffic-rrx] }
+    shared: { path: [traffic-tx, r1, switch, traffic-rx] }
+    rshared: { path: [traffic-rtx, r1, r0, traffic-rrx] }
 
 links:
-  - { from: pub, to: router }
-  - { from: router, to: switch }
+  - { from: pub, to: r0 }
+  - { from: r0, to: r1 }
+  - { from: r1, to: switch }
   - { from: switch, to: sub-a }
   - { from: switch, to: sub-b }
   - { from: switch, to: sub-c }
   - { from: switch, to: sub-d }
   - { from: switch, to: traffic-rx }
-  - { from: traffic-tx, to: router }
-  - { from: router, to: sub-ctrl }
-  - { from: switch, to: traffic-rtx }
-  - { from: router, to: traffic-rrx }
+  - { from: traffic-tx, to: r1 }
+  - { from: traffic-rtx, to: r1 }
+  - { from: r0, to: traffic-rrx }
+  - { from: r0, to: sub-ctrl }

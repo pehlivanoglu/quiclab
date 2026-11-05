@@ -10,13 +10,15 @@ import csv
 import json
 import time
 
-from quiclab.config.scenario import Scenario, load_scenario
-from quiclab.config.schema import TopologyConfig, load_topology
+from quiclab.config.scenario import RouterQueue, Scenario, load_scenario
+from quiclab.config.schema import DirectionSpec, TopologyConfig, load_topology
 from quiclab.designer import dump_draft_yaml, schema_contract_issues
 from quiclab.orchestrator.mininet_backend import (
     LiveNetwork,
     MininetBackend,
     RunRecord,
+    _queue_text,
+    apply_live_router_aqm,
     client_facing_router_interfaces,
     iperf_client_argv,
     iperf_json_to_csv,
@@ -100,6 +102,32 @@ def test_application_edges_and_addresses() -> None:
     assert "sub-b" in neighbors["sub-a"] and "router" in neighbors["sub-a"]
 
 
+def test_live_aqm_swap_respects_egress_overrides() -> None:
+    topology = _shared()
+    names = {e.a_iface: e.b for e in edge_interfaces(topology) if e.a == "router"}
+    names |= {e.b_iface: e.a for e in edge_interfaces(topology) if e.b == "router"}
+    specs = {(i, d): DirectionSpec() for i in range(len(topology.links)) for d in ("forward", "reverse")}
+    mixed = RouterQueue(aqm="pfifo", egress={"switch": RouterQueue(aqm="fq_codel")})
+    assert mixed.on("switch").aqm == "fq_codel" and mixed.on("sub-ctrl").aqm == "pfifo"
+    ran = []
+
+    def run(node, command):
+        ran.append((node, command))
+        return 0, ""
+
+    apply_live_router_aqm(topology, "router", RouterQueue(aqm="pie"), mixed, specs, run)
+    assert {node for node, _ in ran} == {"router"}
+    # Each egress is replaced by the router-wide queue; the override is gone.
+    replaced = {names[c.split()[4]]: c.split()[-2:] for _, c in ran}
+    assert set(replaced) == set(names.values())
+    assert all(aqm[0] == "pie" for aqm in replaced.values())
+
+
+def test_queue_text_is_unchanged_without_overrides() -> None:
+    assert _queue_text(RouterQueue(aqm="fq_codel", queue_limit_packets=80)) == "aqm=fq_codel queue_limit_packets=80"
+    assert _queue_text(RouterQueue()) == "aqm=default"
+
+
 def test_router_metrics_follow_receiver_side_egresses() -> None:
     topology = _shared()
     names = {e.a_iface: e.b for e in edge_interfaces(topology) if e.a == "router"}
@@ -113,6 +141,16 @@ def test_router_metrics_follow_receiver_side_egresses() -> None:
     [
         (lambda d: d["links"].append({"from": "sub-a", "to": "switch"}), "declared from/to order"),
         (lambda d: d["routers"].update(nope={}), "not a topology router"),
+        (lambda d: d["events"].append({"at_s": 5, "type": "link", "from": "switch", "to": "sub-a",
+                                        "bandwidth_mbps": 3}), "congestion belongs on a router egress"),
+        (lambda d: d["events"].append({"at_s": 5, "type": "link", "from": "router", "to": "switch",
+                                        "direction": "reverse", "bandwidth_mbps": 3}),
+         "congestion belongs on a router egress"),
+        (lambda d: d["routers"]["router"].update(egress={"sub-a": {"aqm": "pie"}}), "not neighbors of router"),
+        (lambda d: d["routers"]["router"].update(egress={"switch": {"egress": {"pub": {"aqm": "pie"}}}}),
+         "cannot have its own egress"),
+        (lambda d: d["events"].append({"at_s": 5, "type": "aqm", "router": "router",
+                                        "egress": {"sub-a": {"aqm": "pie"}}}), "not neighbors of router"),
         (lambda d: d["routers"]["router"].update(aqm=None), "queue_limit_packets requires an aqm"),
         (lambda d: d["routers"]["router"].update(aqm="red", queue_limit_packets=30), "must exceed red_max_bytes"),
         (lambda d: d["events"].append({"at_s": 95, "type": "leave", "subscriber": "sub-a"}), "after duration_s"),

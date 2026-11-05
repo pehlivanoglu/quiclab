@@ -1,0 +1,24 @@
+# Event benchmark base for detector-rev.yaml: same forward conditions as
+# det-burst.yaml (17.5 Mb/s shared bottleneck r1 -> switch, u ~0.65, client RTTs
+# 20-100 ms). scripts/grouping_campaign.py caps the reverse of r0 -> r1 for the
+# revcross types and adds the events.
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: r0, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: r1, to: switch, forward: { bandwidth_mbps: 17.5 } }
+  - { from: switch, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch, to: sub-d, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: r0, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  r0: { aqm: pfifo, queue_limit_packets: 100 }
+  r1: { aqm: pfifo, queue_limit_packets: 100 }
+
+events: []

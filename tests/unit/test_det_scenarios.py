@@ -1,7 +1,9 @@
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -11,14 +13,65 @@ from quiclab.config.scenario import load_scenario  # noqa: E402
 from quiclab.config.schema import load_topology  # noqa: E402
 
 
+@pytest.mark.parametrize("aqm", sorted(det_matrix.AQMS))
 @pytest.mark.parametrize("topology", sorted(det_matrix.TOPOLOGIES))
 @pytest.mark.parametrize("name", sorted(det_matrix.BURST_SCENARIOS))
-def test_every_event_scenario_validates(name: str, topology: str, tmp_path: Path) -> None:
-    targets = {t for tgt in det_matrix.BURST_SCENARIOS[name].get("targets", ()) for t in tgt.split("+")}
+def test_every_event_scenario_validates(name: str, topology: str, aqm: str, tmp_path: Path) -> None:
+    spec = det_matrix.BURST_SCENARIOS[name]
+    targets = {t for tgt in spec.get("targets", ()) for t in tgt.split("+")}
     if not targets <= set(det_matrix.TOPOLOGIES[topology][2]):
         pytest.skip(f"{name} targets bottlenecks {topology} does not have")
+    if spec["kind"] == "access" and topology != "access":
+        with pytest.raises(SystemExit, match="needs --topology access"):
+            det_matrix.scenario_for(name, aqm, 1, tmp_path, topology)
+        return
     topo = load_topology(ROOT / "configs" / "topologies" / det_matrix.TOPOLOGIES[topology][0])
-    load_scenario(det_matrix.scenario_for(name, "pfifo", 1, tmp_path, topology), topo)
+    load_scenario(det_matrix.scenario_for(name, aqm, 1, tmp_path, topology), topo)
+
+
+def test_isolate_congests_a_private_router_egress() -> None:
+    events, _ = det_matrix.burst_events("isolate", seed=1, topology="access")
+    assert {(e["from"], e["to"]) for e in events} == {("ra", "sub-a"), ("rb", "sub-b"), ("rc", "sub-c"), ("rd", "sub-d")}
+
+
+@pytest.mark.parametrize("topo_file", sorted(p.name for p in (ROOT / "configs" / "topologies").glob("*.yaml")))
+def test_cross_traffic_enters_at_a_router_not_through_a_switch(topo_file: str) -> None:
+    topo = load_topology(ROOT / "configs" / "topologies" / topo_file)
+    for name, route in (topo.traffic.routes.items() if topo.traffic else ()):
+        assert route.path[1] in topo.routers, f"{topo_file} route {name}"
+
+
+@pytest.mark.parametrize("topo,scenario", [
+    ("detector.yaml", "det-burst.yaml"), ("detector-large.yaml", "det-burst-large.yaml"),
+    ("detector-access.yaml", "det-burst-access.yaml"), ("detector-split.yaml", "det-burst-split.yaml"),
+    ("detector-tree8.yaml", "grp-burst-tree8.yaml"), ("detector-rev.yaml", "grp-burst-rev.yaml"),
+    ("flowbot-like.yaml", "flowbot-load-100.yaml"), ("shared.yaml", "shared-cross.yaml"),
+])
+def test_switch_ports_are_faster_than_the_router_egress_feeding_them(topo: str, scenario: str) -> None:
+    t = load_topology(ROOT / "configs" / "topologies" / topo)
+    sc = load_scenario(ROOT / "configs" / "scenarios" / scenario, t)
+    for link in t.links:
+        if link.to in t.switches:
+            feed = sc.initial_link(link.from_, link.to)[0].bandwidth_mbps
+            ports = [sc.initial_link(x.from_, x.to)[0].bandwidth_mbps for x in t.links if x.from_ == link.to]
+            assert all(p > feed for p in ports), f"{link.from_} -> {link.to}: {feed} vs ports {ports}"
+
+
+@pytest.mark.parametrize("topo,expected", [
+    ("detector.yaml", {"sub-a": "router->switch", "sub-d": "router->switch", "sub-ctrl": ""}),
+    ("detector-access.yaml", {"sub-a": "router->switch", "sub-ctrl": ""}),
+    ("detector-rev.yaml", {"sub-a": "r1->switch", "sub-ctrl": ""}),
+    ("detector-split.yaml", {"a1": "r2->switch-a", "b3": "r2->switch-b", "sub-ctrl": ""}),
+    ("detector-tree8.yaml", {"a1": "r1->switch-a", "b1": "r1->switch-b", "c2": "r2->switch-c", "d1": "r2->switch-d",
+                             "sub-ctrl": ""}),
+    ("flowbot-like.yaml", {"a00": "r2->switch-a", "b09": "r2->switch-b"}),
+])
+def test_detector_group_is_the_leaf_queue(topo: str, expected: dict) -> None:
+    raw = yaml.safe_load((ROOT / "configs" / "topologies" / topo).read_text())
+    run = SimpleNamespace(topology=raw)
+    pub = next(iter(raw["publishers"]))
+    groups = det_eval.leaf_queues(raw, {s: det_eval.path_hops(run, pub, s) for s in raw["subscribers"]})
+    assert {s: groups[s] for s in expected} == expected
 
 
 def test_split_bursts_hit_only_their_bottleneck() -> None:

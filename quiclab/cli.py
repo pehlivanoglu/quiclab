@@ -81,8 +81,10 @@ def validate(config: Path, scenario: Path | None) -> None:
     if loaded is not None:
         click.echo(f"OK: {scenario}  duration={loaded.duration_s:g} s")
         for rid in topology.routers:
-            aqm = loaded.router_queue(rid).aqm
-            click.echo(f"  router     {rid:14}  aqm={aqm.value if aqm else 'default'}")
+            queue = loaded.router_queue(rid)
+            overrides = "".join(f"  {peer}:{q.aqm.value if q.aqm else 'default'}"
+                                for peer, q in (queue.egress or {}).items())
+            click.echo(f"  router     {rid:14}  aqm={queue.aqm.value if queue.aqm else 'default'}{overrides}")
         for event in sorted(loaded.events, key=lambda e: e.at_s):
             click.echo(f"  t={event.at_s:<7g} {event.type:6} {event.label or ''}")
 
