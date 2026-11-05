@@ -121,6 +121,11 @@ python -m quiclab design           # drag/drop topology designer on http://127.0
 python -m quiclab run -c configs/topologies/shared.yaml -s configs/scenarios/shared-cross.yaml --vis
 ```
 
+Long matrices run in tmux: `scripts/run_detector_matrix.sh`, or
+`scripts/grouping_campaign.py`. If one stops, the same command with the same
+tag / `--campaign` and `--skip-existing` keeps finished runs and restarts the
+interrupted one.
+
 `run` on the host starts `docker run --rm --privileged quiclab:latest` with
 the checkout, the topology and scenario directories and the runs dir
 bind-mounted at the same paths, plus `/lib/modules` (read-only, for

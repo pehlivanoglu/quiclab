@@ -16,7 +16,9 @@ scenarios on split load the upstream bottleneck.
 Every run matrix gets its own folder .runs/<YYYY-MM-DD_HHMM>_<name>/ (--name,
 default det-[<topology>-]<scenarios>) with a matrix.yaml manifest: name, start
 and finish time, command, git commit, topology, scenarios, AQMs, reps and the
-outcome of every run. Pass --campaign <folder> with --skip-existing to resume. Run ids inside are det-<scenario>-<aqm>-r<rep>;
+outcome of every run. Pass --campaign <folder> with --skip-existing to resume
+with the same arguments: finished runs are kept, an interrupted run's folder is
+deleted and that run starts over. Run ids inside are det-<scenario>-<aqm>-r<rep>;
 scenario copies with the AQM swapped go to <campaign>/_gen/. Each finished run
 is scored (scripts/det_eval.py score) and the per-AQM x scenario tables are
 written to <campaign>/det-report.{md,csv} (burst runs: det-burst-report.{md,csv});
@@ -38,6 +40,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import det_eval  # noqa: E402
+from quiclab.runtime import remove_partial_run, run_finished  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNS = ROOT / ".runs"
@@ -340,7 +343,7 @@ def main() -> None:
                          + "-".join(args.scenarios.split(",")))
     if any(c in name for c in "/\\ ") or not name:
         raise SystemExit(f"--name must be a non-empty folder name without spaces or slashes: {name!r}")
-    campaign = RUNS / (args.campaign or f"{started:%Y-%m-%d_%H%M}_{name}")
+    campaign = RUNS / (Path(args.campaign).name if args.campaign else f"{started:%Y-%m-%d_%H%M}_{name}")
     resumed = (campaign / "matrix.yaml").exists()
     campaign.mkdir(parents=True, exist_ok=True)
     print(f"campaign: {campaign}", flush=True)
@@ -367,7 +370,9 @@ def main() -> None:
             for scn in args.scenarios.split(","):
                 run_id = f"det-{scn}-{aqm}-r{rep}"
                 run_dir = campaign / run_id
-                if not (args.skip_existing and (run_dir / "events.csv").exists()):
+                if not (args.skip_existing and run_finished(run_dir)):
+                    if args.skip_existing:
+                        remove_partial_run(run_dir)
                     scenario = scenario_for(scn, aqm, rep, campaign, args.topology)
                     print(f"== {run_id}", flush=True)
                     status = subprocess.run([sys.executable, "-m", "quiclab", "--runs-dir", str(campaign),

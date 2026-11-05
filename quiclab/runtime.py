@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import re
+import shutil
+import subprocess
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -34,6 +36,26 @@ def validate_run_id(run_id: str) -> None:
         raise OrchestratorError(
             f"invalid run id {run_id!r}: must match {_RUN_ID_RE.pattern}"
         )
+
+
+def run_finished(run_dir: Path) -> bool:
+    """True when the scenario ran to its end: events.csv has its `end` row.
+    An interrupted run has events.csv too, without that row."""
+    events = run_dir / "events.csv"
+    return events.exists() and any(line.startswith("end,") for line in events.read_text().splitlines())
+
+
+def remove_partial_run(run_dir: Path, image: str = "quiclab:latest") -> None:
+    """Delete an unfinished run's folder. A hard-killed container never handed
+    its files back, so they may be root's: then remove them from a container."""
+    if not run_dir.exists():
+        return
+    try:
+        shutil.rmtree(run_dir)
+    except PermissionError:
+        parent = str(run_dir.resolve().parent)
+        subprocess.run(["docker", "run", "--rm", "-v", f"{parent}:{parent}", image, "rm", "-rf", str(run_dir.resolve())],
+                       check=True)
 
 
 def topology_edges(topology: TopologyConfig) -> list[tuple[str, str]]:
