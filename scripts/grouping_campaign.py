@@ -73,6 +73,7 @@ import grouping_baselines as gb  # noqa: E402
 from grouping import Config  # noqa: E402
 from quiclab.config.scenario import load_scenario  # noqa: E402
 from quiclab.config.schema import load_topology  # noqa: E402
+from quiclab.runtime import remove_partial_run, run_finished  # noqa: E402
 
 RUNS = ROOT / ".runs"
 # Extra topologies, registered with det_matrix's table (import time only, the file is not changed).
@@ -333,9 +334,11 @@ def run_campaign(k: str, kdir: Path, reps: int, skip_existing: bool, dry: bool) 
         if dry:
             continue
         run_dir = kdir / rid
-        if skip_existing and (run_dir / "events.csv").exists():
+        if skip_existing and run_finished(run_dir):
             manifest["runs"].setdefault(rid, "kept")
             continue
+        if skip_existing:
+            remove_partial_run(run_dir)
         print(f"== {k} {rid} ({duration:.0f} s)", flush=True)
         status = subprocess.run([sys.executable, "-m", "quiclab", "--runs-dir", str(kdir), "run", "-c", str(topo_file),
                                  "-s", str(scenario), "--run-id", rid], cwd=ROOT)
@@ -407,7 +410,7 @@ def med(vals: list) -> float | None:
 
 
 def report(k: str, kdir: Path, cfg: Config) -> None:
-    runs = sorted(p for p in kdir.glob("grp-*") if (p / "events.csv").exists())
+    runs = sorted(p for p in kdir.glob("grp-*") if run_finished(p))
     results = [score_run(r, cfg) for r in runs]
     (kdir / "results.json").write_text(json.dumps(results, indent=1, default=str))
     lines = [f"# Grouping campaign {k}", "", f"{len(runs)} runs, engine overrides {ENGINE_SET}, "

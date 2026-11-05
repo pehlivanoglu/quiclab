@@ -25,7 +25,7 @@ from quiclab.orchestrator.mininet_backend import (
 )
 from quiclab.orchestrator.scenario_runner import EventLog, ScenarioRunner
 from quiclab.orchestrator.routing import addressed_links
-from quiclab.runtime import edge_interfaces, node_loopback_ips, topology_edges
+from quiclab.runtime import edge_interfaces, node_loopback_ips, remove_partial_run, run_finished, topology_edges
 from quiclab.visualizer import (
     read_last_row,
     read_netns_counters,
@@ -351,3 +351,20 @@ def test_queue_limit_reaches_every_aqm(aqm: str, expected: str) -> None:
 
     commands = shaping_commands("r-eth0", DirectionSpec(bandwidth_mbps=50), AqmKind(aqm), None, 300)
     assert expected in commands[-1]
+
+
+def test_run_finished_needs_the_end_row(tmp_path: Path) -> None:
+    assert not run_finished(tmp_path)
+    events = tmp_path / "events.csv"
+    events.write_text("event,at_s\nepoch,0\nlink,5\nteardown,\n")  # Ctrl-C: teardown without end
+    assert not run_finished(tmp_path)
+    events.write_text("event,at_s\nepoch,0\nend,300\nteardown,\n")
+    assert run_finished(tmp_path)
+
+
+def test_remove_partial_run(tmp_path: Path) -> None:
+    run = tmp_path / "r"
+    (run / "logs").mkdir(parents=True)
+    remove_partial_run(run)
+    assert not run.exists()
+    remove_partial_run(run)  # already gone: no error
