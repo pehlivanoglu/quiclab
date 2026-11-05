@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Run the detector matrix: every AQM x det-* scenario x repetition, then score.
 
-    python3 scripts/det_matrix.py [--reps N] [--aqms a,b] [--scenarios a,b] [--topology base|large|split]
+    python3 scripts/det_matrix.py [--reps N] [--aqms a,b] [--scenarios a,b] [--topology base|large|split|access]
                                   [--name NAME] [--campaign DIR] [--skip-existing]
 
 Scenarios: capacity, cbr, ppbp (det-<name>.yaml) and the event benchmark
 generated from det-burst.yaml (seed = rep, see BURST_SCENARIOS): burstcap,
-burstudp, bursttiny, ramp, isolate, tcpcubic, tcpbbr, burstcaplowrtt,
+burstudp, bursttiny, ramp, isolate (--topology access only), tcpcubic, tcpbbr, burstcaplowrtt,
 burstcaphighrtt, burstlong, burstcapshallow, burstcapdeep, onoff, revdelay,
 the no-congestion false-alarm runs calm030, calm065, calm090,
 calmcbr090, delaystep, randloss, and for --topology split (upstream + two
@@ -47,6 +47,8 @@ RUNS = ROOT / ".runs"
 TOPOLOGIES = {
     "base": ("detector.yaml", "det-burst.yaml", {"main": ("router", "switch", "shared")}, "main"),
     "large": ("detector-large.yaml", "det-burst-large.yaml", {"main": ("router", "switch", "shared")}, "main"),
+    # base + one access router per client: private bottlenecks on router egresses (isolate).
+    "access": ("detector-access.yaml", "det-burst-access.yaml", {"main": ("router", "switch", "shared")}, "main"),
     # Upstream r1 -> r2 (both groups), downstream r2 -> switch-a / switch-b (one group each).
     "split": ("detector-split.yaml", "det-burst-split.yaml",
               {"up": ("r1", "r2", "shared"), "a": ("r2", "switch-a", "cross-a"), "b": ("r2", "switch-b", "cross-b")},
@@ -79,8 +81,8 @@ BURST_SCENARIOS = {
     # Slow capacity ramps through u = 0.9, 0.95, ..., peak, ..., 0.9 (2 s steps):
     # borderline load; truth = the time above u = 1.
     "ramp": {"kind": "ramp", "u": (1.05, 1.1, 1.2), "d": (0,), "repeats": 4},
-    # One client's own access link drops (netem FIFO, no router AQM): only that
-    # client may alarm. AQM-independent, so it runs once (first AQM).
+    # One client's own access router egress drops: only that client may alarm.
+    # --topology access only: switches never congest.
     "isolate": {"kind": "access", "u": (1.3, 2.0), "d": (1, 2, 4), "repeats": 1, "per_client": True},
     # Competing elastic TCP (iperf3 bulk, one connection) for d seconds.
     "tcpcubic": {"kind": "tcp", "cc": "cubic", "u": (0,), "d": (2, 4, 8), "repeats": 5},
@@ -116,7 +118,6 @@ BURST_SCENARIOS = {
     "splitcap": {"kind": "cap", "u": (1.3, 2.0), "d": (1, 2, 4), "repeats": 1, "targets": ("up", "a", "b", "a+up")},
     "splitudp": {"kind": "udp", "u": (1.3, 2.0), "d": (1, 2, 4), "repeats": 1, "targets": ("up", "a", "b")},
 }
-AQM_INDEPENDENT = {"isolate"}
 FEED_DELAY_MS = 5  # delay both ways of the publisher's first link in det-burst*.yaml (delaystep, randloss)
 
 
@@ -252,7 +253,18 @@ def base_mbps(name: str, topology: str, target: str) -> float:
     return round(h["demand"] / spec["base_u"], 3) if "base_u" in spec else h["base"]
 
 
+def red_thresholds(n: dict, limit: int | None) -> dict:
+    """RED thresholds ~15 / 45 ms at the smallest bottleneck's capacity, inside a shallower queue if limit says so."""
+    bytes_per_ms = min(h["base"] for h in n["hops"].values()) * 1e6 / 8 / 1000
+    hi = int(45 * bytes_per_ms)
+    if limit:
+        hi = min(hi, int(0.75 * limit * 1500))
+    return {"red_min_bytes": min(int(15 * bytes_per_ms), hi // 3), "red_max_bytes": hi}
+
+
 def scenario_for(name: str, aqm: str, rep: int = 1, campaign: Path = RUNS, topology: str = "base") -> Path:
+    if BURST_SCENARIOS.get(name, {}).get("kind") == "access" and topology != "access":
+        raise SystemExit(f"scenario {name} congests per-client links: it needs --topology access")
     if name in BURST_SCENARIOS:
         base_file = TOPOLOGIES[topology][1]
     elif topology == "base":
@@ -290,9 +302,7 @@ def scenario_for(name: str, aqm: str, rep: int = 1, campaign: Path = RUNS, topol
         router.clear()
         router.update({"aqm": aqm, "queue_limit_packets": limit, **AQMS[aqm]})
         if aqm == "red":
-            # Thresholds ~15 / 45 ms at the smallest bottleneck's capacity.
-            bytes_per_ms = min(h["base"] for h in n["hops"].values()) * 1e6 / 8 / 1000
-            router.update({"red_min_bytes": int(15 * bytes_per_ms), "red_max_bytes": int(45 * bytes_per_ms)})
+            router.update(red_thresholds(n, limit))
     out = campaign / "_gen" / f"det-{name}-{aqm}-r{rep}.yaml"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(yaml.safe_dump(data, sort_keys=False))
@@ -312,7 +322,7 @@ def write_manifest(campaign: Path, info: dict) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--reps", type=int, default=3)
+    ap.add_argument("--reps", type=int, default=2)
     ap.add_argument("--aqms", default=",".join(AQMS))
     ap.add_argument("--scenarios", default=",".join(SCENARIOS))
     ap.add_argument("--skip-existing", action="store_true")
@@ -321,6 +331,9 @@ def main() -> None:
     ap.add_argument("--campaign", default=None, help="existing folder under .runs/ to resume (with --skip-existing)")
     ap.add_argument("--topology", default="base", choices=sorted(TOPOLOGIES))
     args = ap.parse_args()
+    if not det_eval.REPLAY.exists():
+        print(f"WARNING: {det_eval.REPLAY} missing: runs are recorded but not scored. "
+              "Afterwards: det_eval.py score <run>... and det_eval.py report <run>...", flush=True)
     topology_file = ROOT / "configs" / "topologies" / TOPOLOGIES[args.topology][0]
     started = datetime.datetime.now()
     name = args.name or ("det-" + ("" if args.topology == "base" else f"{args.topology}-")
@@ -350,13 +363,11 @@ def main() -> None:
     write_manifest(campaign, manifest)
     done = []
     for rep in range(1, args.reps + 1):
-        for i, aqm in enumerate(args.aqms.split(",")):
+        for aqm in args.aqms.split(","):
             for scn in args.scenarios.split(","):
-                if scn in AQM_INDEPENDENT and i > 0:
-                    continue
                 run_id = f"det-{scn}-{aqm}-r{rep}"
                 run_dir = campaign / run_id
-                if not (args.skip_existing and (run_dir / "detector" / "detections.csv").exists()):
+                if not (args.skip_existing and (run_dir / "events.csv").exists()):
                     scenario = scenario_for(scn, aqm, rep, campaign, args.topology)
                     print(f"== {run_id}", flush=True)
                     status = subprocess.run([sys.executable, "-m", "quiclab", "--runs-dir", str(campaign),
@@ -367,7 +378,10 @@ def main() -> None:
                         manifest["runs"][run_id] = f"failed ({status.returncode})"
                         write_manifest(campaign, manifest)
                         continue
-                    det_eval.score(run_dir)
+                    try:
+                        det_eval.score(run_dir)
+                    except SystemExit as e:  # no replay binary: the run itself is fine, score it later
+                        print(f"   not scored: {e}", flush=True)
                     manifest["runs"][run_id] = f"done {datetime.datetime.now():%Y-%m-%dT%H:%M:%S}"
                     write_manifest(campaign, manifest)
                 done.append(run_dir)

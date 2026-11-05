@@ -3,6 +3,9 @@ scripts/grouping_baselines.py): hierarchical pair truth and baseline scoring."""
 
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 import grouping_adapter as ga  # noqa: E402
@@ -66,3 +69,15 @@ def test_score_sbd_majority_over_burst_windows():
     assert m["final"]["vs_link"]["recall"] < 1.0
     # Running majority: b pairs reach half only during the b burst, a-b pairs fall below it.
     assert 50.0 <= m["t_correct"] <= 54.0
+
+
+def test_window_hits_only_count_clients_the_plan_expected(monkeypatch):
+    # Two links congested at once: both groups have congested bins in both windows.
+    subs = ["a1", "b1", "ctrl"]
+    bins = {"a1": np.array([10.5, 20.5]), "b1": np.array([10.5, 20.5]), "ctrl": np.array([])}
+    monkeypatch.setattr(ga, "congested_bins", lambda _run, s: bins[s])
+    run = SimpleNamespace(subs=subs)
+    windows = [{"start": 10, "end": 11, "kind": "cap", "target": "a", "expected": ["a1"]},
+               {"start": 10, "end": 11, "kind": "cap", "target": "b", "expected": ["b1"]},
+               {"start": 20, "end": 21, "kind": "rev", "target": "rev", "expected": []}]
+    assert [b["hit"] for b in ga.measured_bursts(run, windows)] == [["a1"], ["b1"], []]

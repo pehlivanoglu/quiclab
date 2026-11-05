@@ -1,0 +1,27 @@
+# Event benchmark base for detector-access.yaml: same conditions as det-burst.yaml
+# (17.5 Mb/s shared bottleneck, u ~0.65, client RTTs 20-100 ms), plus an access
+# router per client. Access queues hold ~70 ms of the client's own rendition, as
+# the shared queue does at the bottleneck (at least 10 packets).
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 100 }
+  reverse: { bandwidth_mbps: 100 }
+
+links:
+  - { from: pub, to: router, forward: { bandwidth_mbps: 100, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: router, to: switch, forward: { bandwidth_mbps: 17.5 } }
+  - { from: ra, to: sub-a, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: rb, to: sub-b, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: rc, to: sub-c, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: rd, to: sub-d, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: router, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  router: { aqm: pfifo, queue_limit_packets: 100 }
+  ra: { aqm: pfifo, queue_limit_packets: 10 }
+  rb: { aqm: pfifo, queue_limit_packets: 15 }
+  rc: { aqm: pfifo, queue_limit_packets: 15 }
+  rd: { aqm: pfifo, queue_limit_packets: 30 }
+
+events: []

@@ -1,0 +1,51 @@
+# detector.yaml with one access router per shared client, for per-client
+# (private) congestion: the congested queue is always a router egress, never a
+# switch port. router -> switch is the shared bottleneck and the switch only
+# fans out; ra -> sub-a ... rd -> sub-d are the private bottlenecks, which no
+# other client crosses. Used with det-burst-access.yaml (det_matrix isolate,
+# grouping campaign K5).
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  sub-a: { connects_to: pub, rate_kbps: 1000 }
+  sub-b: { connects_to: pub, rate_kbps: 2500, phase_ms: 250 }
+  sub-c: { connects_to: pub, rate_kbps: 2500, phase_ms: 500 }
+  sub-d: { connects_to: pub, rate_kbps: 5000, phase_ms: 750 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500 }
+
+routers:
+  router:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+  ra:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+  rb:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+  rc:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+  rd:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+
+switches:
+  switch: {}
+
+traffic:
+  senders: [{ id: traffic-tx }]
+  receivers: [{ id: traffic-rx }]
+  routes:
+    shared: { path: [traffic-tx, router, switch, traffic-rx] }
+
+links:
+  - { from: pub, to: router }
+  - { from: router, to: switch }
+  - { from: switch, to: ra }
+  - { from: switch, to: rb }
+  - { from: switch, to: rc }
+  - { from: switch, to: rd }
+  - { from: ra, to: sub-a }
+  - { from: rb, to: sub-b }
+  - { from: rc, to: sub-c }
+  - { from: rd, to: sub-d }
+  - { from: switch, to: traffic-rx }
+  - { from: traffic-tx, to: router }
+  - { from: router, to: sub-ctrl }

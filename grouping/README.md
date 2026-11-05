@@ -18,7 +18,8 @@ scripts/grouping_adapter.py   quiclab run -> onset log (shadow / OWD oracle / bu
 scripts/grouping_baselines.py SBD baselines (DCW, rmcatSBD, dcSBD) scored as grouping methods next to ECG
 scripts/grouping_campaign.py  campaigns K1-K6: plan, run one after another, report per campaign when it finishes
 configs/topologies/detector-tree8.yaml + configs/scenarios/grp-burst-tree8.yaml   K6 three-level tree (9 clients)
-configs/topologies/detector-rev.yaml   detector.yaml + a cross-traffic route on the ACK path (K3 revcross)
+configs/topologies/detector-rev.yaml + configs/scenarios/grp-burst-rev.yaml   ACKs and a cross-traffic route share the router egress r1 -> r0 (K3 revcross)
+configs/topologies/detector-access.yaml + configs/scenarios/det-burst-access.yaml   one access router per client: private bottlenecks (K5, isolate)
 tests/unit/test_grouping.py   52 tests (alignment, clustering, weights, cases, scenarios, determinism)
 tests/unit/test_grouping_tools.py  hierarchical pair truth, baseline scoring
 tests/unit/test_grouping_campaign.py  planner: every type validates, seeded, windows vs events, join/leave rules
@@ -188,21 +189,24 @@ is done (adapter with the three onset sources, θ = 0.6, then the SBD scorer):
 
 ```bash
 .venv/bin/python scripts/grouping_campaign.py --plan                  # YAMLs + budget, runs nothing
-.venv/bin/python scripts/grouping_campaign.py --ks K1,K2,K3,K5,K6 --reps 3    # in tmux; ~10.5 h + setup
+.venv/bin/python scripts/grouping_campaign.py --ks K1,K2,K3,K5,K6 --reps 3    # in tmux; ~10.4 h + setup
 .venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --skip-existing   # resume
 .venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --set theta_J=0.7 theta_cov=0.7
 ```
 
 | K | topology | types | AQMs | runs (3 reps) | what it decides |
 |---|---|---|---|---|---|
-| K1 hier | split (3+3) | cells u {1.3, 2} × d {1, 2, 4} × {up, a, b, a+b, a+b@0.5, a+b@1, a+b@2, a+up} | 4 uniform + mixa (r1 pfifo / r2 fq_codel) + mixb | 18 × 12.7 min | hierarchy (A / B / GLOBAL), false GLOBAL on simultaneous independent events, δ_max / hold on offsets, serial bottleneck |
-| K2 part | detector | Poisson on/off UDP, u ∈ {1.05, 1.1, 1.15, 1.3} per run, on U(1, 4) s (15 % U(10, 20)), off U(5, 20) | pfifo, fq_codel | 24 × 5 min | share of a leaf that alarms at light load → θ; long episodes |
-| K3 rev | detector / detector-rev | revasym (reverse delays 5/40/80/120), revjit5/10/20, revcross (ACK-path bursts only, reverse link 10 Mb/s), revcrossmix | pfifo, fq_codel | 36 × 3–6 min | alignment error, false onsets from jitter, correlated false onsets from reverse congestion |
-| K5 mixed | detector | shared cap bursts + per-client access drops shuffled; sub-d joins at 60 s, sub-b leaves at 240 s | 4 | 12 × 6 min | private events leave the leaf alone, Case D→A for the joiner, the leaver's decay |
+| K1 hier | split (3+3) | cells u {1.3, 2} × d {1, 2, 4} × {up, a, b, a+b, a+b@0.5, a+b@1, a+b@2, a+up} | 4 uniform + mixa (r1 pfifo / r2 fq_codel) + mixb (r1 fq_codel / r2 pfifo) + mixab (r1 pfifo; r2: branch a pfifo, branch b fq_codel) | 21 × 12.7 min | hierarchy (A / B / GLOBAL), false GLOBAL on simultaneous independent events, δ_max / hold on offsets, serial bottleneck |
+| K2 part | detector | Poisson on/off capacity drops, u ∈ {1.05, 1.1, 1.15, 1.3} per run, on U(1, 4) s (15 % U(10, 20)), off U(5, 20) | pfifo (shared queue), fq_codel (per-flow queues: only clients above their fair share are hit) | 24 × 5 min | share of a leaf that alarms at light load → θ; long episodes |
+| K3 rev | detector / detector-rev | revasym (reverse delays 5/40/80/120), revjit10, revcross (ACK-path bursts only, router egress r1 → r0 at 10 Mb/s), revcrossmix | pfifo, fq_codel (ACKs isolated: control) | 24 × 3–6 min | alignment error, false onsets from jitter, correlated false onsets from reverse congestion |
+| K5 mixed | detector-access | shared cap bursts + per-client access router drops shuffled; sub-d joins at 60 s, sub-b leaves at 240 s | 4 | 12 × 6 min | private events leave the leaf alone, Case D→A for the joiner, the leaver's decay |
 | K6 depth | tree8 (4 × 2) | {A, B, C, D, X, Y, root, A+C} | pfifo, fq_codel | 6 × 12.7 min | two-flow leaves, two-level LCA, A+C simultaneous |
 
-Per-router AQM is all the schema offers, so "mixed AQM" on the split topology
-means upstream vs downstream (r1 vs r2), not branch a vs branch b.
+"Mixed AQM" on the split topology: mixa / mixb differ upstream vs downstream
+(r1 vs r2), mixab differs between the branches through r2's per-egress `egress`
+override. det_eval's own model reads one AQM per run (the first router's), so
+its detector tables are approximate on all three; the grouping truth below does
+not use that model.
 
 Truth for these runs is not det_eval's model: each run carries its stimulus
 windows (`<run>/grouping/windows.json`, from the plan) and a client counts as
@@ -218,7 +222,10 @@ same P/R, same t_correct as with `bursts.csv`. The report adds a case matrix
 must not be GLOBAL, `up`/`root` must.
 
 det_eval.score still runs after every run (best effort, for the detector's
-own tables); nothing here changes detector code or outputs.
+own tables). The replay's shared-group context is the client's leaf queue
+(det_eval.leaf_queues), on every topology; on one-bottleneck topologies that
+equals the old "first router egress". Without the replay binary the campaign
+continues on the owd and truth sources: score the runs later, then --report-only.
 
 ## Ambiguities in the brief and how they were resolved
 
@@ -299,6 +306,10 @@ own tables); nothing here changes detector code or outputs.
   driven by the same external process.
 - Under FQ-CoDel the hit set depends on severity; groups are
   severity-dependent (seen on the large fq_codel runs: 6–7 of 8 clients).
+  This is the chosen truth definition (2026-11-05): `pairs_leaf` asks whether
+  clients congest together behind one stimulated link, not whether they share a
+  queue. One window where b3 is hit without b2 makes that pair DIFFERENT, so a
+  leaf of clients on one fq_codel egress can score as a false positive.
 - Reverse-path congestion is grouped like forward congestion.
 - Coincidence pairs (two noise onsets within δ) are the main source of
   junk structure at δ = 0.3 s; the SOLO pair rule removes them over time but
