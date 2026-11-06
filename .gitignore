@@ -3,3 +3,4 @@
 qvideo/build*/
 __pycache__/
 .pytest_cache/
+shadow/build/

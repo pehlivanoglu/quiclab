@@ -6,8 +6,8 @@
     python3 scripts/det_eval.py bursts .runs/<run> [...]     # burst benchmark tables
 
 score: rebuilds network truth per subscriber from the run itself (link
-capacities, video demand, cross traffic), replays the moq-testbed shadow
-detector (moqx_shadow_replay) over the sender's per-ACK record
+capacities, video demand, cross traffic), replays the shadow detector
+(shadow/, moqx_shadow_replay) over the sender's per-ACK record
 (publishers/<pub>/<sub>-acks.csv, -sent.csv) and writes <run>/detector/
 truth.csv, alarms.csv, detections.csv.
 
@@ -58,7 +58,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from quiclab.config.schema import load_topology  # noqa: E402
 from quiclab.runtime import edge_interfaces  # noqa: E402
-REPLAY = ROOT.parent / "moq-testbed" / "build" / "moqx_shadow_replay"
+REPLAY = ROOT / "shadow" / "build" / "moqx_shadow_replay"
 
 CONGESTED_U = 1.0
 CLEAR_U = 0.85
@@ -511,7 +511,7 @@ def replay(run: Run, params: dict, samples_to: Path | None = None) -> list[dict]
     samples_to: also keep the first variant's per-ACK detector columns there,
     one <subscriber>.csv each (detector state for plots)."""
     if not REPLAY.exists():
-        sys.exit(f"replay binary missing: {REPLAY} (build moq-testbed target moqx_shadow_replay)")
+        sys.exit(f"replay binary missing: {REPLAY} (cmake -S shadow -B shadow/build -DCMAKE_BUILD_TYPE=Release && cmake --build shadow/build)")
     paths = {s: path_hops(run, run.pub, s) for s in run.subs}
     # Group = clients sharing their leaf queue (topology ground truth).
     group_of = leaf_queues(run.topology, paths)
