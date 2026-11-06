@@ -11,7 +11,7 @@
 # an interrupted run starts over. A run that fails is recorded in matrix.yaml and
 # the matrix goes on; running the script again retries it.
 #
-# Without ../moq-testbed/build/moqx_shadow_replay the runs are recorded but not
+# Without shadow/build/moqx_shadow_replay (README "Usage") the runs are recorded but not
 # scored. Afterwards: .venv/bin/python scripts/det_eval.py score .runs/<TAG>_det-*/det-*
 set -euo pipefail
 cd "$(dirname "$0")/.."

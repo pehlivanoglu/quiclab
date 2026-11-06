@@ -116,6 +116,7 @@ tooling and a WebTransport proxygen patch; nothing qvideo uses.
 ```bash
 python -m quiclab build qvideo     # init pinned moxygen submodule, cmake + ninja + selftest -> qvideo/build/
 python -m quiclab build image      # quiclab:latest
+cmake -S shadow -B shadow/build -DCMAKE_BUILD_TYPE=Release && cmake --build shadow/build   # detector replay (det_eval)
 python -m quiclab validate -c configs/topologies/shared.yaml -s configs/scenarios/shared-cross.yaml
 python -m quiclab design           # drag/drop topology designer on http://127.0.0.1:8765/
 python -m quiclab run -c configs/topologies/shared.yaml -s configs/scenarios/shared-cross.yaml --vis
