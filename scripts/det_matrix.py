@@ -24,6 +24,12 @@ is scored (scripts/det_eval.py score) and the per-AQM x scenario tables are
 written to <campaign>/det-report.{md,csv} (burst runs: det-burst-report.{md,csv});
 the same against the measured truth (runs with the OWD oracle) go to
 det-report-measured.* and det-burst-report-measured.*.
+Each finished run also gets its GT1 queue truth (<run>/truth/gt1.csv, scripts/gt1.py),
+GT2 demand truth (<run>/truth/gt2.csv, scripts/gt2.py), GT3 flow-impact truth
+(<run>/truth/gt3.csv, scripts/gt3.py) and the plots of all three
+(<run>/truth/plots/, scripts/truth_plot.py); the campaign index <campaign>/truth-plots.html
+is refreshed after every run, and <campaign>/gt1-report.md and gt2-report.md are
+written once when the matrix ends.
 """
 
 from __future__ import annotations
@@ -40,6 +46,10 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import det_eval  # noqa: E402
+import gt1  # noqa: E402
+import gt2  # noqa: E402
+import gt3  # noqa: E402
+import truth_plot  # noqa: E402
 from quiclab.runtime import remove_partial_run, run_finished  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -387,9 +397,19 @@ def main() -> None:
                         det_eval.score(run_dir)
                     except SystemExit as e:  # no replay binary: the run itself is fine, score it later
                         print(f"   not scored: {e}", flush=True)
+                    # GT1 / GT2 truth and their plots are analysis: a failure is reported, the matrix
+                    # goes on (redo by hand: gt1.py score <run>, gt2.py score <run>, truth_plot.py <run>).
+                    try:
+                        gt1.score(run_dir, gt1.Params())
+                        gt2.score(run_dir, gt2.Params())
+                        gt3.score(run_dir, gt3.Params())
+                        print(f"   {truth_plot.plot(run_dir)}", flush=True)
+                    except (Exception, SystemExit) as e:  # the plots replay the shadow too
+                        print(f"   GT1 / GT2 / GT3 not scored / plotted: {e!r}", flush=True)
                     manifest["runs"][run_id] = f"done {datetime.datetime.now():%Y-%m-%dT%H:%M:%S}"
                     write_manifest(campaign, manifest)
                 done.append(run_dir)
+                truth_plot.index(campaign, [r for r in done if (r / "truth" / "plots" / "overview.png").exists()])
                 # Burst runs have bursts.csv; the rest (capacity/cbr/ppbp, calm, delaystep, randloss)
                 # are onset / false-alarm scored only.
                 for tag, suffix in (("detector", ""), ("detector/measured", "-measured")):
@@ -404,6 +424,11 @@ def main() -> None:
                         text, table = det_eval.burst_report(bursts, tag=tag)
                         (campaign / f"det-burst-report{suffix}.md").write_text(text)
                         det_eval.write_csv(campaign / f"det-burst-report{suffix}.csv", table)
+    for name, module, params in (("GT1", gt1, gt1.Params()), ("GT2", gt2, gt2.Params())):
+        try:  # once per campaign: the parameter sweeps read every run again
+            module.report(campaign, params)
+        except Exception as e:
+            print(f"!! {name} report failed: {e!r} (redo: {name.lower()}.py report {campaign})", flush=True)
     manifest["finished"] = datetime.datetime.now().isoformat(timespec="seconds")
     write_manifest(campaign, manifest)
 
