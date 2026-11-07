@@ -505,11 +505,13 @@ def hop_metrics_file(run: Run, hop: tuple[str, str]) -> Path | None:
 
 # ── detector replay ──────────────────────────────────────────────────────
 
-def replay(run: Run, params: dict, samples_to: Path | None = None) -> list[dict]:
+def replay(run: Run, params: dict, samples_to: Path | None = None,
+           acks: dict[str, Path] | None = None) -> list[dict]:
     """Detector events with run time t and subscriber, from moqx_shadow_replay.
 
     samples_to: also keep the first variant's per-ACK detector columns there,
-    one <subscriber>.csv each (detector state for plots)."""
+    one <subscriber>.csv each (detector state for plots). acks: per subscriber,
+    a replacement per-ACK input file (e.g. the one-way-delay mode, owd_mode.py)."""
     if not REPLAY.exists():
         sys.exit(f"replay binary missing: {REPLAY} (cmake -S shadow -B shadow/build -DCMAKE_BUILD_TYPE=Release && cmake --build shadow/build)")
     paths = {s: path_hops(run, run.pub, s) for s in run.subs}
@@ -519,10 +521,10 @@ def replay(run: Run, params: dict, samples_to: Path | None = None) -> list[dict]
         manifest = Path(tmp) / "manifest.tsv"
         lines = []
         for s in run.subs:
-            acks = run.sender_file(s, "acks")
-            if not acks.exists():
-                sys.exit(f"{acks} missing: the run predates per-ACK recording")
-            lines.append("\t".join([s, s, group_of[s], s, str(acks), str(run.sender_file(s, "sent"))]))
+            ack_file = (acks or {}).get(s, run.sender_file(s, "acks"))
+            if not ack_file.exists():
+                sys.exit(f"{ack_file} missing: the run predates per-ACK recording")
+            lines.append("\t".join([s, s, group_of[s], s, str(ack_file), str(run.sender_file(s, "sent"))]))
         manifest.write_text("\n".join(lines) + "\n")
         argv = [str(REPLAY), "--manifest", str(manifest), "--output", tmp]
         if samples_to is None:
