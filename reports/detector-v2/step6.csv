@@ -1,0 +1,601 @@
+run,aqm,scenario,topology,rep,detector,episodes,detected,alarm_on,tp,fp,clear_s,harm_eps_200,harm_eps_400,harm_eps_600,harm_missed_200,harm_missed_400,harm_missed_600
+det-isolate-fq_codel-r1,fq_codel,isolate,access,r1,v2,26,24,25,24,1,474.495,5,5,5,0,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,access,r1,v2-fixed,26,25,26,25,1,474.495,5,5,5,0,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,access,r1,v1 (reference),26,23,24,23,0,474.495,5,5,5,1,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,access,r2,v2,25,24,24,24,6,478.005,14,11,10,1,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,access,r2,v2-fixed,25,24,24,24,1,478.005,14,11,10,1,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,access,r2,v1 (reference),25,21,21,21,1,478.005,14,11,10,1,0,0
+det-isolate-pfifo-r1,pfifo,isolate,access,r1,v2,25,24,25,24,4,457.9,6,6,6,1,1,1
+det-isolate-pfifo-r1,pfifo,isolate,access,r1,v2-fixed,25,24,25,24,0,457.9,6,6,6,1,1,1
+det-isolate-pfifo-r1,pfifo,isolate,access,r1,v1 (reference),25,24,25,24,3,457.9,6,6,6,1,1,1
+det-isolate-pfifo-r2,pfifo,isolate,access,r2,v2,32,26,31,26,0,460.735,11,10,9,0,0,0
+det-isolate-pfifo-r2,pfifo,isolate,access,r2,v2-fixed,32,26,31,26,0,460.735,11,10,9,0,0,0
+det-isolate-pfifo-r2,pfifo,isolate,access,r2,v1 (reference),32,26,28,26,1,460.735,11,10,9,0,0,0
+det-isolate-pie-r1,pie,isolate,access,r1,v2,27,24,26,24,2,462.245,8,8,8,1,1,1
+det-isolate-pie-r1,pie,isolate,access,r1,v2-fixed,27,24,26,24,0,462.245,8,8,8,1,1,1
+det-isolate-pie-r1,pie,isolate,access,r1,v1 (reference),27,26,26,26,1,462.245,8,8,8,1,1,1
+det-isolate-pie-r2,pie,isolate,access,r2,v2,25,23,23,23,0,459.8,10,9,7,1,1,0
+det-isolate-pie-r2,pie,isolate,access,r2,v2-fixed,25,23,23,23,0,459.8,10,9,7,1,1,0
+det-isolate-pie-r2,pie,isolate,access,r2,v1 (reference),25,23,23,23,2,459.8,10,9,7,1,1,0
+det-isolate-red-r1,red,isolate,access,r1,v2,27,24,26,24,0,452.53499999999997,7,7,7,0,0,0
+det-isolate-red-r1,red,isolate,access,r1,v2-fixed,27,24,26,24,0,452.53499999999997,7,7,7,1,1,1
+det-isolate-red-r1,red,isolate,access,r1,v1 (reference),27,24,26,24,0,452.53499999999997,7,7,7,2,1,1
+det-isolate-red-r2,red,isolate,access,r2,v2,27,25,26,25,3,475.345,16,13,12,1,0,0
+det-isolate-red-r2,red,isolate,access,r2,v2-fixed,27,25,26,25,1,475.345,16,13,12,1,0,0
+det-isolate-red-r2,red,isolate,access,r2,v1 (reference),27,25,25,25,1,475.345,16,13,12,1,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,base,r1,v2,47,46,47,46,5,346.18000000000006,9,9,9,1,1,1
+det-burstcap-fq_codel-r1,fq_codel,burstcap,base,r1,v2-fixed,47,46,47,46,3,346.18000000000006,9,9,9,1,1,1
+det-burstcap-fq_codel-r1,fq_codel,burstcap,base,r1,v1 (reference),47,46,46,46,2,346.18000000000006,9,9,9,1,1,1
+det-burstcap-fq_codel-r2,fq_codel,burstcap,base,r2,v2,49,46,49,46,2,349.12,15,14,13,0,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,base,r2,v2-fixed,49,47,49,47,1,349.12,15,14,13,0,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,base,r2,v1 (reference),49,46,46,46,2,349.12,15,14,13,0,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,base,r1,v2,77,73,77,73,0,309.49,16,15,11,1,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,base,r1,v2-fixed,77,72,76,72,0,309.49,16,15,11,1,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,base,r1,v1 (reference),77,72,76,72,0,309.49,16,15,11,2,1,1
+det-burstcap-pfifo-r2,pfifo,burstcap,base,r2,v2,83,72,83,72,0,325.21,9,9,9,0,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,base,r2,v2-fixed,83,72,83,72,0,325.21,9,9,9,0,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,base,r2,v1 (reference),83,77,83,77,0,325.21,9,9,9,1,1,1
+det-burstcap-pie-r1,pie,burstcap,base,r1,v2,73,72,72,72,2,304.285,13,13,12,0,0,0
+det-burstcap-pie-r1,pie,burstcap,base,r1,v2-fixed,73,72,72,72,2,304.285,13,13,12,0,0,0
+det-burstcap-pie-r1,pie,burstcap,base,r1,v1 (reference),73,71,71,71,1,304.285,13,13,12,1,1,1
+det-burstcap-pie-r2,pie,burstcap,base,r2,v2,73,72,72,72,0,315.12,14,14,14,0,0,0
+det-burstcap-pie-r2,pie,burstcap,base,r2,v2-fixed,73,72,72,72,0,315.12,14,14,14,0,0,0
+det-burstcap-pie-r2,pie,burstcap,base,r2,v1 (reference),73,72,72,72,0,315.12,14,14,14,1,1,0
+det-burstcap-red-r1,red,burstcap,base,r1,v2,77,70,76,70,0,311.34000000000003,11,10,10,0,0,0
+det-burstcap-red-r1,red,burstcap,base,r1,v2-fixed,77,71,77,71,0,311.34000000000003,11,10,10,0,0,0
+det-burstcap-red-r1,red,burstcap,base,r1,v1 (reference),77,71,73,71,0,311.34000000000003,11,10,10,2,1,0
+det-burstcap-red-r2,red,burstcap,base,r2,v2,72,72,72,72,0,329.975,11,11,11,0,0,0
+det-burstcap-red-r2,red,burstcap,base,r2,v2-fixed,72,72,72,72,0,329.975,11,11,11,0,0,0
+det-burstcap-red-r2,red,burstcap,base,r2,v1 (reference),72,71,71,71,2,329.975,11,11,11,0,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,base,r1,v2,45,41,45,41,2,337.72999999999996,12,12,12,0,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,base,r1,v2-fixed,45,42,45,42,1,337.72999999999996,12,12,12,0,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,base,r1,v1 (reference),45,45,45,45,2,337.72999999999996,12,12,12,1,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,base,r2,v2,44,42,44,42,6,338.875,11,11,11,0,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,base,r2,v2-fixed,44,42,44,42,4,338.875,11,11,11,0,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,base,r2,v1 (reference),44,43,43,43,0,338.875,11,11,11,2,1,1
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,base,r1,v2,83,71,82,71,0,293.55000000000007,10,9,9,0,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,base,r1,v2-fixed,83,71,82,71,1,293.55000000000007,10,9,9,0,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,base,r1,v1 (reference),83,75,82,75,0,293.55000000000007,10,9,9,0,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,base,r2,v2,72,72,72,72,1,309.225,9,9,9,0,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,base,r2,v2-fixed,72,72,72,72,1,309.225,9,9,9,0,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,base,r2,v1 (reference),72,71,71,71,0,309.225,9,9,9,0,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,base,r1,v2,72,72,72,72,0,282.01,13,13,12,0,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,base,r1,v2-fixed,72,72,72,72,0,282.01,13,13,12,0,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,base,r1,v1 (reference),72,70,70,70,0,282.01,13,13,12,0,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,base,r2,v2,74,74,74,74,0,302.19500000000005,11,11,11,0,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,base,r2,v2-fixed,74,74,74,74,0,302.19500000000005,11,11,11,0,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,base,r2,v1 (reference),74,73,73,73,0,302.19500000000005,11,11,11,0,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,base,r1,v2,72,71,71,71,0,314.315,16,16,15,1,1,1
+det-burstcapdeep-red-r1,red,burstcapdeep,base,r1,v2-fixed,72,72,72,72,0,314.315,16,16,15,0,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,base,r1,v1 (reference),72,70,70,70,0,314.315,16,16,15,2,1,1
+det-burstcapdeep-red-r2,red,burstcapdeep,base,r2,v2,73,73,73,73,0,324.665,7,7,7,0,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,base,r2,v2-fixed,73,73,73,73,0,324.665,7,7,7,0,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,base,r2,v1 (reference),73,71,71,71,0,324.665,7,7,7,0,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,base,r1,v2,43,42,42,42,3,358.90000000000003,10,10,10,0,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,base,r1,v2-fixed,43,39,40,39,2,358.90000000000003,10,10,10,0,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,base,r1,v1 (reference),43,39,39,39,0,358.90000000000003,10,10,10,0,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,base,r2,v2,44,42,43,42,5,368.4,10,9,7,0,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,base,r2,v2-fixed,44,41,43,41,4,368.4,10,9,7,0,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,base,r2,v1 (reference),44,41,41,41,0,368.4,10,9,7,3,1,1
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,base,r1,v2,74,73,73,73,0,343.96500000000003,13,10,10,0,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,base,r1,v2-fixed,74,74,74,74,0,343.96500000000003,13,10,10,0,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,base,r1,v1 (reference),74,74,74,74,0,343.96500000000003,13,10,10,0,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,base,r2,v2,72,71,71,71,0,349.39500000000004,11,11,11,0,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,base,r2,v2-fixed,72,71,71,71,0,349.39500000000004,11,11,11,0,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,base,r2,v1 (reference),72,70,70,70,0,349.39500000000004,11,11,11,0,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,base,r1,v2,73,72,72,72,1,319.90500000000003,15,15,11,1,1,1
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,base,r1,v2-fixed,73,72,72,72,1,319.90500000000003,15,15,11,1,1,1
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,base,r1,v1 (reference),73,71,71,71,0,319.90500000000003,15,15,11,1,1,1
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,base,r2,v2,73,72,72,72,3,328.76000000000005,11,11,11,0,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,base,r2,v2-fixed,73,72,72,72,2,328.76000000000005,11,11,11,0,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,base,r2,v1 (reference),73,72,72,72,0,328.76000000000005,11,11,11,0,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,base,r1,v2,73,72,73,72,0,334.09999999999997,16,15,13,0,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,base,r1,v2-fixed,73,72,73,72,0,334.09999999999997,16,15,13,0,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,base,r1,v1 (reference),73,72,72,72,1,334.09999999999997,16,15,13,0,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,base,r2,v2,72,72,72,72,0,348.12000000000006,9,9,9,0,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,base,r2,v2-fixed,72,72,72,72,0,348.12000000000006,9,9,9,0,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,base,r2,v1 (reference),72,70,70,70,1,348.12000000000006,9,9,9,1,1,1
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,base,r1,v2,43,40,43,40,8,337.305,10,10,8,0,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,base,r1,v2-fixed,43,41,43,41,3,337.305,10,10,8,0,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,base,r1,v1 (reference),43,41,41,41,3,337.305,10,10,8,0,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,base,r2,v2,42,38,42,38,6,339.45,12,11,11,0,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,base,r2,v2-fixed,42,39,42,39,3,339.45,12,11,11,0,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,base,r2,v1 (reference),42,41,41,41,2,339.45,12,11,11,2,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,base,r1,v2,87,73,87,73,1,314.45500000000004,13,12,11,0,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,base,r1,v2-fixed,87,73,87,73,0,314.45500000000004,13,12,11,0,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,base,r1,v1 (reference),87,79,86,79,0,314.45500000000004,13,12,11,0,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,base,r2,v2,84,72,84,72,0,319.13500000000005,9,9,9,0,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,base,r2,v2-fixed,84,72,84,72,0,319.13500000000005,9,9,9,0,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,base,r2,v1 (reference),84,75,84,75,0,319.13500000000005,9,9,9,0,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,base,r1,v2,73,72,72,72,0,281.11,19,15,14,2,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,base,r1,v2-fixed,73,72,72,72,0,281.11,19,15,14,2,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,base,r1,v1 (reference),73,72,72,72,0,281.11,19,15,14,2,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,base,r2,v2,72,72,72,72,0,289.815,10,10,10,0,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,base,r2,v2-fixed,72,72,72,72,0,289.815,10,10,10,0,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,base,r2,v1 (reference),72,72,72,72,0,289.815,10,10,10,0,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,base,r1,v2,76,69,76,69,0,308.99,14,14,12,0,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,base,r1,v2-fixed,76,69,76,69,1,308.99,14,14,12,0,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,base,r1,v1 (reference),76,70,76,70,0,308.99,14,14,12,0,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,base,r2,v2,85,73,85,73,0,324.24000000000007,11,11,10,1,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,base,r2,v2-fixed,85,72,85,72,0,324.24000000000007,11,11,10,1,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,base,r2,v1 (reference),85,77,84,77,0,324.24000000000007,11,11,10,2,1,1
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,base,r1,v2,64,59,61,59,1,331.84499999999997,14,10,8,0,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,base,r1,v2-fixed,64,53,55,53,0,331.84499999999997,14,10,8,0,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,base,r1,v1 (reference),64,38,38,38,0,331.84499999999997,14,10,8,6,1,1
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,base,r2,v2,65,60,65,60,0,349.49999999999994,12,8,7,1,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,base,r2,v2-fixed,65,57,60,57,0,349.49999999999994,12,8,7,1,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,base,r2,v1 (reference),65,42,44,42,1,349.49999999999994,12,8,7,3,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,base,r1,v2,71,70,71,70,3,328.45,12,10,9,0,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,base,r1,v2-fixed,71,70,71,70,0,328.45,12,10,9,0,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,base,r1,v1 (reference),71,61,61,61,0,328.45,12,10,9,1,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,base,r2,v2,77,73,77,73,0,336.415,10,10,9,0,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,base,r2,v2-fixed,77,72,76,72,0,336.415,10,10,9,0,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,base,r2,v1 (reference),77,71,71,71,0,336.415,10,10,9,0,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,base,r1,v2,70,69,69,69,1,332.8,12,12,12,0,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,base,r1,v2-fixed,70,69,69,69,0,332.8,12,12,12,0,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,base,r1,v1 (reference),70,64,64,64,0,332.8,12,12,12,0,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,base,r2,v2,74,73,73,73,0,335.705,11,11,10,0,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,base,r2,v2-fixed,74,73,73,73,0,335.705,11,11,10,0,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,base,r2,v1 (reference),74,69,69,69,2,335.705,11,11,10,0,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,base,r1,v2,70,69,69,69,2,331.02000000000004,16,14,13,0,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,base,r1,v2-fixed,70,68,68,68,0,331.02000000000004,16,14,13,0,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,base,r1,v1 (reference),70,65,65,65,0,331.02000000000004,16,14,13,3,1,0
+det-burstcapshallow-red-r2,red,burstcapshallow,base,r2,v2,73,70,71,70,0,331.06,14,11,10,0,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,base,r2,v2-fixed,73,70,71,70,0,331.06,14,11,10,0,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,base,r2,v1 (reference),73,68,68,68,0,331.06,14,11,10,2,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,base,r1,v2,98,24,98,24,12,306.975,14,14,13,0,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,base,r1,v2-fixed,98,25,98,25,3,306.975,14,14,13,0,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,base,r1,v1 (reference),98,95,95,95,4,306.975,14,14,13,1,1,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,base,r2,v2,93,31,93,31,14,317.41,17,17,15,0,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,base,r2,v2-fixed,93,35,93,35,7,317.41,17,17,15,0,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,base,r2,v1 (reference),93,82,83,82,3,317.41,17,17,15,0,0,0
+det-burstlong-pfifo-r1,pfifo,burstlong,base,r1,v2,72,37,72,37,0,207.28500000000003,13,13,13,1,1,0
+det-burstlong-pfifo-r1,pfifo,burstlong,base,r1,v2-fixed,72,37,72,37,0,207.28500000000003,13,13,13,2,1,0
+det-burstlong-pfifo-r1,pfifo,burstlong,base,r1,v1 (reference),72,67,70,67,0,207.28500000000003,13,13,13,3,2,1
+det-burstlong-pfifo-r2,pfifo,burstlong,base,r2,v2,81,37,81,37,0,218.61,13,13,13,0,0,0
+det-burstlong-pfifo-r2,pfifo,burstlong,base,r2,v2-fixed,81,36,80,36,0,218.61,13,13,13,1,1,1
+det-burstlong-pfifo-r2,pfifo,burstlong,base,r2,v1 (reference),81,81,81,81,0,218.61,13,13,13,1,1,1
+det-burstlong-pie-r1,pie,burstlong,base,r1,v2,43,36,43,36,0,208.565,13,13,13,1,1,1
+det-burstlong-pie-r1,pie,burstlong,base,r1,v2-fixed,43,36,43,36,0,208.565,13,13,13,1,1,1
+det-burstlong-pie-r1,pie,burstlong,base,r1,v1 (reference),43,43,43,43,0,208.565,13,13,13,1,1,1
+det-burstlong-pie-r2,pie,burstlong,base,r2,v2,39,38,39,38,0,212.3,9,9,9,0,0,0
+det-burstlong-pie-r2,pie,burstlong,base,r2,v2-fixed,39,38,39,38,0,212.3,9,9,9,0,0,0
+det-burstlong-pie-r2,pie,burstlong,base,r2,v1 (reference),39,38,38,38,0,212.3,9,9,9,0,0,0
+det-burstlong-red-r1,red,burstlong,base,r1,v2,47,36,47,36,0,210.235,10,10,10,2,1,1
+det-burstlong-red-r1,red,burstlong,base,r1,v2-fixed,47,36,47,36,0,210.235,10,10,10,2,2,2
+det-burstlong-red-r1,red,burstlong,base,r1,v1 (reference),47,43,45,43,0,210.235,10,10,10,4,2,1
+det-burstlong-red-r2,red,burstlong,base,r2,v2,49,36,49,36,0,219.43,12,12,12,0,0,0
+det-burstlong-red-r2,red,burstlong,base,r2,v2-fixed,49,36,49,36,0,219.43,12,12,12,0,0,0
+det-burstlong-red-r2,red,burstlong,base,r2,v1 (reference),49,49,49,49,1,219.43,12,12,12,0,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,base,r1,v2,20,19,19,19,6,345.755,3,1,0,1,1,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,base,r1,v2-fixed,20,18,18,18,2,345.755,3,1,0,1,1,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,base,r1,v1 (reference),20,16,16,16,2,345.755,3,1,0,1,1,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,base,r2,v2,19,16,16,16,3,348.635,6,1,1,1,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,base,r2,v2-fixed,19,16,16,16,0,348.635,6,1,1,1,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,base,r2,v1 (reference),19,14,14,14,1,348.635,6,1,1,1,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,base,r1,v2,36,36,36,36,1,336.835,9,4,0,0,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,base,r1,v2-fixed,36,35,35,35,1,336.835,9,4,0,1,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,base,r1,v1 (reference),36,31,31,31,2,336.835,9,4,0,1,1,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,base,r2,v2,35,34,34,34,0,341.15000000000003,6,2,0,0,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,base,r2,v2-fixed,35,33,33,33,1,341.15000000000003,6,2,0,0,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,base,r2,v1 (reference),35,31,31,31,1,341.15000000000003,6,2,0,1,0,0
+det-bursttiny-pie-r1,pie,bursttiny,base,r1,v2,36,33,34,33,2,341.36,11,4,0,0,0,0
+det-bursttiny-pie-r1,pie,bursttiny,base,r1,v2-fixed,36,33,34,33,2,341.36,11,4,0,0,0,0
+det-bursttiny-pie-r1,pie,bursttiny,base,r1,v1 (reference),36,32,32,32,2,341.36,11,4,0,1,1,0
+det-bursttiny-pie-r2,pie,bursttiny,base,r2,v2,36,35,35,35,1,343.035,7,3,0,1,0,0
+det-bursttiny-pie-r2,pie,bursttiny,base,r2,v2-fixed,36,36,36,36,3,343.035,7,3,0,1,0,0
+det-bursttiny-pie-r2,pie,bursttiny,base,r2,v1 (reference),36,34,34,34,3,343.035,7,3,0,3,1,0
+det-bursttiny-red-r1,red,bursttiny,base,r1,v2,37,34,34,34,4,338.19,10,4,1,0,0,0
+det-bursttiny-red-r1,red,bursttiny,base,r1,v2-fixed,37,34,34,34,1,338.19,10,4,1,1,0,0
+det-bursttiny-red-r1,red,bursttiny,base,r1,v1 (reference),37,31,31,31,2,338.19,10,4,1,3,1,0
+det-bursttiny-red-r2,red,bursttiny,base,r2,v2,37,35,35,35,3,333.355,9,5,0,1,1,0
+det-bursttiny-red-r2,red,bursttiny,base,r2,v2-fixed,37,35,35,35,2,333.355,9,5,0,1,1,0
+det-bursttiny-red-r2,red,bursttiny,base,r2,v1 (reference),37,34,34,34,3,333.355,9,5,0,2,1,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,base,r1,v2,18,17,18,17,7,362.53,1,1,1,0,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,base,r1,v2-fixed,18,17,17,17,0,362.53,1,1,1,0,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,base,r1,v1 (reference),18,9,9,9,2,362.53,1,1,1,0,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,base,r2,v2,28,26,26,26,5,344.26000000000005,4,2,2,1,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,base,r2,v2-fixed,28,26,26,26,3,344.26000000000005,4,2,2,1,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,base,r2,v1 (reference),28,16,16,16,0,344.26000000000005,4,2,2,1,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,base,r1,v2,73,72,72,72,0,303.02,16,16,13,0,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,base,r1,v2-fixed,73,71,72,71,0,303.02,16,16,13,0,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,base,r1,v1 (reference),73,72,72,72,1,303.02,16,16,13,5,2,2
+det-burstudp-pfifo-r2,pfifo,burstudp,base,r2,v2,74,74,74,74,0,317.04,13,13,13,0,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,base,r2,v2-fixed,74,73,74,73,0,317.04,13,13,13,0,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,base,r2,v1 (reference),74,74,74,74,0,317.04,13,13,13,0,0,0
+det-burstudp-pie-r1,pie,burstudp,base,r1,v2,74,70,71,70,1,302.12000000000006,19,17,16,1,0,0
+det-burstudp-pie-r1,pie,burstudp,base,r1,v2-fixed,74,69,72,69,0,302.12000000000006,19,17,16,1,0,0
+det-burstudp-pie-r1,pie,burstudp,base,r1,v1 (reference),74,68,68,68,0,302.12000000000006,19,17,16,2,1,1
+det-burstudp-pie-r2,pie,burstudp,base,r2,v2,74,72,74,72,1,311.095,14,14,14,0,0,0
+det-burstudp-pie-r2,pie,burstudp,base,r2,v2-fixed,74,71,74,71,1,311.095,14,14,14,0,0,0
+det-burstudp-pie-r2,pie,burstudp,base,r2,v1 (reference),74,73,73,73,1,311.095,14,14,14,0,0,0
+det-burstudp-red-r1,red,burstudp,base,r1,v2,71,67,69,67,1,310.245,16,15,12,2,2,1
+det-burstudp-red-r1,red,burstudp,base,r1,v2-fixed,71,67,69,67,0,310.245,16,15,12,2,2,1
+det-burstudp-red-r1,red,burstudp,base,r1,v1 (reference),71,65,65,65,0,310.245,16,15,12,4,2,1
+det-burstudp-red-r2,red,burstudp,base,r2,v2,72,72,72,72,3,320.76500000000004,14,14,14,0,0,0
+det-burstudp-red-r2,red,burstudp,base,r2,v2-fixed,72,72,72,72,1,320.76500000000004,14,14,14,0,0,0
+det-burstudp-red-r2,red,burstudp,base,r2,v1 (reference),72,72,72,72,0,320.76500000000004,14,14,14,1,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,base,r1,v2,0,0,0,0,0,99.025,0,0,0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,base,r1,v2-fixed,0,0,0,0,0,99.025,0,0,0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,base,r1,v1 (reference),0,0,0,0,0,99.025,0,0,0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,base,r2,v2,0,0,0,0,0,95.725,0,0,0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,base,r2,v2-fixed,0,0,0,0,0,95.725,0,0,0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,base,r2,v1 (reference),0,0,0,0,0,95.725,0,0,0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,base,r1,v2,0,0,0,0,0,96.095,0,0,0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,base,r1,v2-fixed,0,0,0,0,0,96.095,0,0,0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,base,r1,v1 (reference),0,0,0,0,0,96.095,0,0,0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,base,r2,v2,0,0,0,0,0,97.87,0,0,0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,base,r2,v2-fixed,0,0,0,0,0,97.87,0,0,0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,base,r2,v1 (reference),0,0,0,0,0,97.87,0,0,0,0,0,0
+det-calm030-pie-r1,pie,calm030,base,r1,v2,0,0,0,0,1,94.08500000000001,0,0,0,0,0,0
+det-calm030-pie-r1,pie,calm030,base,r1,v2-fixed,0,0,0,0,0,94.08500000000001,0,0,0,0,0,0
+det-calm030-pie-r1,pie,calm030,base,r1,v1 (reference),0,0,0,0,0,94.08500000000001,0,0,0,0,0,0
+det-calm030-pie-r2,pie,calm030,base,r2,v2,0,0,0,0,0,96.56,0,0,0,0,0,0
+det-calm030-pie-r2,pie,calm030,base,r2,v2-fixed,0,0,0,0,0,96.56,0,0,0,0,0,0
+det-calm030-pie-r2,pie,calm030,base,r2,v1 (reference),0,0,0,0,0,96.56,0,0,0,0,0,0
+det-calm030-red-r1,red,calm030,base,r1,v2,0,0,0,0,0,94.59,0,0,0,0,0,0
+det-calm030-red-r1,red,calm030,base,r1,v2-fixed,0,0,0,0,0,94.59,0,0,0,0,0,0
+det-calm030-red-r1,red,calm030,base,r1,v1 (reference),0,0,0,0,0,94.59,0,0,0,0,0,0
+det-calm030-red-r2,red,calm030,base,r2,v2,0,0,0,0,0,98.95500000000001,0,0,0,0,0,0
+det-calm030-red-r2,red,calm030,base,r2,v2-fixed,0,0,0,0,0,98.95500000000001,0,0,0,0,0,0
+det-calm030-red-r2,red,calm030,base,r2,v1 (reference),0,0,0,0,0,98.95500000000001,0,0,0,0,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,base,r1,v2,2,1,1,1,1,108.63499999999999,0,0,0,0,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,base,r1,v2-fixed,2,1,1,1,0,108.63499999999999,0,0,0,0,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,base,r1,v1 (reference),2,0,0,0,0,108.63499999999999,0,0,0,0,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,base,r2,v2,8,1,1,1,0,91.975,1,0,0,1,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,base,r2,v2-fixed,8,3,3,3,0,91.975,1,0,0,1,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,base,r2,v1 (reference),8,0,0,0,0,91.975,1,0,0,1,0,0
+det-calm065-pfifo-r1,pfifo,calm065,base,r1,v2,3,1,1,1,0,98.25,0,0,0,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,base,r1,v2-fixed,3,2,2,2,0,98.25,0,0,0,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,base,r1,v1 (reference),3,0,0,0,0,98.25,0,0,0,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,base,r2,v2,1,0,0,0,1,119.71000000000001,0,0,0,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,base,r2,v2-fixed,1,0,0,0,1,119.71000000000001,0,0,0,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,base,r2,v1 (reference),1,0,0,0,0,119.71000000000001,0,0,0,0,0,0
+det-calm065-pie-r1,pie,calm065,base,r1,v2,4,1,1,1,1,103.62500000000001,0,0,0,0,0,0
+det-calm065-pie-r1,pie,calm065,base,r1,v2-fixed,4,1,1,1,0,103.62500000000001,0,0,0,0,0,0
+det-calm065-pie-r1,pie,calm065,base,r1,v1 (reference),4,1,1,1,0,103.62500000000001,0,0,0,0,0,0
+det-calm065-pie-r2,pie,calm065,base,r2,v2,1,0,0,0,2,105.0,0,0,0,0,0,0
+det-calm065-pie-r2,pie,calm065,base,r2,v2-fixed,1,0,0,0,2,105.0,0,0,0,0,0,0
+det-calm065-pie-r2,pie,calm065,base,r2,v1 (reference),1,0,0,0,0,105.0,0,0,0,0,0,0
+det-calm065-red-r1,red,calm065,base,r1,v2,3,0,0,0,0,124.245,0,0,0,0,0,0
+det-calm065-red-r1,red,calm065,base,r1,v2-fixed,3,0,0,0,0,124.245,0,0,0,0,0,0
+det-calm065-red-r1,red,calm065,base,r1,v1 (reference),3,0,0,0,0,124.245,0,0,0,0,0,0
+det-calm065-red-r2,red,calm065,base,r2,v2,3,0,0,0,0,113.245,0,0,0,0,0,0
+det-calm065-red-r2,red,calm065,base,r2,v2-fixed,3,0,0,0,0,113.245,0,0,0,0,0,0
+det-calm065-red-r2,red,calm065,base,r2,v1 (reference),3,0,0,0,0,113.245,0,0,0,0,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,base,r1,v2,20,11,13,11,2,108.00500000000001,3,1,1,2,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,base,r1,v2-fixed,20,12,18,12,2,108.00500000000001,3,1,1,2,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,base,r1,v1 (reference),20,11,12,11,5,108.00500000000001,3,1,1,2,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,base,r2,v2,21,15,16,15,0,117.80000000000001,3,3,2,0,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,base,r2,v2-fixed,21,10,20,10,5,117.80000000000001,3,3,2,0,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,base,r2,v1 (reference),21,11,11,11,7,117.80000000000001,3,3,2,1,1,0
+det-calm090-pfifo-r1,pfifo,calm090,base,r1,v2,56,17,25,17,0,107.52000000000001,2,1,0,0,0,0
+det-calm090-pfifo-r1,pfifo,calm090,base,r1,v2-fixed,56,36,48,36,2,107.52000000000001,2,1,0,0,0,0
+det-calm090-pfifo-r1,pfifo,calm090,base,r1,v1 (reference),56,33,38,33,0,107.52000000000001,2,1,0,0,0,0
+det-calm090-pfifo-r2,pfifo,calm090,base,r2,v2,65,26,34,26,0,101.25,4,1,0,1,0,0
+det-calm090-pfifo-r2,pfifo,calm090,base,r2,v2-fixed,65,46,56,46,1,101.25,4,1,0,1,0,0
+det-calm090-pfifo-r2,pfifo,calm090,base,r2,v1 (reference),65,37,40,37,2,101.25,4,1,0,2,0,0
+det-calm090-pie-r1,pie,calm090,base,r1,v2,19,3,8,3,0,39.21,0,0,0,0,0,0
+det-calm090-pie-r1,pie,calm090,base,r1,v2-fixed,19,9,18,9,1,39.21,0,0,0,0,0,0
+det-calm090-pie-r1,pie,calm090,base,r1,v1 (reference),19,14,14,14,1,39.21,0,0,0,0,0,0
+det-calm090-pie-r2,pie,calm090,base,r2,v2,7,5,6,5,0,19.465,5,4,3,1,0,0
+det-calm090-pie-r2,pie,calm090,base,r2,v2-fixed,7,0,7,0,0,19.465,5,4,3,0,0,0
+det-calm090-pie-r2,pie,calm090,base,r2,v1 (reference),7,7,7,7,0,19.465,5,4,3,1,0,0
+det-calm090-red-r1,red,calm090,base,r1,v2,71,20,21,20,0,112.6,0,0,0,0,0,0
+det-calm090-red-r1,red,calm090,base,r1,v2-fixed,71,57,63,57,2,112.6,0,0,0,0,0,0
+det-calm090-red-r1,red,calm090,base,r1,v1 (reference),71,42,43,42,1,112.6,0,0,0,0,0,0
+det-calm090-red-r2,red,calm090,base,r2,v2,48,17,18,17,0,76.035,5,1,0,1,0,0
+det-calm090-red-r2,red,calm090,base,r2,v2-fixed,48,34,47,34,1,76.035,5,1,0,0,0,0
+det-calm090-red-r2,red,calm090,base,r2,v1 (reference),48,26,26,26,0,76.035,5,1,0,1,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,base,r1,v2,9,7,7,7,4,129.41,3,1,1,3,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,base,r1,v2-fixed,9,7,8,7,12,129.41,3,1,1,2,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,base,r1,v1 (reference),9,6,6,6,9,129.41,3,1,1,2,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,base,r2,v2,17,10,12,10,3,115.76,3,1,0,3,1,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,base,r2,v2-fixed,17,8,14,8,9,115.76,3,1,0,2,1,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,base,r2,v1 (reference),17,8,8,8,5,115.76,3,1,0,3,1,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,base,r1,v2,33,10,13,10,0,116.43,4,1,0,1,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,base,r1,v2-fixed,33,25,29,25,0,116.43,4,1,0,0,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,base,r1,v1 (reference),33,16,17,16,0,116.43,4,1,0,1,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,base,r2,v2,40,14,16,14,0,121.64,2,0,0,1,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,base,r2,v2-fixed,40,28,31,28,1,121.64,2,0,0,1,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,base,r2,v1 (reference),40,20,21,20,1,121.64,2,0,0,1,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,base,r1,v2,41,14,15,14,0,125.63,2,0,0,1,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,base,r1,v2-fixed,41,28,30,28,1,125.63,2,0,0,0,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,base,r1,v1 (reference),41,19,19,19,0,125.63,2,0,0,1,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,base,r2,v2,41,13,15,13,0,128.015,0,0,0,0,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,base,r2,v2-fixed,41,23,27,23,0,128.015,0,0,0,0,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,base,r2,v1 (reference),41,14,14,14,0,128.015,0,0,0,0,0,0
+det-calmcbr090-red-r1,red,calmcbr090,base,r1,v2,35,12,13,12,0,133.94,1,0,0,1,0,0
+det-calmcbr090-red-r1,red,calmcbr090,base,r1,v2-fixed,35,28,30,28,0,133.94,1,0,0,0,0,0
+det-calmcbr090-red-r1,red,calmcbr090,base,r1,v1 (reference),35,8,8,8,0,133.94,1,0,0,0,0,0
+det-calmcbr090-red-r2,red,calmcbr090,base,r2,v2,34,15,19,15,0,136.16500000000002,3,0,0,3,0,0
+det-calmcbr090-red-r2,red,calmcbr090,base,r2,v2-fixed,34,25,30,25,4,136.16500000000002,3,0,0,1,0,0
+det-calmcbr090-red-r2,red,calmcbr090,base,r2,v1 (reference),34,10,13,10,0,136.16500000000002,3,0,0,3,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,base,r1,v2,20,13,20,13,3,162.95,6,6,5,0,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,base,r1,v2-fixed,20,13,20,13,1,162.95,6,6,5,0,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,base,r1,v1 (reference),20,15,15,15,0,162.95,6,6,5,1,1,0
+det-capacity-fq_codel-r2,fq_codel,capacity,base,r2,v2,25,17,22,17,3,162.765,9,8,7,0,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,base,r2,v2-fixed,25,17,23,17,2,162.765,9,8,7,0,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,base,r2,v1 (reference),25,17,17,17,0,162.765,9,8,7,1,0,0
+det-capacity-pfifo-r1,pfifo,capacity,base,r1,v2,29,20,28,20,0,146.46,7,7,7,0,0,0
+det-capacity-pfifo-r1,pfifo,capacity,base,r1,v2-fixed,29,20,28,20,1,146.46,7,7,7,0,0,0
+det-capacity-pfifo-r1,pfifo,capacity,base,r1,v1 (reference),29,21,23,21,0,146.46,7,7,7,0,0,0
+det-capacity-pfifo-r2,pfifo,capacity,base,r2,v2,26,22,25,22,1,143.98000000000002,9,9,9,0,0,0
+det-capacity-pfifo-r2,pfifo,capacity,base,r2,v2-fixed,26,23,26,23,1,143.98000000000002,9,9,9,0,0,0
+det-capacity-pfifo-r2,pfifo,capacity,base,r2,v1 (reference),26,23,23,23,0,143.98000000000002,9,9,9,0,0,0
+det-capacity-pie-r1,pie,capacity,base,r1,v2,23,22,22,22,0,142.625,10,10,10,0,0,0
+det-capacity-pie-r1,pie,capacity,base,r1,v2-fixed,23,21,22,21,0,142.625,10,10,10,0,0,0
+det-capacity-pie-r1,pie,capacity,base,r1,v1 (reference),23,22,22,22,1,142.625,10,10,10,0,0,0
+det-capacity-pie-r2,pie,capacity,base,r2,v2,24,24,24,24,0,147.565,9,8,8,0,0,0
+det-capacity-pie-r2,pie,capacity,base,r2,v2-fixed,24,24,24,24,0,147.565,9,8,8,0,0,0
+det-capacity-pie-r2,pie,capacity,base,r2,v1 (reference),24,23,23,23,0,147.565,9,8,8,1,1,1
+det-capacity-red-r1,red,capacity,base,r1,v2,25,20,25,20,0,143.76,6,6,6,0,0,0
+det-capacity-red-r1,red,capacity,base,r1,v2-fixed,25,21,25,21,0,143.76,6,6,6,0,0,0
+det-capacity-red-r1,red,capacity,base,r1,v1 (reference),25,20,24,20,0,143.76,6,6,6,1,0,0
+det-capacity-red-r2,red,capacity,base,r2,v2,34,29,33,29,0,145.185,10,10,9,0,0,0
+det-capacity-red-r2,red,capacity,base,r2,v2-fixed,34,28,34,28,0,145.185,10,10,9,0,0,0
+det-capacity-red-r2,red,capacity,base,r2,v1 (reference),34,31,32,31,1,145.185,10,10,9,0,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,base,r1,v2,16,14,14,14,1,157.77999999999997,5,3,3,0,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,base,r1,v2-fixed,16,14,15,14,2,157.77999999999997,5,3,3,0,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,base,r1,v1 (reference),16,5,5,5,1,157.77999999999997,5,3,3,2,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,base,r2,v2,21,17,20,17,2,144.31,5,3,3,0,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,base,r2,v2-fixed,21,15,20,15,2,144.31,5,3,3,0,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,base,r2,v1 (reference),21,9,9,9,0,144.31,5,3,3,1,0,0
+det-cbr-pfifo-r1,pfifo,cbr,base,r1,v2,21,20,21,20,1,126.425,8,8,8,0,0,0
+det-cbr-pfifo-r1,pfifo,cbr,base,r1,v2-fixed,21,20,21,20,2,126.425,8,8,8,0,0,0
+det-cbr-pfifo-r1,pfifo,cbr,base,r1,v1 (reference),21,21,21,21,0,126.425,8,8,8,1,1,0
+det-cbr-pfifo-r2,pfifo,cbr,base,r2,v2,26,22,24,22,0,121.145,8,8,8,0,0,0
+det-cbr-pfifo-r2,pfifo,cbr,base,r2,v2-fixed,26,24,26,24,0,121.145,8,8,8,1,0,0
+det-cbr-pfifo-r2,pfifo,cbr,base,r2,v1 (reference),26,24,25,24,0,121.145,8,8,8,1,0,0
+det-cbr-pie-r1,pie,cbr,base,r1,v2,20,20,20,20,0,120.62,10,10,9,0,0,0
+det-cbr-pie-r1,pie,cbr,base,r1,v2-fixed,20,20,20,20,0,120.62,10,10,9,0,0,0
+det-cbr-pie-r1,pie,cbr,base,r1,v1 (reference),20,20,20,20,0,120.62,10,10,9,0,0,0
+det-cbr-pie-r2,pie,cbr,base,r2,v2,22,21,21,21,0,119.825,12,12,11,0,0,0
+det-cbr-pie-r2,pie,cbr,base,r2,v2-fixed,22,21,21,21,1,119.825,12,12,11,0,0,0
+det-cbr-pie-r2,pie,cbr,base,r2,v1 (reference),22,20,20,20,0,119.825,12,12,11,0,0,0
+det-cbr-red-r1,red,cbr,base,r1,v2,24,24,24,24,0,121.46000000000001,9,9,9,1,1,1
+det-cbr-red-r1,red,cbr,base,r1,v2-fixed,24,24,24,24,0,121.46000000000001,9,9,9,0,0,0
+det-cbr-red-r1,red,cbr,base,r1,v1 (reference),24,23,23,23,0,121.46000000000001,9,9,9,2,2,1
+det-cbr-red-r2,red,cbr,base,r2,v2,27,21,26,21,0,123.86500000000001,10,10,8,0,0,0
+det-cbr-red-r2,red,cbr,base,r2,v2-fixed,27,21,26,21,0,123.86500000000001,10,10,8,0,0,0
+det-cbr-red-r2,red,cbr,base,r2,v1 (reference),27,25,25,25,0,123.86500000000001,10,10,8,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,base,r1,v2,2,0,2,0,7,209.15999999999997,0,0,0,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,base,r1,v2-fixed,2,0,2,0,11,209.15999999999997,0,0,0,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,base,r1,v1 (reference),2,1,1,1,2,209.15999999999997,0,0,0,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,base,r2,v2,7,1,5,1,10,220.24,0,0,0,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,base,r2,v2-fixed,7,0,5,0,10,220.24,0,0,0,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,base,r2,v1 (reference),7,3,3,3,5,220.24,0,0,0,0,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,base,r1,v2,8,3,7,3,8,207.08,1,0,0,0,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,base,r1,v2-fixed,8,2,6,2,10,207.08,1,0,0,0,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,base,r1,v1 (reference),8,3,3,3,3,207.08,1,0,0,1,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,base,r2,v2,3,0,2,0,9,218.2,0,0,0,0,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,base,r2,v2-fixed,3,0,2,0,10,218.2,0,0,0,0,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,base,r2,v1 (reference),3,1,1,1,6,218.2,0,0,0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,base,r1,v2,0,0,0,0,11,216.19,0,0,0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,base,r1,v2-fixed,0,0,0,0,6,216.19,0,0,0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,base,r1,v1 (reference),0,0,0,0,5,216.19,0,0,0,0,0,0
+det-delaystep-pie-r2,pie,delaystep,base,r2,v2,2,0,2,0,9,200.985,0,0,0,0,0,0
+det-delaystep-pie-r2,pie,delaystep,base,r2,v2-fixed,2,0,2,0,11,200.985,0,0,0,0,0,0
+det-delaystep-pie-r2,pie,delaystep,base,r2,v1 (reference),2,0,0,0,5,200.985,0,0,0,0,0,0
+det-delaystep-red-r1,red,delaystep,base,r1,v2,3,1,3,1,17,247.41,1,0,0,0,0,0
+det-delaystep-red-r1,red,delaystep,base,r1,v2-fixed,3,0,3,0,13,247.41,1,0,0,0,0,0
+det-delaystep-red-r1,red,delaystep,base,r1,v1 (reference),3,0,0,0,8,247.41,1,0,0,1,0,0
+det-delaystep-red-r2,red,delaystep,base,r2,v2,2,0,2,0,9,246.50000000000003,0,0,0,0,0,0
+det-delaystep-red-r2,red,delaystep,base,r2,v2-fixed,2,0,2,0,13,246.50000000000003,0,0,0,0,0,0
+det-delaystep-red-r2,red,delaystep,base,r2,v1 (reference),2,0,0,0,8,246.50000000000003,0,0,0,0,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,base,r1,v2,25,24,24,24,1,148.45000000000002,4,1,0,1,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,base,r1,v2-fixed,25,22,22,22,2,148.45000000000002,4,1,0,1,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,base,r1,v1 (reference),25,15,15,15,2,148.45000000000002,4,1,0,1,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,base,r2,v2,27,23,24,23,4,143.115,6,2,0,1,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,base,r2,v2-fixed,27,23,24,23,5,143.115,6,2,0,1,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,base,r2,v1 (reference),27,15,15,15,1,143.115,6,2,0,1,0,0
+det-onoff-pfifo-r1,pfifo,onoff,base,r1,v2,68,54,68,54,0,98.87,14,14,13,0,0,0
+det-onoff-pfifo-r1,pfifo,onoff,base,r1,v2-fixed,68,52,68,52,0,98.87,14,14,13,0,0,0
+det-onoff-pfifo-r1,pfifo,onoff,base,r1,v1 (reference),68,67,67,67,0,98.87,14,14,13,2,2,2
+det-onoff-pfifo-r2,pfifo,onoff,base,r2,v2,64,52,63,52,0,104.97500000000001,8,8,8,1,0,0
+det-onoff-pfifo-r2,pfifo,onoff,base,r2,v2-fixed,64,50,64,50,0,104.97500000000001,8,8,8,1,0,0
+det-onoff-pfifo-r2,pfifo,onoff,base,r2,v1 (reference),64,61,61,61,0,104.97500000000001,8,8,8,2,1,0
+det-onoff-pie-r1,pie,onoff,base,r1,v2,65,51,62,51,0,95.23,17,16,15,1,0,0
+det-onoff-pie-r1,pie,onoff,base,r1,v2-fixed,65,47,64,47,0,95.23,17,16,15,1,0,0
+det-onoff-pie-r1,pie,onoff,base,r1,v1 (reference),65,61,61,61,0,95.23,17,16,15,2,1,0
+det-onoff-pie-r2,pie,onoff,base,r2,v2,72,59,70,59,0,100.515,11,11,11,0,0,0
+det-onoff-pie-r2,pie,onoff,base,r2,v2-fixed,72,56,70,56,0,100.515,11,11,11,0,0,0
+det-onoff-pie-r2,pie,onoff,base,r2,v1 (reference),72,66,66,66,0,100.515,11,11,11,2,1,1
+det-onoff-red-r1,red,onoff,base,r1,v2,73,64,73,64,0,101.77000000000001,15,13,12,0,0,0
+det-onoff-red-r1,red,onoff,base,r1,v2-fixed,73,61,73,61,0,101.77000000000001,15,13,12,0,0,0
+det-onoff-red-r1,red,onoff,base,r1,v1 (reference),73,69,70,69,1,101.77000000000001,15,13,12,2,2,1
+det-onoff-red-r2,red,onoff,base,r2,v2,72,63,72,63,0,107.215,16,16,16,0,0,0
+det-onoff-red-r2,red,onoff,base,r2,v2-fixed,72,62,72,62,0,107.215,16,16,16,0,0,0
+det-onoff-red-r2,red,onoff,base,r2,v1 (reference),72,69,69,69,0,107.215,16,16,16,2,1,1
+det-ppbp-fq_codel-r1,fq_codel,ppbp,base,r1,v2,18,3,3,3,1,139.065,2,2,2,2,2,2
+det-ppbp-fq_codel-r1,fq_codel,ppbp,base,r1,v2-fixed,18,5,18,5,2,139.065,2,2,2,0,0,0
+det-ppbp-fq_codel-r1,fq_codel,ppbp,base,r1,v1 (reference),18,16,16,16,0,139.065,2,2,2,0,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,base,r2,v2,24,9,13,9,0,130.005,4,2,2,1,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,base,r2,v2-fixed,24,11,24,11,1,130.005,4,2,2,1,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,base,r2,v1 (reference),24,15,15,15,0,130.005,4,2,2,2,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,base,r1,v2,67,13,18,13,0,49.015,10,10,10,5,5,5
+det-ppbp-pfifo-r1,pfifo,ppbp,base,r1,v2-fixed,67,37,67,37,0,49.015,10,10,10,0,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,base,r1,v1 (reference),67,61,64,61,0,49.015,10,10,10,0,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,base,r2,v2,81,10,16,10,0,51.295,11,10,9,5,4,3
+det-ppbp-pfifo-r2,pfifo,ppbp,base,r2,v2-fixed,81,61,81,61,0,51.295,11,10,9,0,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,base,r2,v1 (reference),81,80,80,80,0,51.295,11,10,9,0,0,0
+det-ppbp-pie-r1,pie,ppbp,base,r1,v2,34,4,8,4,0,37.144999999999996,11,11,11,5,5,5
+det-ppbp-pie-r1,pie,ppbp,base,r1,v2-fixed,34,15,34,15,0,37.144999999999996,11,11,11,0,0,0
+det-ppbp-pie-r1,pie,ppbp,base,r1,v1 (reference),34,26,30,26,0,37.144999999999996,11,11,11,0,0,0
+det-ppbp-pie-r2,pie,ppbp,base,r2,v2,33,6,11,6,0,35.915,6,6,6,3,3,3
+det-ppbp-pie-r2,pie,ppbp,base,r2,v2-fixed,33,14,33,14,0,35.915,6,6,6,0,0,0
+det-ppbp-pie-r2,pie,ppbp,base,r2,v1 (reference),33,33,33,33,0,35.915,6,6,6,0,0,0
+det-ppbp-red-r1,red,ppbp,base,r1,v2,97,7,12,7,0,53.42,6,6,5,3,3,1
+det-ppbp-red-r1,red,ppbp,base,r1,v2-fixed,97,49,96,49,0,53.42,6,6,5,0,0,0
+det-ppbp-red-r1,red,ppbp,base,r1,v1 (reference),97,81,83,81,1,53.42,6,6,5,0,0,0
+det-ppbp-red-r2,red,ppbp,base,r2,v2,89,7,10,7,0,58.825,12,12,8,8,8,4
+det-ppbp-red-r2,red,ppbp,base,r2,v2-fixed,89,57,89,57,0,58.825,12,12,8,0,0,0
+det-ppbp-red-r2,red,ppbp,base,r2,v1 (reference),89,79,84,79,0,58.825,12,12,8,0,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,base,r1,v2,37,18,37,18,20,358.14000000000004,9,9,5,0,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,base,r1,v2-fixed,37,18,37,18,6,358.14000000000004,9,9,5,0,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,base,r1,v1 (reference),37,29,29,29,2,358.14000000000004,9,9,5,3,3,0
+det-ramp-fq_codel-r2,fq_codel,ramp,base,r2,v2,39,22,39,22,23,366.645,7,6,4,0,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,base,r2,v2-fixed,39,24,39,24,2,366.645,7,6,4,0,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,base,r2,v1 (reference),39,30,30,30,3,366.645,7,6,4,3,2,0
+det-ramp-pfifo-r1,pfifo,ramp,base,r1,v2,99,77,92,77,0,274.395,12,10,10,1,0,0
+det-ramp-pfifo-r1,pfifo,ramp,base,r1,v2-fixed,99,72,94,72,0,274.395,12,10,10,1,0,0
+det-ramp-pfifo-r1,pfifo,ramp,base,r1,v1 (reference),99,83,83,83,0,274.395,12,10,10,2,0,0
+det-ramp-pfifo-r2,pfifo,ramp,base,r2,v2,95,65,94,65,0,276.93,17,16,14,0,0,0
+det-ramp-pfifo-r2,pfifo,ramp,base,r2,v2-fixed,95,65,94,65,0,276.93,17,16,14,0,0,0
+det-ramp-pfifo-r2,pfifo,ramp,base,r2,v1 (reference),95,81,83,81,0,276.93,17,16,14,0,0,0
+det-ramp-pie-r1,pie,ramp,base,r1,v2,117,79,110,79,1,250.46499999999997,6,6,6,2,1,1
+det-ramp-pie-r1,pie,ramp,base,r1,v2-fixed,117,78,113,78,2,250.46499999999997,6,6,6,2,1,1
+det-ramp-pie-r1,pie,ramp,base,r1,v1 (reference),117,92,92,92,0,250.46499999999997,6,6,6,2,1,1
+det-ramp-pie-r2,pie,ramp,base,r2,v2,96,55,96,55,1,273.69,8,8,8,0,0,0
+det-ramp-pie-r2,pie,ramp,base,r2,v2-fixed,96,53,96,53,1,273.69,8,8,8,0,0,0
+det-ramp-pie-r2,pie,ramp,base,r2,v1 (reference),96,81,82,81,0,273.69,8,8,8,2,0,0
+det-ramp-red-r1,red,ramp,base,r1,v2,111,66,111,66,1,272.155,10,10,10,0,0,0
+det-ramp-red-r1,red,ramp,base,r1,v2-fixed,111,59,111,59,1,272.155,10,10,10,0,0,0
+det-ramp-red-r1,red,ramp,base,r1,v1 (reference),111,93,93,93,2,272.155,10,10,10,0,0,0
+det-ramp-red-r2,red,ramp,base,r2,v2,78,49,78,49,1,270.655,16,16,16,0,0,0
+det-ramp-red-r2,red,ramp,base,r2,v2-fixed,78,46,78,46,1,270.655,16,16,16,0,0,0
+det-ramp-red-r2,red,ramp,base,r2,v1 (reference),78,66,67,66,0,270.655,16,16,16,2,2,2
+det-randloss-fq_codel-r1,fq_codel,randloss,base,r1,v2,0,0,0,0,2,297.825,0,0,0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,base,r1,v2-fixed,0,0,0,0,0,297.825,0,0,0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,base,r1,v1 (reference),0,0,0,0,3,297.825,0,0,0,0,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,base,r2,v2,4,1,1,1,1,295.22499999999997,0,0,0,0,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,base,r2,v2-fixed,4,1,1,1,3,295.22499999999997,0,0,0,0,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,base,r2,v1 (reference),4,0,0,0,1,295.22499999999997,0,0,0,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,base,r1,v2,1,0,0,0,4,319.33,0,0,0,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,base,r1,v2-fixed,1,0,0,0,2,319.33,0,0,0,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,base,r1,v1 (reference),1,0,0,0,1,319.33,0,0,0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,base,r2,v2,0,0,0,0,3,317.32000000000005,0,0,0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,base,r2,v2-fixed,0,0,0,0,1,317.32000000000005,0,0,0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,base,r2,v1 (reference),0,0,0,0,3,317.32000000000005,0,0,0,0,0,0
+det-randloss-pie-r1,pie,randloss,base,r1,v2,3,2,2,2,4,299.815,0,0,0,0,0,0
+det-randloss-pie-r1,pie,randloss,base,r1,v2-fixed,3,2,2,2,2,299.815,0,0,0,0,0,0
+det-randloss-pie-r1,pie,randloss,base,r1,v1 (reference),3,0,0,0,2,299.815,0,0,0,0,0,0
+det-randloss-pie-r2,pie,randloss,base,r2,v2,1,1,1,1,4,300.675,0,0,0,0,0,0
+det-randloss-pie-r2,pie,randloss,base,r2,v2-fixed,1,1,1,1,3,300.675,0,0,0,0,0,0
+det-randloss-pie-r2,pie,randloss,base,r2,v1 (reference),1,0,0,0,3,300.675,0,0,0,0,0,0
+det-randloss-red-r1,red,randloss,base,r1,v2,0,0,0,0,2,312.77500000000003,0,0,0,0,0,0
+det-randloss-red-r1,red,randloss,base,r1,v2-fixed,0,0,0,0,3,312.77500000000003,0,0,0,0,0,0
+det-randloss-red-r1,red,randloss,base,r1,v1 (reference),0,0,0,0,1,312.77500000000003,0,0,0,0,0,0
+det-randloss-red-r2,red,randloss,base,r2,v2,1,0,0,0,2,298.115,0,0,0,0,0,0
+det-randloss-red-r2,red,randloss,base,r2,v2-fixed,1,0,0,0,2,298.115,0,0,0,0,0,0
+det-randloss-red-r2,red,randloss,base,r2,v1 (reference),1,0,0,0,0,298.115,0,0,0,0,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,base,r1,v2,43,41,42,41,5,352.29,9,9,8,1,1,1
+det-revdelay-fq_codel-r1,fq_codel,revdelay,base,r1,v2-fixed,43,40,42,40,2,352.29,9,9,8,1,1,1
+det-revdelay-fq_codel-r1,fq_codel,revdelay,base,r1,v1 (reference),43,42,42,42,0,352.29,9,9,8,2,2,1
+det-revdelay-fq_codel-r2,fq_codel,revdelay,base,r2,v2,47,45,46,45,4,355.84999999999997,15,15,12,0,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,base,r2,v2-fixed,47,43,44,43,1,355.84999999999997,15,15,12,0,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,base,r2,v1 (reference),47,42,42,42,0,355.84999999999997,15,15,12,1,1,0
+det-revdelay-pfifo-r1,pfifo,revdelay,base,r1,v2,72,72,72,72,0,339.85,16,14,13,1,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,base,r1,v2-fixed,72,72,72,72,1,339.85,16,14,13,1,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,base,r1,v1 (reference),72,72,72,72,0,339.85,16,14,13,1,1,0
+det-revdelay-pfifo-r2,pfifo,revdelay,base,r2,v2,76,72,75,72,0,335.605,12,12,12,0,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,base,r2,v2-fixed,76,72,75,72,0,335.605,12,12,12,0,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,base,r2,v1 (reference),76,72,72,72,0,335.605,12,12,12,0,0,0
+det-revdelay-pie-r1,pie,revdelay,base,r1,v2,76,74,74,74,0,311.375,16,15,13,0,0,0
+det-revdelay-pie-r1,pie,revdelay,base,r1,v2-fixed,76,74,75,74,0,311.375,16,15,13,0,0,0
+det-revdelay-pie-r1,pie,revdelay,base,r1,v1 (reference),76,74,74,74,0,311.375,16,15,13,0,0,0
+det-revdelay-pie-r2,pie,revdelay,base,r2,v2,73,72,72,72,3,319.26,12,12,12,0,0,0
+det-revdelay-pie-r2,pie,revdelay,base,r2,v2-fixed,73,72,72,72,0,319.26,12,12,12,0,0,0
+det-revdelay-pie-r2,pie,revdelay,base,r2,v1 (reference),73,72,72,72,1,319.26,12,12,12,0,0,0
+det-revdelay-red-r1,red,revdelay,base,r1,v2,76,74,74,74,1,322.89500000000004,12,11,10,0,0,0
+det-revdelay-red-r1,red,revdelay,base,r1,v2-fixed,76,74,75,74,1,322.89500000000004,12,11,10,0,0,0
+det-revdelay-red-r1,red,revdelay,base,r1,v1 (reference),76,74,74,74,1,322.89500000000004,12,11,10,0,0,0
+det-revdelay-red-r2,red,revdelay,base,r2,v2,73,72,73,72,0,334.905,11,11,11,0,0,0
+det-revdelay-red-r2,red,revdelay,base,r2,v2-fixed,73,72,73,72,0,334.905,11,11,11,0,0,0
+det-revdelay-red-r2,red,revdelay,base,r2,v1 (reference),73,72,72,72,1,334.905,11,11,11,0,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,base,r1,v2,41,26,33,26,6,269.05999999999995,3,2,1,2,1,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,base,r1,v2-fixed,41,25,32,25,5,269.05999999999995,3,2,1,2,1,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,base,r1,v1 (reference),41,21,21,21,2,269.05999999999995,3,2,1,2,1,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,base,r2,v2,36,24,29,24,13,309.315,4,2,2,2,1,1
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,base,r2,v2-fixed,36,24,29,24,4,309.315,4,2,2,2,1,1
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,base,r2,v1 (reference),36,22,22,22,2,309.315,4,2,2,3,1,1
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,base,r1,v2,68,60,68,60,0,277.635,16,7,5,0,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,base,r1,v2-fixed,68,60,68,60,1,277.635,16,7,5,0,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,base,r1,v1 (reference),68,64,64,64,0,277.635,16,7,5,2,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,base,r2,v2,62,60,62,60,0,298.425,8,3,2,0,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,base,r2,v2-fixed,62,60,62,60,0,298.425,8,3,2,0,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,base,r2,v1 (reference),62,53,53,53,1,298.425,8,3,2,1,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,base,r1,v2,68,61,68,61,1,272.16999999999996,11,4,2,0,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,base,r1,v2-fixed,68,61,68,61,0,272.16999999999996,11,4,2,0,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,base,r1,v1 (reference),68,57,57,57,0,272.16999999999996,11,4,2,0,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,base,r2,v2,67,60,66,60,1,292.15999999999997,14,9,3,0,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,base,r2,v2-fixed,67,60,66,60,0,292.15999999999997,14,9,3,0,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,base,r2,v1 (reference),67,65,66,65,0,292.15999999999997,14,9,3,1,0,0
+det-tcpbbr-red-r1,red,tcpbbr,base,r1,v2,67,60,67,60,0,274.875,14,7,5,0,0,0
+det-tcpbbr-red-r1,red,tcpbbr,base,r1,v2-fixed,67,60,67,60,0,274.875,14,7,5,0,0,0
+det-tcpbbr-red-r1,red,tcpbbr,base,r1,v1 (reference),67,56,57,56,0,274.875,14,7,5,2,0,0
+det-tcpbbr-red-r2,red,tcpbbr,base,r2,v2,60,60,60,60,0,307.14500000000004,9,3,3,0,0,0
+det-tcpbbr-red-r2,red,tcpbbr,base,r2,v2-fixed,60,60,60,60,0,307.14500000000004,9,3,3,0,0,0
+det-tcpbbr-red-r2,red,tcpbbr,base,r2,v1 (reference),60,50,50,50,0,307.14500000000004,9,3,3,0,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,base,r1,v2,34,29,33,29,12,289.865,5,3,2,0,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,base,r1,v2-fixed,34,27,32,27,6,289.865,5,3,2,1,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,base,r1,v1 (reference),34,20,20,20,0,289.865,5,3,2,2,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,base,r2,v2,30,23,25,23,5,300.12499999999994,6,3,2,2,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,base,r2,v2-fixed,30,21,24,21,2,300.12499999999994,6,3,2,2,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,base,r2,v1 (reference),30,16,16,16,1,300.12499999999994,6,3,2,2,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,base,r1,v2,60,60,60,60,0,277.435,12,4,1,2,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,base,r1,v2-fixed,60,60,60,60,0,277.435,12,4,1,2,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,base,r1,v1 (reference),60,54,54,54,0,277.435,12,4,1,4,2,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,base,r2,v2,62,60,60,60,0,294.005,9,4,0,1,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,base,r2,v2-fixed,62,60,60,60,0,294.005,9,4,0,1,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,base,r2,v1 (reference),62,56,56,56,0,294.005,9,4,0,3,1,0
+det-tcpcubic-pie-r1,pie,tcpcubic,base,r1,v2,103,63,102,63,1,289.45,8,1,0,0,0,0
+det-tcpcubic-pie-r1,pie,tcpcubic,base,r1,v2-fixed,103,61,102,61,0,289.45,8,1,0,1,1,0
+det-tcpcubic-pie-r1,pie,tcpcubic,base,r1,v1 (reference),103,58,64,58,1,289.45,8,1,0,1,1,0
+det-tcpcubic-pie-r2,pie,tcpcubic,base,r2,v2,102,62,101,62,1,312.73999999999995,8,1,0,0,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,base,r2,v2-fixed,102,62,101,62,0,312.73999999999995,8,1,0,0,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,base,r2,v1 (reference),102,64,65,64,2,312.73999999999995,8,1,0,4,1,0
+det-tcpcubic-red-r1,red,tcpcubic,base,r1,v2,71,60,71,60,0,280.78999999999996,7,0,0,0,0,0
+det-tcpcubic-red-r1,red,tcpcubic,base,r1,v2-fixed,71,61,71,61,0,280.78999999999996,7,0,0,0,0,0
+det-tcpcubic-red-r1,red,tcpcubic,base,r1,v1 (reference),71,39,40,39,0,280.78999999999996,7,0,0,5,0,0
+det-tcpcubic-red-r2,red,tcpcubic,base,r2,v2,67,59,62,59,1,282.06,9,3,0,1,0,0
+det-tcpcubic-red-r2,red,tcpcubic,base,r2,v2-fixed,67,62,65,62,0,282.06,9,3,0,0,0,0
+det-tcpcubic-red-r2,red,tcpcubic,base,r2,v1 (reference),67,34,36,34,0,282.06,9,3,0,4,1,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,split,r1,v2,73,66,72,66,7,674.36,8,8,8,0,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,split,r1,v2-fixed,73,67,72,67,1,674.36,8,8,8,0,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,split,r1,v1 (reference),73,70,70,70,6,674.36,8,8,8,2,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,split,r2,v2,73,64,70,64,10,705.5050000000001,21,21,20,0,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,split,r2,v2-fixed,73,65,71,65,2,705.5050000000001,21,21,20,0,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,split,r2,v1 (reference),73,69,70,69,2,705.5050000000001,21,21,20,0,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,split,r1,v2,126,108,124,108,0,634.59,8,8,8,1,1,1
+det-splitcap-pfifo-r1,pfifo,splitcap,split,r1,v2-fixed,126,109,126,109,0,634.59,8,8,8,1,1,1
+det-splitcap-pfifo-r1,pfifo,splitcap,split,r1,v1 (reference),126,109,117,109,1,634.59,8,8,8,1,1,1
+det-splitcap-pfifo-r2,pfifo,splitcap,split,r2,v2,120,109,118,109,3,655.8950000000001,34,33,24,1,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,split,r2,v2-fixed,120,108,118,108,3,655.8950000000001,34,33,24,0,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,split,r2,v1 (reference),120,106,113,106,3,655.8950000000001,34,33,24,5,5,2
+det-splitcap-pie-r1,pie,splitcap,split,r1,v2,115,110,114,110,0,605.82,14,14,14,0,0,0
+det-splitcap-pie-r1,pie,splitcap,split,r1,v2-fixed,115,110,114,110,0,605.82,14,14,14,1,0,0
+det-splitcap-pie-r1,pie,splitcap,split,r1,v1 (reference),115,112,112,112,1,605.82,14,14,14,2,1,1
+det-splitcap-pie-r2,pie,splitcap,split,r2,v2,113,108,111,108,3,627.94,27,27,27,0,0,0
+det-splitcap-pie-r2,pie,splitcap,split,r2,v2-fixed,113,108,112,108,2,627.94,27,27,27,0,0,0
+det-splitcap-pie-r2,pie,splitcap,split,r2,v1 (reference),113,110,110,110,2,627.94,27,27,27,0,0,0
+det-splitcap-red-r1,red,splitcap,split,r1,v2,128,110,124,110,0,636.775,15,15,14,0,0,0
+det-splitcap-red-r1,red,splitcap,split,r1,v2-fixed,128,109,124,109,2,636.775,15,15,14,0,0,0
+det-splitcap-red-r1,red,splitcap,split,r1,v1 (reference),128,113,120,113,0,636.775,15,15,14,3,2,2
+det-splitcap-red-r2,red,splitcap,split,r2,v2,123,108,121,108,3,654.545,27,24,22,0,0,0
+det-splitcap-red-r2,red,splitcap,split,r2,v2-fixed,123,108,121,108,2,654.545,27,24,22,0,0,0
+det-splitcap-red-r2,red,splitcap,split,r2,v1 (reference),123,111,116,111,2,654.545,27,24,22,2,1,1
+det-splitudp-fq_codel-r1,fq_codel,splitudp,split,r1,v2,18,16,18,16,5,532.78,6,3,1,0,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,split,r1,v2-fixed,18,17,18,17,4,532.78,6,3,1,1,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,split,r1,v1 (reference),18,13,13,13,4,532.78,6,3,1,1,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,split,r2,v2,16,15,15,15,7,523.345,3,3,2,1,1,1
+det-splitudp-fq_codel-r2,fq_codel,splitudp,split,r2,v2-fixed,16,15,16,15,8,523.345,3,3,2,1,1,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,split,r2,v1 (reference),16,13,13,13,1,523.345,3,3,2,0,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,split,r1,v2,74,70,72,70,0,471.9150000000001,14,14,14,1,1,0
+det-splitudp-pfifo-r1,pfifo,splitudp,split,r1,v2-fixed,74,70,72,70,1,471.9150000000001,14,14,14,1,1,0
+det-splitudp-pfifo-r1,pfifo,splitudp,split,r1,v1 (reference),74,72,72,72,1,471.9150000000001,14,14,14,4,1,0
+det-splitudp-pfifo-r2,pfifo,splitudp,split,r2,v2,81,75,80,75,1,486.755,21,21,21,1,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,split,r2,v2-fixed,81,74,79,74,1,486.755,21,21,21,1,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,split,r2,v1 (reference),81,74,75,74,0,486.755,21,21,21,4,3,2
+det-splitudp-pie-r1,pie,splitudp,split,r1,v2,72,71,72,71,2,483.345,16,16,16,0,0,0
+det-splitudp-pie-r1,pie,splitudp,split,r1,v2-fixed,72,71,72,71,3,483.345,16,16,16,1,0,0
+det-splitudp-pie-r1,pie,splitudp,split,r1,v1 (reference),72,72,72,72,0,483.345,16,16,16,3,1,1
+det-splitudp-pie-r2,pie,splitudp,split,r2,v2,78,73,75,73,1,486.8500000000001,16,16,16,0,0,0
+det-splitudp-pie-r2,pie,splitudp,split,r2,v2-fixed,78,73,75,73,0,486.8500000000001,16,16,16,0,0,0
+det-splitudp-pie-r2,pie,splitudp,split,r2,v1 (reference),78,73,73,73,1,486.8500000000001,16,16,16,0,0,0
+det-splitudp-red-r1,red,splitudp,split,r1,v2,75,70,73,70,2,479.29,16,16,13,1,1,0
+det-splitudp-red-r1,red,splitudp,split,r1,v2-fixed,75,70,73,70,1,479.29,16,16,13,1,1,0
+det-splitudp-red-r1,red,splitudp,split,r1,v1 (reference),75,71,71,71,3,479.29,16,16,13,2,1,0
+det-splitudp-red-r2,red,splitudp,split,r2,v2,82,75,80,75,2,502.58,18,18,18,2,1,1
+det-splitudp-red-r2,red,splitudp,split,r2,v2-fixed,82,75,80,75,1,502.58,18,18,18,2,1,0
+det-splitudp-red-r2,red,splitudp,split,r2,v1 (reference),82,74,75,74,1,502.58,18,18,18,4,1,1
