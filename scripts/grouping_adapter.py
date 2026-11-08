@@ -243,18 +243,31 @@ def build(run_dir: Path, cfg: Config, backdate_max: float, warmup: float, qd_ms:
     return records, truth, onsets
 
 
-def leaf_groups(hit_sets: list[set[str]], same: dict[str, set[str]], subs: list[str]) -> dict[str, frozenset]:
-    """Tightest group of a client: the intersection of every hit set that
-    contains it. On a split topology an upstream burst hits A ∪ B, a downstream
-    one A or B, so leaf(a1) = A and leaf(b1) = B: the pair shares a link (pairs)
-    but not a leaf (pairs_leaf). Single bottleneck: both relations coincide.
-    Without hit sets (topology truth) the group is the client's `same` set.
-    A client in no group gets the empty set."""
-    if not hit_sets:
+def leaf_groups(bursts: list[dict], same: dict[str, set[str]], subs: list[str]) -> dict[str, frozenset]:
+    """Tightest *shared* group of a client. With plan windows (`expected`): the
+    intersection of the expected sets of the shared windows (>= 2 expected
+    clients) in which the client was hit, so a partial hit under fq_codel (2 of
+    3 clients queue) still says "link a" and a private access-link window does
+    not shrink the group to the client itself. Without expected sets
+    (bursts.csv): the intersection of the hit sets containing the client.
+    On a split topology an upstream burst gives A u B and a downstream one A,
+    so leaf(a1) = A: the a-b pair shares a link (pairs) but not a leaf
+    (pairs_leaf). Without any hits (topology truth) the group is the client's
+    `same` set. A client in no shared group gets the empty set."""
+    if not bursts:
         return {s: frozenset(same[s] | {s}) if same[s] else frozenset() for s in subs}
     out = {}
     for s in subs:
-        sets = [h for h in hit_sets if s in h]
+        sets = []
+        for b in bursts:
+            if s not in b["hit"]:
+                continue
+            exp = b.get("expected")
+            if exp is not None:
+                if len(exp) >= 2:
+                    sets.append(set(exp))
+            elif len(b["hit"]) >= 1:
+                sets.append(set(b["hit"]))
         out[s] = frozenset(set.intersection(*sets)) if sets else frozenset()
     return out
 
@@ -319,7 +332,7 @@ def truth_of(run: d.Run) -> dict:
             same[s] = {x for x in run.subs if group_of[x] == group_of[s] and group_of[s] != s}
         truth["source"] = "topology (same leaf queue)"
         truth["bursts"] = []
-    leaf = leaf_groups([set(b["hit"]) for b in truth["bursts"] if b["hit"]], same, run.subs)
+    leaf = leaf_groups([b for b in truth["bursts"] if b["hit"]], same, run.subs)
     truth["leaf"] = {s: sorted(l) for s, l in leaf.items()}
     truth["pairs_leaf"] = {}
     subs = sorted(run.subs)

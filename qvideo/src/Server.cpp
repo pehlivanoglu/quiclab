@@ -36,7 +36,7 @@ DEFINE_string(cc, "bbr", "mvfst congestion controller (bbr, bbr2, copa, cubic, n
 DEFINE_string(ladder_kbps, "500,1000,2500,5000,8000,12000", "allowed renditions");
 DEFINE_int32(fps, 30, "frames per second");
 DEFINE_int32(gop_ms, 1000, "GOP duration; one QUIC stream per GOP");
-DEFINE_double(ip_ratio, 8.0, "mean I-frame / mean P-frame size");
+DEFINE_double(ip_ratio, 4.0, "mean I-frame / mean P-frame size");
 DEFINE_double(size_sigma, 0.2, "lognormal sigma of per-frame size noise");
 DEFINE_uint64(seed, 1, "frame size seed");
 DEFINE_int32(stats_ms, 50, "sender CC stats sampling interval");

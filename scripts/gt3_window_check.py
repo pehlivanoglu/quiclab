@@ -70,9 +70,9 @@ def main(argv):
             cells = []
             for d in DETS:
                 s = gt_score.summarize([r["v"][name]["score"][d] for r in res if r["aqm"] == aqm])
-                cells.append(f"{s['precision']:.2f} / {s['recall']:.2f} / {s['recall_long']:.2f} / {s['latency_p50_ms']:.0f}")
+                cells.append(f"{s['precision']:.2f} / {s['recall']:.2f} / {s['bin_recall'][-1]:.2f} / {s['latency_p50_ms']:.0f}")
             rows.append([aqm, name, *cells])
-    L += ["## Detector scores (precision / recall / recall >= 1 s / latency p50 ms)", "",
+    L += ["## Detector scores (precision / recall / recall of episodes >= 2 s / latency p50 ms)", "",
           T(["aqm", "truth", *DETS], rows), ""]
     Path(argv[0]).write_text("\n".join(L))
     print("\n".join(L))

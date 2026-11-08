@@ -15,14 +15,18 @@ A, B = {"a1", "a2", "a3"}, {"b1", "b2", "b3"}
 SUBS = sorted(A | B | {"ctrl"})
 
 
+def _b(hit, expected=None):
+    return {"hit": sorted(hit)} if expected is None else {"hit": sorted(hit), "expected": sorted(expected)}
+
+
 def test_leaf_groups_split_topology():
-    leaf = ga.leaf_groups([A | B, A, B, A | B], {}, SUBS)
+    leaf = ga.leaf_groups([_b(A | B), _b(A), _b(B), _b(A | B)], {}, SUBS)
     assert leaf["a1"] == frozenset(A) and leaf["b2"] == frozenset(B)
     assert leaf["ctrl"] == frozenset()
 
 
 def test_leaf_groups_single_bottleneck_equals_link_relation():
-    leaf = ga.leaf_groups([A, A], {}, sorted(A | {"ctrl"}))
+    leaf = ga.leaf_groups([_b(A), _b(A)], {}, sorted(A | {"ctrl"}))
     assert all(leaf[s] == frozenset(A) for s in A) and leaf["ctrl"] == frozenset()
 
 
@@ -30,6 +34,16 @@ def test_leaf_groups_topology_fallback():
     same = {"a1": {"a2"}, "a2": {"a1"}, "ctrl": set()}
     leaf = ga.leaf_groups([], same, ["a1", "a2", "ctrl"])
     assert leaf["a1"] == leaf["a2"] == frozenset({"a1", "a2"}) and leaf["ctrl"] == frozenset()
+
+
+def test_leaf_groups_partial_hits_and_private_windows_keep_the_link_group():
+    # fq_codel-like partial hits (2 of 3) and a private access-link window on a1.
+    bursts = [_b({"a1", "a2"}, A), _b({"a2", "a3"}, A), _b({"a1"}, {"a1"}), _b(B, B), _b(A | B, A | B)]
+    leaf = ga.leaf_groups(bursts, {}, SUBS)
+    assert leaf["a1"] == leaf["a2"] == leaf["a3"] == frozenset(A)
+    assert leaf["b1"] == frozenset(B) and leaf["ctrl"] == frozenset()
+    # never hit -> no group
+    assert ga.leaf_groups([_b({"a2", "a3"}, A)], {}, SUBS)["a1"] == frozenset()
 
 
 def test_first_sustained_ignores_single_lucky_window():

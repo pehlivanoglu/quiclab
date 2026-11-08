@@ -90,7 +90,7 @@ class PublisherConfig(_StrictBase):
     fps: int = Field(default=30, ge=1, le=120)
     gop_ms: int = Field(default=1000, gt=0)
     # Mean I-frame size over mean P-frame size.
-    ip_ratio: float = Field(default=8.0, ge=1)
+    ip_ratio: float = Field(default=4.0, ge=1)
     # Lognormal sigma of the per-frame size noise (mean-preserving).
     size_sigma: float = Field(default=0.2, ge=0, le=2)
     seed: int = Field(default=1, ge=0)
