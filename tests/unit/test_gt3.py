@@ -70,3 +70,10 @@ def test_baseline_follows_a_path_delay_decrease_within_its_window():
     assert base[t.searchsorted(19.0)] == 40.0 and base[t.searchsorted(21.0)] == 20.0
     base = gt3.baseline(t, np.where(t < 20, 20.0, 40.0), [20.0], 10.0)  # increase, reset at the change
     assert base[t.searchsorted(21.0)] == 40.0
+
+
+def test_queue_between_band_and_episode_windows_is_ambiguous_not_clear():
+    owd = [20.0] * 400 + [50.0] * 60 + [20.0] * 400  # 30 ms standing queue for 300 ms: < 500 ms, > 150 ms
+    _, (eps, lab, _) = run(owd)
+    assert eps == []
+    assert set(lab[430:460]) == {"AMBIGUOUS"} and set(lab[:390]) == {"CLEAR"}

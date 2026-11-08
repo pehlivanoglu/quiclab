@@ -105,11 +105,11 @@ def main(argv):
     with ProcessPoolExecutor(max_workers=12) as pool:
         res = list(pool.map(worker, runs))
     T = gt1._table
-    cols = ["episodes", "precision", "recall", "recall >= 1 s", "latency p50 after t_on (ms)", "FA / min CLEAR"]
+    cols = ["episodes", "precision", "recall", "recall of episodes >= 2 s", "latency p50 after t_on (ms)", "FA / min CLEAR"]
 
     def cells(rs, truth, det):
         s = gt_score.summarize([r["score"][truth][det] for r in rs])
-        return [s["episodes"], _f(s["precision"]), _f(s["recall"]), _f(s["recall_long"]),
+        return [s["episodes"], _f(s["precision"]), _f(s["recall"]), _f(s["bin_recall"][-1]),
                 _f(s["late_latency_p50_ms"], 0), _f(s["fa_per_min"])]
 
     L = ["# Shadow / GCC: RTT vs sender-side OWD", "", __doc__.split("\n\n", 1)[1], ""]

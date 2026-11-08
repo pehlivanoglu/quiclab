@@ -28,7 +28,13 @@ RANK = {gt_bands.NO_DATA: -1, gt_bands.CLEAR: 0, gt_bands.AMBIGUOUS: 1, gt_bands
 NAMES = {v: k for k, v in RANK.items()}
 GRID_S = 0.005
 SCORED = ("shadow", "gcc", "bbr")
-LONG_S = 1.0  # episodes at least this long get their own recall
+# Recall is also broken down by episode duration (no cut-off: every bin is reported).
+BINS = ((0.0, 0.5), (0.5, 1.0), (1.0, 2.0), (2.0, float("inf")))
+BIN_LABELS = ("< 0.5 s", "0.5-1 s", "1-2 s", ">= 2 s")
+
+
+def _bin(duration: float) -> int:
+    return next(i for i, (lo, hi) in enumerate(BINS) if lo <= duration < hi)
 
 
 def client_view_codes(run: det_eval.Run, spans: list[dict]) -> np.ndarray:
@@ -87,7 +93,7 @@ def score(run: det_eval.Run, view: dict, starts: dict, detectors=SCORED) -> dict
     out = {}
     for name in detectors:
         t = {"episodes": 0, "detected": 0, "tp": 0, "fp": 0, "clear_s": 0.0, "amb_s": 0.0, "latency": [],
-             "episodes_long": 0, "detected_long": 0, "early": 0, "late_latency": []}
+             "bin_episodes": [0] * len(BINS), "bin_detected": [0] * len(BINS), "early": 0, "late_latency": []}
         for s, (eps, code) in view.items():
             alarms = sorted(a for a in starts.get((name, s), []) if a >= det_eval.WARMUP_S)
             cells = code[int(det_eval.WARMUP_S / GRID_S):]
@@ -98,13 +104,13 @@ def score(run: det_eval.Run, view: dict, starts: dict, detectors=SCORED) -> dict
                 if a < det_eval.WARMUP_S:
                     continue
                 t["episodes"] += 1
-                long = b - a >= LONG_S
-                t["episodes_long"] += long
+                k = _bin(b - a)
+                t["bin_episodes"][k] += 1
                 lo, hi = a - det_eval.PRE_ONSET_LEAD_S, min(b, a + det_eval.SEARCH_S)
                 hit = next((x for x in alarms if lo <= x <= hi), None)
                 if hit is not None:
                     t["detected"] += 1
-                    t["detected_long"] += long
+                    t["bin_detected"][k] += 1
                     t["tp"] += 1
                     t["latency"].append(max(0.0, hit - a))
                     if hit < a:
@@ -140,6 +146,31 @@ def summarize(tallies: list[dict]) -> dict[str, float]:
             "early_share": sum(t.get("early", 0) for t in tallies) / det if det else float("nan"),
             "late_latency_p50_ms": statistics.median(x for t in tallies for x in t.get("late_latency", [])) * 1000
             if any(t.get("late_latency") for t in tallies) else float("nan"),
-            "episodes_long": sum(t["episodes_long"] for t in tallies),
-            "recall_long": (sum(t["detected_long"] for t in tallies) / sum(t["episodes_long"] for t in tallies)
-                            if sum(t["episodes_long"] for t in tallies) else float("nan"))}
+            "bin_episodes": [sum(t["bin_episodes"][i] for t in tallies) for i in range(len(BINS))],
+            "bin_recall": [(sum(t["bin_detected"][i] for t in tallies) / n if n else float("nan"))
+                           for i, n in enumerate(sum(t["bin_episodes"][i] for t in tallies) for i in range(len(BINS)))],
+            "hop_episodes": sum(t.get("hop_episodes", 0) for t in tallies),
+            "hop_recall": (sum(t.get("hop_detected", 0) for t in tallies) / sum(t.get("hop_episodes", 0) for t in tallies)
+                           if sum(t.get("hop_episodes", 0) for t in tallies) else float("nan"))}
+
+
+def hop_score(run: det_eval.Run, hop_eps: list[tuple[str, float, float]], starts: dict, detectors=SCORED) -> dict[str, dict]:
+    """Link-level recall for resource truths (GT1 / GT2): one count per hop episode,
+    detected when any client whose path crosses the hop alarms in the det_eval window.
+    Returns per detector {"hop_episodes", "hop_detected"} to merge into score() tallies."""
+    exposed = {}
+    for s in run.subs:
+        for a, b in det_eval.path_hops(run, run.pub, s):
+            exposed.setdefault(f"{a}->{b}", []).append(s)
+    out = {}
+    for name in detectors:
+        t = {"hop_episodes": 0, "hop_detected": 0}
+        for hop, a, b in hop_eps:
+            if a < det_eval.WARMUP_S or not exposed.get(hop):
+                continue
+            t["hop_episodes"] += 1
+            lo, hi = a - det_eval.PRE_ONSET_LEAD_S, min(b, a + det_eval.SEARCH_S)
+            if any(lo <= x <= hi for s in exposed[hop] for x in starts.get((name, s), [])):
+                t["hop_detected"] += 1
+        out[name] = t
+    return out

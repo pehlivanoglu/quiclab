@@ -43,7 +43,7 @@ struct VideoParams {
   uint32_t rateKbps{0};
   uint32_t fps{30};
   uint32_t gopFrames{60};
-  double ipRatio{8.0};   // mean I-frame size / mean P-frame size
+  double ipRatio{4.0};   // mean I-frame size / mean P-frame size
   double sizeSigma{0.2}; // lognormal sigma of per-frame size noise
   uint64_t seed{1};
 };

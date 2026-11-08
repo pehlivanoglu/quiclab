@@ -28,7 +28,9 @@ K of N windows active (N = P_ON / W, K / N = 4 / 6); t_on = the onset of the fir
 active window of the qualifying run, trigger = the channels active there; the
 episode ends after P_OFF (0.5 s) without an active window. Labels: CONGESTED in an
 episode; outside it NO_DATA (no timestamped packet, or near a delay change),
-AMBIGUOUS (x_d >= 5 ms or x_l >= 3 %), else CLEAR.
+AMBIGUOUS when the 150 ms minimum of q (P_AMB, the link-level persistence of
+GT1 / GT2) is >= 5 ms or x_l >= 3 %, else CLEAR: a standing queue of 150-500 ms
+is neither an episode nor clear time, so an alarm on it is not a false alarm.
 
 Loss is the receiver's evidence (sent but never timestamped), as det_eval's
 measured truth uses, not the sender's newly_lost (relay-side loss detection).
@@ -65,6 +67,7 @@ class Params:
     # (scripts/gt3_window_check.py): no sub-0.5 s episodes, negatives 3-4x lower, 97 % of
     # the injected event x client hits kept, split events 917 -> 336.
     p_min: float = 0.5
+    p_amb: float = 0.15  # window of the AMBIGUOUS band (link-level persistence)
     p_on: float = 0.15
     p_off: float = 0.5
     kn: float = 4 / 6
@@ -76,7 +79,7 @@ class Params:
 
     def tag(self) -> str:
         return (f"delay {self.d_enter_ms:g}/{self.d_stay_ms:g} ms, loss {self.l_enter:g}/{self.l_stay:g}, "
-                f"P_min {self.p_min * 1000:g} ms, K/N {self.kn:.2f}, base {self.base_window_s:g} s, "
+                f"P_min {self.p_min * 1000:g} ms, P_amb {self.p_amb * 1000:g} ms, K/N {self.kn:.2f}, base {self.base_window_s:g} s, "
                 f"min packets {self.min_packets}")
 
 
@@ -208,7 +211,8 @@ def flow_core(t, owd, sent, timed, changes, p: Params, dt: float):
     for e in episodes:
         in_ep |= (t >= e["t_on"]) & (t < e["t_end"])
     no_data = excluded | (np.isnan(owd) if sent is None else (timed == 0))
-    amb = (np.nan_to_num(x_d, nan=-1) >= p.d_stay_ms) | (np.nan_to_num(x_l, nan=-1) >= p.l_stay)
+    x_amb = _rolling_min(t, np.where(excluded, np.nan, q), p.p_amb)
+    amb = (np.nan_to_num(x_amb, nan=-1) >= p.d_stay_ms) | (np.nan_to_num(x_l, nan=-1) >= p.l_stay)
     lab = np.where(in_ep, gt_bands.CONGESTED,
                    np.where(no_data, NO_DATA, np.where(amb, gt_bands.AMBIGUOUS, gt_bands.CLEAR)))
     return episodes, lab, {"q": q, "x_d": x_d, "x_l": x_l}

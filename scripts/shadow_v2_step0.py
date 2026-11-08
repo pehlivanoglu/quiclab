@@ -185,14 +185,16 @@ def main(argv):
     def pooled(rs, g, t, det):
         return gt_score.summarize([r["score"][(g, t)][det] for r in rs])
 
-    hdr = ["truth", "grouping", "detector", "episodes", "precision", "recall", "recall >= 1 s",
+    hdr = ["truth", "grouping", "detector", "episodes", "precision", "recall",
+           *(f"recall {b} (n)" for b in gt_score.BIN_LABELS),
            "latency p50 after t_on (ms)", "latency p90", "share alarmed before t_on", "FA / min CLEAR"]
     rows, csv_rows = [], []
     for t in TRUTHS:
         for g in GROUPINGS:
             for det in DETS:
                 s = pooled(res, g, t, det)
-                row = [t, g, det, s["episodes"], _f(s["precision"]), _f(s["recall"]), _f(s["recall_long"]),
+                row = [t, g, det, s["episodes"], _f(s["precision"]), _f(s["recall"]),
+                       *(f"{_f(r)} ({n})" for r, n in zip(s["bin_recall"], s["bin_episodes"])),
                        _f(s["late_latency_p50_ms"], 0), _f(s["latency_p90_ms"], 0), _f(s["early_share"]),
                        _f(s["fa_per_min"])]
                 csv_rows.append(["all", *row])
@@ -204,7 +206,8 @@ def main(argv):
                 for det in DETS:
                     s = pooled([r for r in res if r["aqm"] == aqm], g, t, det)
                     csv_rows.append([aqm, t, g, det, s["episodes"], _f(s["precision"]), _f(s["recall"]),
-                                     _f(s["recall_long"]), _f(s["late_latency_p50_ms"], 0), _f(s["latency_p90_ms"], 0),
+                                     *(f"{_f(r)} ({n})" for r, n in zip(s["bin_recall"], s["bin_episodes"])),
+                                     _f(s["late_latency_p50_ms"], 0), _f(s["latency_p90_ms"], 0),
                                      _f(s["early_share"]), _f(s["fa_per_min"])])
     L += ["## 0.2 Baseline (all runs pooled; per AQM and single-signal variants in the CSV)", "", T(hdr, rows), ""]
 
