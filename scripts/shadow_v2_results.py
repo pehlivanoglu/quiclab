@@ -4,7 +4,7 @@
     python3 scripts/shadow_v2_results.py .runs/<campaign> [...]   # -> reports/detector-v2/results.md, results.csv
 
 Both detectors: tick features F1 (delay level), F2 (delay growth), F3 (pending growth over one GOP),
-loss fraction over 100 ms; fusion S = s1 + s2 + s3 + sL; CUSUM; score = G / G_ref. G_ref and the
+loss fraction over 100 ms; fusion S = s1 + s2 + s3 + sL; CUSUM with the hold rule; score = G / G_ref. G_ref and the
 v2-fixed scale are fitted on the calm pfifo-r1 runs only (scripts/shadow_v2_step3.py); everything
 else (other AQMs, every r2) is held out. Score = G / (2 G_ref) in [0, 1]. Operating point theta_on = 0.25 (G = G_ref / 2), off at
 0.125 for T_clear. Truths: GT3 with a GT1 / GT2 queue on the path (spec section 11; main), GT1 and GT2
@@ -29,7 +29,7 @@ import gt3  # noqa: E402
 import gt_score  # noqa: E402
 import shadow_v2_step3 as s3  # noqa: E402
 
-DETS = {"v2": "fuse d: s1+s2+s3+sL", "v2-fixed": "fuse d fixed"}
+DETS = {"v2": "fuse d: s1+s2+s3+sL +hold gate:level+cap", "v2-fixed": "fuse d fixed +hold gate:level+cap"}  # frozen: hold (Step 5), loss gate level+cap
 THETAS = (0.15, 0.25, 0.4)
 MAIN_THETA = s3.THETA_ON
 

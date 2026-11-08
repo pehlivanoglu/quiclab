@@ -145,14 +145,14 @@ def ticks_for(run: d.Run, sid: str, dump: Path, code: np.ndarray, rendition_bps:
     R = np.full(n, np.nan)
     if n >= win:
         R[win - 1:] = r1s
-    F4 = np.where(R >= MIN_R_BYTES, P * 8 / R - base / 1000, np.nan)  # seconds
+    F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
     # F5: sends shifted by base (observed when their fate is known), packets ~ bytes / PKT.
     shift = np.nan_to_num(base, nan=np.nanmedian(base) if np.isfinite(np.nanmedian(base)) else 0.0) / 1000
     t_obs = t_sent + np.interp(t_sent, edges[1:], shift)
     k_s = np.clip(np.searchsorted(edges, t_obs, side="right") - 1, 0, n - 1)
     n_pk = np.bincount(k_s, weights=sent_bytes / PKT, minlength=n)
     df = pd.DataFrame({"t": edges[1:], "F1": F1, "F2": F2, "F3": F3, "F4": F4, "n": n_pk, "l": lost, "base": base,
-                       "P": P, "P_min": p_min, "d": dk, "R": R, "masked": masked, "no_data": no_data, "acks": cnt,
+                       "P": P, "P_min": p_min, "d": dk, "rate": rate, "d0": rendition_bps * WIRE, "R": R, "masked": masked, "no_data": no_data, "acks": cnt,
                        "srtt": srtt, "probe_rtt": probe_rtt, "gt3": tick_code})
     df.loc[df.no_data, FEATS] = np.nan
     return df
