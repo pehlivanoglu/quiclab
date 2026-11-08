@@ -67,12 +67,12 @@ def client_view(run: det_eval.Run, hop_eps: list[tuple[str, float, float]],
     return out
 
 
-def alarm_starts(run: det_eval.Run, detectors=SCORED, acks=None) -> dict[tuple[str, str], list[float]]:
+def alarm_starts(run: det_eval.Run, detectors=SCORED, acks=None, grouping: str = "topology") -> dict[tuple[str, str], list[float]]:
     """(detector, client) -> alarm start times, from the same replays det_eval.score uses."""
     # As det_eval.score: tuned variants relabelled, BBR's own events ("" variant) taken once, from the m4 replay.
-    events = [{**e, "variant": f"tuned:{e['variant']}"} for e in det_eval.replay(run, det_eval.TUNED, acks=acks)
+    events = [{**e, "variant": f"tuned:{e['variant']}"} for e in det_eval.replay(run, det_eval.TUNED, acks=acks, grouping=grouping)
               if e["variant"]]
-    events += det_eval.replay(run, det_eval.PARAMS, acks=acks)  # m4 setting: gcc, shadow_m4, single-signal variants, bbr
+    events += det_eval.replay(run, det_eval.PARAMS, acks=acks, grouping=grouping)  # m4 setting: gcc, shadow_m4, single-signal variants, bbr
     starts = defaultdict(list)
     for e in events:
         for name in detectors:
