@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.."
 TAG="${1:-$(date +%F)}"
 REPS="${REPS:-2}"
 AQMS="${AQMS:-pfifo,red,pie,fq_codel}"
-BASE="capacity,cbr,ppbp,burstcap,burstudp,bursttiny,ramp,tcpcubic,tcpbbr,burstcaplowrtt,burstcaphighrtt,burstlong,burstcapshallow,burstcapdeep,onoff,revdelay,calm030,calm065,calm090,calmcbr090,delaystep,randloss"
+BASE="capacity,cbr,ppbp,burstcap,burstudp,bursttiny,ramp,tcpcubic,tcpbbr,burstcaplowrtt,burstcaphighrtt,burstlong,burstcapshallow,burstcapdeep,onoff,revdelay,calm030,calm065,calm090,calmcbr090,randloss"
 
 [ -x .venv/bin/python ] || { echo "missing .venv: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt" >&2; exit 1; }
 [ -x qvideo/build/qvideo-server ] || { echo "missing qvideo: .venv/bin/python -m quiclab build qvideo" >&2; exit 1; }

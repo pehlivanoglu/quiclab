@@ -9,7 +9,7 @@ generated from det-burst.yaml (seed = rep, see BURST_SCENARIOS): burstcap,
 burstudp, bursttiny, ramp, isolate (--topology access only), tcpcubic, tcpbbr, burstcaplowrtt,
 burstcaphighrtt, burstlong, burstcapshallow, burstcapdeep, onoff, revdelay,
 the no-congestion false-alarm runs calm030, calm065, calm090,
-calmcbr090, delaystep, randloss, and for --topology split (upstream + two
+calmcbr090, randloss, and for --topology split (upstream + two
 downstream bottlenecks, detector-split.yaml) splitcap, splitudp. Other event
 scenarios on split load the upstream bottleneck.
 
@@ -120,10 +120,6 @@ BURST_SCENARIOS = {
     "calm090": {"kind": "calm", "base_u": 0.9, "duration_s": 120},
     # Same u 0.9, reached by constant UDP cross traffic instead of a smaller link.
     "calmcbr090": {"kind": "calm", "cbr_u": 0.9, "duration_s": 120},
-    # Propagation delay steps on pub -> router (every client), forward or reverse, held d s:
-    # RTT rises, nothing queues.
-    "delaystep": {"kind": "delay", "u": (("forward", 20), ("forward", 50), ("reverse", 20), ("reverse", 50)),
-                  "d": (5,), "repeats": 3},
     # Random loss on pub -> router (every client), held d s, no queue.
     "randloss": {"kind": "loss", "u": (0.5, 1.0, 2.0), "d": (10,), "repeats": 3},
     # --topology split: capacity drops / UDP bursts on one bottleneck at a time, and on the

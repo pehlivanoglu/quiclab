@@ -1,0 +1,1201 @@
+run,aqm,scenario,variant,episodes,detected,tp,fp,cov_on_s,cov_ep_s,starts_in_ep,rebases,rebases_in_ep
+det-isolate-fq_codel-r1,fq_codel,isolate,v2,26,25,25,2,43.21159999999985,50.09999999999991,23,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,v2 +hold,26,24,24,1,44.138199999999856,50.09999999999991,22,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,v2 +hold +rebase,26,24,24,1,44.138199999999856,50.09999999999991,22,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,v2-fixed,26,25,25,1,41.42399999999985,50.09999999999991,25,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,v2-fixed +hold,26,25,25,1,42.75339999999983,50.09999999999991,25,0,0
+det-isolate-fq_codel-r1,fq_codel,isolate,v2-fixed +hold +rebase,26,25,25,1,42.75339999999983,50.09999999999991,25,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,v2,25,24,24,6,42.77269999999983,49.275,24,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,v2 +hold,25,24,24,6,43.0051999999998,49.275,24,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,v2 +hold +rebase,25,24,24,6,43.0051999999998,49.275,24,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,v2-fixed,25,24,24,2,41.56529999999998,49.275,24,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,v2-fixed +hold,25,24,24,1,41.28919999999988,49.275,24,0,0
+det-isolate-fq_codel-r2,fq_codel,isolate,v2-fixed +hold +rebase,25,24,24,1,41.28919999999988,49.275,24,0,0
+det-isolate-pfifo-r1,pfifo,isolate,v2,25,24,24,4,42.45299999999989,48.14499999999993,23,0,0
+det-isolate-pfifo-r1,pfifo,isolate,v2 +hold,25,24,24,4,43.95849999999992,48.14499999999993,21,0,0
+det-isolate-pfifo-r1,pfifo,isolate,v2 +hold +rebase,25,24,24,4,43.95849999999992,48.14499999999993,21,0,0
+det-isolate-pfifo-r1,pfifo,isolate,v2-fixed,25,24,24,1,42.53449999999993,48.14499999999993,24,0,0
+det-isolate-pfifo-r1,pfifo,isolate,v2-fixed +hold,25,24,24,0,42.9079999999999,48.14499999999993,22,0,0
+det-isolate-pfifo-r1,pfifo,isolate,v2-fixed +hold +rebase,25,24,24,0,42.9079999999999,48.14499999999993,22,0,0
+det-isolate-pfifo-r2,pfifo,isolate,v2,32,26,26,0,46.8715999999999,54.72999999999992,27,0,0
+det-isolate-pfifo-r2,pfifo,isolate,v2 +hold,32,26,26,0,49.18249999999988,54.72999999999992,25,0,0
+det-isolate-pfifo-r2,pfifo,isolate,v2 +hold +rebase,32,26,26,0,49.18249999999988,54.72999999999992,25,0,0
+det-isolate-pfifo-r2,pfifo,isolate,v2-fixed,32,24,24,0,45.77430000000003,54.72999999999992,25,0,0
+det-isolate-pfifo-r2,pfifo,isolate,v2-fixed +hold,32,26,26,0,48.052799999999905,54.72999999999992,26,0,0
+det-isolate-pfifo-r2,pfifo,isolate,v2-fixed +hold +rebase,32,26,26,0,48.052799999999905,54.72999999999992,26,0,0
+det-isolate-pie-r1,pie,isolate,v2,27,24,24,2,44.11219999999996,53.295000000000016,24,0,0
+det-isolate-pie-r1,pie,isolate,v2 +hold,27,24,24,2,46.652799999999914,53.295000000000016,22,0,0
+det-isolate-pie-r1,pie,isolate,v2 +hold +rebase,27,24,24,2,46.652799999999914,53.295000000000016,22,0,0
+det-isolate-pie-r1,pie,isolate,v2-fixed,27,24,24,0,43.56439999999987,53.295000000000016,25,0,0
+det-isolate-pie-r1,pie,isolate,v2-fixed +hold,27,24,24,0,45.15359999999984,53.295000000000016,24,0,0
+det-isolate-pie-r1,pie,isolate,v2-fixed +hold +rebase,27,24,24,0,45.15359999999984,53.295000000000016,24,0,0
+det-isolate-pie-r2,pie,isolate,v2,25,23,23,2,46.637699999999825,53.59999999999991,23,0,0
+det-isolate-pie-r2,pie,isolate,v2 +hold,25,23,23,0,47.363199999999864,53.59999999999991,22,0,0
+det-isolate-pie-r2,pie,isolate,v2 +hold +rebase,25,23,23,0,47.363199999999864,53.59999999999991,22,0,0
+det-isolate-pie-r2,pie,isolate,v2-fixed,25,23,23,0,46.471999999999795,53.59999999999991,22,0,0
+det-isolate-pie-r2,pie,isolate,v2-fixed +hold,25,23,23,0,46.47219999999979,53.59999999999991,22,0,0
+det-isolate-pie-r2,pie,isolate,v2-fixed +hold +rebase,25,23,23,0,46.47219999999979,53.59999999999991,22,0,0
+det-isolate-red-r1,red,isolate,v2,27,25,25,0,47.678400000000025,57.46500000000006,22,0,0
+det-isolate-red-r1,red,isolate,v2 +hold,27,24,24,0,50.45099999999999,57.46500000000006,20,0,0
+det-isolate-red-r1,red,isolate,v2 +hold +rebase,27,24,24,0,50.45099999999999,57.46500000000006,20,0,0
+det-isolate-red-r1,red,isolate,v2-fixed,27,25,25,0,47.055599999999956,57.46500000000006,24,0,0
+det-isolate-red-r1,red,isolate,v2-fixed +hold,27,24,24,0,49.005199999999974,57.46500000000006,23,0,0
+det-isolate-red-r1,red,isolate,v2-fixed +hold +rebase,27,24,24,0,49.005199999999974,57.46500000000006,23,0,0
+det-isolate-red-r2,red,isolate,v2,27,26,26,4,44.24899999999994,50.94000000000004,26,0,0
+det-isolate-red-r2,red,isolate,v2 +hold,27,25,25,3,46.17729999999992,50.94000000000004,23,0,0
+det-isolate-red-r2,red,isolate,v2 +hold +rebase,27,25,25,3,46.17729999999992,50.94000000000004,23,0,0
+det-isolate-red-r2,red,isolate,v2-fixed,27,25,25,2,43.864999999999895,50.94000000000004,25,0,0
+det-isolate-red-r2,red,isolate,v2-fixed +hold,27,25,25,1,45.24739999999994,50.94000000000004,24,0,0
+det-isolate-red-r2,red,isolate,v2-fixed +hold +rebase,27,25,25,1,45.24739999999994,50.94000000000004,24,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,v2,47,47,47,5,102.40869999999984,118.85499999999992,45,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,v2 +hold,47,46,46,5,107.4229999999998,118.85499999999992,40,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,v2 +hold +rebase,47,46,46,5,107.4229999999998,118.85499999999992,40,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,v2-fixed,47,47,47,3,101.52949999999983,118.85499999999992,48,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,v2-fixed +hold,47,46,46,3,105.76479999999984,118.85499999999992,42,0,0
+det-burstcap-fq_codel-r1,fq_codel,burstcap,v2-fixed +hold +rebase,47,46,46,3,105.76479999999984,118.85499999999992,42,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,v2,49,47,47,3,100.64549999999987,114.07000000000008,49,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,v2 +hold,49,46,46,2,103.62339999999996,114.07000000000008,45,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,v2 +hold +rebase,49,46,46,2,103.62339999999996,114.07000000000008,45,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,v2-fixed,49,47,47,0,99.42409999999995,114.07000000000008,48,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,v2-fixed +hold,49,47,47,1,101.2396999999999,114.07000000000008,47,0,0
+det-burstcap-fq_codel-r2,fq_codel,burstcap,v2-fixed +hold +rebase,49,47,47,1,101.2396999999999,114.07000000000008,47,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,v2,77,74,74,0,193.79369999999975,224.33000000000007,69,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,v2 +hold,77,73,73,0,202.39229999999986,224.33000000000007,67,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,v2 +hold +rebase,77,73,73,0,202.39229999999986,224.33000000000007,67,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,v2-fixed,77,73,73,1,193.29929999999996,224.33000000000007,69,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,v2-fixed +hold,77,72,72,0,198.81569999999988,224.33000000000007,69,0,0
+det-burstcap-pfifo-r1,pfifo,burstcap,v2-fixed +hold +rebase,77,72,72,0,198.81569999999988,224.33000000000007,69,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,v2,83,74,74,0,182.15729999999962,210.87499999999997,72,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,v2 +hold,83,72,72,0,189.66209999999973,210.87499999999997,70,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,v2 +hold +rebase,83,72,72,0,189.66209999999973,210.87499999999997,70,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,v2-fixed,83,74,74,0,182.42239999999958,210.87499999999997,73,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,v2-fixed +hold,83,72,72,0,188.31369999999959,210.87499999999997,71,0,0
+det-burstcap-pfifo-r2,pfifo,burstcap,v2-fixed +hold +rebase,83,72,72,0,188.31369999999959,210.87499999999997,71,0,0
+det-burstcap-pie-r1,pie,burstcap,v2,73,72,72,2,193.60739999999996,288.8450000000001,85,0,0
+det-burstcap-pie-r1,pie,burstcap,v2 +hold,73,72,72,2,267.67319999999995,288.8450000000001,69,0,0
+det-burstcap-pie-r1,pie,burstcap,v2 +hold +rebase,73,72,72,2,267.67319999999995,288.8450000000001,69,0,0
+det-burstcap-pie-r1,pie,burstcap,v2-fixed,73,72,72,2,198.59179999999986,288.8450000000001,84,0,0
+det-burstcap-pie-r1,pie,burstcap,v2-fixed +hold,73,72,72,2,266.27559999999977,288.8450000000001,70,0,0
+det-burstcap-pie-r1,pie,burstcap,v2-fixed +hold +rebase,73,72,72,2,266.27559999999977,288.8450000000001,70,0,0
+det-burstcap-pie-r2,pie,burstcap,v2,73,72,72,0,184.17919999999978,270.78,83,0,0
+det-burstcap-pie-r2,pie,burstcap,v2 +hold,73,72,72,0,250.2843999999997,270.78,70,0,0
+det-burstcap-pie-r2,pie,burstcap,v2 +hold +rebase,73,72,72,0,250.2843999999997,270.78,70,0,0
+det-burstcap-pie-r2,pie,burstcap,v2-fixed,73,72,72,0,187.64559999999992,270.78,85,0,0
+det-burstcap-pie-r2,pie,burstcap,v2-fixed +hold,73,72,72,0,248.2515999999997,270.78,72,0,0
+det-burstcap-pie-r2,pie,burstcap,v2-fixed +hold +rebase,73,72,72,0,248.2515999999997,270.78,72,0,0
+det-burstcap-red-r1,red,burstcap,v2,77,70,70,0,192.32219999999998,228.305,72,0,0
+det-burstcap-red-r1,red,burstcap,v2 +hold,77,70,70,0,204.96389999999988,228.305,70,0,0
+det-burstcap-red-r1,red,burstcap,v2 +hold +rebase,77,70,70,0,204.96389999999988,228.305,70,0,0
+det-burstcap-red-r1,red,burstcap,v2-fixed,77,70,70,1,193.7959999999999,228.305,72,0,0
+det-burstcap-red-r1,red,burstcap,v2-fixed +hold,77,71,71,0,205.6389999999999,228.305,71,0,0
+det-burstcap-red-r1,red,burstcap,v2-fixed +hold +rebase,77,71,71,0,205.6389999999999,228.305,71,0,0
+det-burstcap-red-r2,red,burstcap,v2,72,72,72,0,187.15969999999973,208.63499999999993,73,0,0
+det-burstcap-red-r2,red,burstcap,v2 +hold,72,72,72,0,191.4038999999996,208.63499999999993,70,0,0
+det-burstcap-red-r2,red,burstcap,v2 +hold +rebase,72,72,72,0,191.4038999999996,208.63499999999993,70,0,0
+det-burstcap-red-r2,red,burstcap,v2-fixed,72,72,72,0,187.25949999999983,208.63499999999993,71,0,0
+det-burstcap-red-r2,red,burstcap,v2-fixed +hold,72,72,72,0,188.26509999999968,208.63499999999993,71,0,0
+det-burstcap-red-r2,red,burstcap,v2-fixed +hold +rebase,72,72,72,0,188.26509999999968,208.63499999999993,71,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,v2,45,43,43,5,98.78209999999991,111.39499999999992,38,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,v2 +hold,45,41,41,2,103.43289999999988,111.39499999999992,37,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,v2 +hold +rebase,45,41,41,2,103.43289999999988,111.39499999999992,37,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,v2-fixed,45,44,44,1,98.77780000000001,111.39499999999992,39,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,v2-fixed +hold,45,42,42,1,102.21189999999993,111.39499999999992,37,0,0
+det-burstcapdeep-fq_codel-r1,fq_codel,burstcapdeep,v2-fixed +hold +rebase,45,42,42,1,102.21189999999993,111.39499999999992,37,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,v2,44,42,42,6,96.347,114.8950000000001,42,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,v2 +hold,44,42,42,6,104.66099999999989,114.8950000000001,41,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,v2 +hold +rebase,44,42,42,6,104.66099999999989,114.8950000000001,41,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,v2-fixed,44,44,44,4,96.44499999999994,114.8950000000001,44,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,v2-fixed +hold,44,42,42,4,103.36099999999986,114.8950000000001,42,0,0
+det-burstcapdeep-fq_codel-r2,fq_codel,burstcapdeep,v2-fixed +hold +rebase,44,42,42,4,103.36099999999986,114.8950000000001,42,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,v2,83,74,74,0,195.4382999999998,232.69,74,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,v2 +hold,83,71,71,0,206.28309999999982,232.69,71,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,v2 +hold +rebase,83,71,71,0,206.28309999999982,232.69,71,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,v2-fixed,83,74,74,0,196.7411999999998,232.69,74,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,v2-fixed +hold,83,71,71,1,206.01499999999967,232.69,71,0,0
+det-burstcapdeep-pfifo-r1,pfifo,burstcapdeep,v2-fixed +hold +rebase,83,71,71,1,206.01499999999967,232.69,71,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,v2,72,72,72,1,192.974,229.32499999999993,72,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,v2 +hold,72,72,72,1,207.07579999999984,229.32499999999993,71,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,v2 +hold +rebase,72,72,72,1,207.07579999999984,229.32499999999993,71,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,v2-fixed,72,72,72,1,193.67779999999988,229.32499999999993,72,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,v2-fixed +hold,72,72,72,1,204.5017999999998,229.32499999999993,71,0,0
+det-burstcapdeep-pfifo-r2,pfifo,burstcapdeep,v2-fixed +hold +rebase,72,72,72,1,204.5017999999998,229.32499999999993,71,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,v2,72,71,71,1,191.9168,336.62500000000006,80,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,v2 +hold,72,72,72,0,311.8953999999999,336.62500000000006,66,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,v2 +hold +rebase,72,72,72,0,311.8953999999999,336.62500000000006,66,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,v2-fixed,72,72,72,0,202.52560000000005,336.62500000000006,86,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,v2-fixed +hold,72,72,72,0,310.80519999999984,336.62500000000006,68,0,0
+det-burstcapdeep-pie-r1,pie,burstcapdeep,v2-fixed +hold +rebase,72,72,72,0,310.80519999999984,336.62500000000006,68,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,v2,74,74,74,0,200.91899999999995,315.7699999999997,81,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,v2 +hold,74,74,74,0,294.09799999999956,315.7699999999997,72,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,v2 +hold +rebase,74,74,74,0,294.09799999999956,315.7699999999997,72,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,v2-fixed,74,74,74,1,207.11530000000008,315.7699999999997,83,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,v2-fixed +hold,74,74,74,0,291.0949999999996,315.7699999999997,72,0,0
+det-burstcapdeep-pie-r2,pie,burstcapdeep,v2-fixed +hold +rebase,74,74,74,0,291.0949999999996,315.7699999999997,72,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,v2,72,72,72,0,198.52600000000007,227.53500000000014,69,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,v2 +hold,72,71,71,0,207.38819999999993,227.53500000000014,68,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,v2 +hold +rebase,72,71,71,0,207.38819999999993,227.53500000000014,68,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,v2-fixed,72,72,72,0,201.46459999999976,227.53500000000014,70,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,v2-fixed +hold,72,72,72,0,206.7592999999997,227.53500000000014,71,0,0
+det-burstcapdeep-red-r1,red,burstcapdeep,v2-fixed +hold +rebase,72,72,72,0,206.7592999999997,227.53500000000014,71,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,v2,73,73,73,0,193.48099999999994,223.71500000000017,75,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,v2 +hold,73,73,73,0,202.9189999999999,223.71500000000017,71,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,v2 +hold +rebase,73,73,73,0,202.9189999999999,223.71500000000017,71,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,v2-fixed,73,73,73,0,194.0419999999999,223.71500000000017,73,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,v2-fixed +hold,73,73,73,0,200.35449999999986,223.71500000000017,71,0,0
+det-burstcapdeep-red-r2,red,burstcapdeep,v2-fixed +hold +rebase,73,73,73,0,200.35449999999986,223.71500000000017,71,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,v2,43,41,41,5,95.10799999999985,113.99999999999997,45,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,v2 +hold,43,42,42,3,98.46939999999981,113.99999999999997,41,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,v2 +hold +rebase,43,42,42,3,98.46939999999981,113.99999999999997,41,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,v2-fixed,43,40,40,3,93.7671999999998,113.99999999999997,45,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,v2-fixed +hold,43,39,39,2,96.70359999999987,113.99999999999997,39,0,0
+det-burstcaphighrtt-fq_codel-r1,fq_codel,burstcaphighrtt,v2-fixed +hold +rebase,43,39,39,2,96.70359999999987,113.99999999999997,39,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,v2,44,42,42,7,99.93379999999983,120.66499999999985,43,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,v2 +hold,44,42,42,5,102.17669999999984,120.66499999999985,41,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,v2 +hold +rebase,44,42,42,5,102.17669999999984,120.66499999999985,41,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,v2-fixed,44,42,42,9,99.76649999999995,120.66499999999985,44,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,v2-fixed +hold,44,41,41,4,102.19369999999988,120.66499999999985,41,0,0
+det-burstcaphighrtt-fq_codel-r2,fq_codel,burstcaphighrtt,v2-fixed +hold +rebase,44,41,41,4,102.19369999999988,120.66499999999985,41,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,v2,74,73,73,0,191.9882999999999,218.79000000000002,72,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,v2 +hold,74,73,73,0,194.95329999999979,218.79000000000002,72,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,v2 +hold +rebase,74,73,73,0,194.95329999999979,218.79000000000002,72,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,v2-fixed,74,74,74,0,191.74409999999975,218.79000000000002,73,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,v2-fixed +hold,74,74,74,0,194.45259999999982,218.79000000000002,73,0,0
+det-burstcaphighrtt-pfifo-r1,pfifo,burstcaphighrtt,v2-fixed +hold +rebase,74,74,74,0,194.45259999999982,218.79000000000002,73,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,v2,72,71,71,0,187.13799999999986,211.25000000000006,69,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,v2 +hold,72,71,71,0,189.08679999999978,211.25000000000006,69,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,v2 +hold +rebase,72,71,71,0,189.08679999999978,211.25000000000006,69,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,v2-fixed,72,71,71,0,185.5141999999998,211.25000000000006,71,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,v2-fixed +hold,72,71,71,0,186.88619999999975,211.25000000000006,71,0,0
+det-burstcaphighrtt-pfifo-r2,pfifo,burstcaphighrtt,v2-fixed +hold +rebase,72,71,71,0,186.88619999999975,211.25000000000006,71,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,v2,73,72,72,2,202.36719999999988,290.54,77,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,v2 +hold,73,72,72,1,265.20459999999986,290.54,66,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,v2 +hold +rebase,73,72,72,1,265.20459999999986,290.54,66,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,v2-fixed,73,72,72,2,208.66740000000001,290.54,82,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,v2-fixed +hold,73,72,72,1,263.93379999999985,290.54,68,0,0
+det-burstcaphighrtt-pie-r1,pie,burstcaphighrtt,v2-fixed +hold +rebase,73,72,72,1,263.93379999999985,290.54,68,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,v2,73,72,72,3,206.95740000000004,277.545,77,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,v2 +hold,73,72,72,3,254.6092,277.545,68,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,v2 +hold +rebase,73,72,72,3,254.6092,277.545,68,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,v2-fixed,73,72,72,3,211.33980000000003,277.545,84,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,v2-fixed +hold,73,72,72,2,252.42359999999988,277.545,69,0,0
+det-burstcaphighrtt-pie-r2,pie,burstcaphighrtt,v2-fixed +hold +rebase,73,72,72,2,252.42359999999988,277.545,69,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,v2,73,72,72,0,188.99739999999986,218.2649999999999,72,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,v2 +hold,73,72,72,0,191.54659999999987,218.2649999999999,72,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,v2 +hold +rebase,73,72,72,0,191.54659999999987,218.2649999999999,72,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,v2-fixed,73,72,72,0,189.16469999999987,218.2649999999999,72,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,v2-fixed +hold,73,72,72,0,192.9195999999998,218.2649999999999,72,0,0
+det-burstcaphighrtt-red-r1,red,burstcaphighrtt,v2-fixed +hold +rebase,73,72,72,0,192.9195999999998,218.2649999999999,72,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,v2,72,72,72,0,184.8869999999998,210.32500000000005,73,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,v2 +hold,72,72,72,0,187.6029999999998,210.32500000000005,73,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,v2 +hold +rebase,72,72,72,0,187.6029999999998,210.32500000000005,73,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,v2-fixed,72,72,72,0,183.5049999999999,210.32500000000005,73,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,v2-fixed +hold,72,72,72,0,185.75499999999982,210.32500000000005,72,0,0
+det-burstcaphighrtt-red-r2,red,burstcaphighrtt,v2-fixed +hold +rebase,72,72,72,0,185.75499999999982,210.32500000000005,72,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,v2,43,42,42,7,96.58889999999994,108.56500000000001,39,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,v2 +hold,43,40,40,8,102.49219999999987,108.56500000000001,37,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,v2 +hold +rebase,43,40,40,8,102.49219999999987,108.56500000000001,37,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,v2-fixed,43,42,42,4,96.38129999999992,108.56500000000001,41,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,v2-fixed +hold,43,41,41,3,101.46389999999985,108.56500000000001,37,0,0
+det-burstcaplowrtt-fq_codel-r1,fq_codel,burstcaplowrtt,v2-fixed +hold +rebase,43,41,41,3,101.46389999999985,108.56500000000001,37,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,v2,42,39,39,10,93.24169999999997,102.06999999999992,37,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,v2 +hold,42,38,38,6,96.7843999999999,102.06999999999992,36,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,v2 +hold +rebase,42,38,38,6,96.7843999999999,102.06999999999992,36,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,v2-fixed,42,40,40,6,92.79950000000001,102.06999999999992,36,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,v2-fixed +hold,42,39,39,3,95.26639999999993,102.06999999999992,36,0,0
+det-burstcaplowrtt-fq_codel-r2,fq_codel,burstcaplowrtt,v2-fixed +hold +rebase,42,39,39,3,95.26639999999993,102.06999999999992,36,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,v2,87,74,74,0,192.07989999999995,223.49000000000012,74,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,v2 +hold,87,73,73,1,203.97359999999992,223.49000000000012,69,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,v2 +hold +rebase,87,73,73,1,203.97359999999992,223.49000000000012,69,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,v2-fixed,87,75,75,1,191.8447999999998,223.49000000000012,76,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,v2-fixed +hold,87,73,73,0,200.61059999999978,223.49000000000012,71,0,0
+det-burstcaplowrtt-pfifo-r1,pfifo,burstcaplowrtt,v2-fixed +hold +rebase,87,73,73,0,200.61059999999978,223.49000000000012,71,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,v2,84,73,73,0,184.72229999999985,214.57,76,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,v2 +hold,84,72,72,0,199.12609999999975,214.57,70,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,v2 +hold +rebase,84,72,72,0,199.12609999999975,214.57,70,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,v2-fixed,84,72,72,0,184.08989999999977,214.57,75,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,v2-fixed +hold,84,72,72,0,194.9257999999998,214.57,72,0,0
+det-burstcaplowrtt-pfifo-r2,pfifo,burstcaplowrtt,v2-fixed +hold +rebase,84,72,72,0,194.9257999999998,214.57,72,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,v2,73,72,72,0,197.75080000000003,320.99999999999994,84,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,v2 +hold,73,72,72,0,301.8615999999997,320.99999999999994,69,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,v2 +hold +rebase,73,72,72,0,301.8615999999997,320.99999999999994,69,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,v2-fixed,73,72,72,0,201.4444000000002,320.99999999999994,88,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,v2-fixed +hold,73,72,72,0,299.27739999999966,320.99999999999994,72,0,0
+det-burstcaplowrtt-pie-r1,pie,burstcaplowrtt,v2-fixed +hold +rebase,73,72,72,0,299.27739999999966,320.99999999999994,72,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,v2,72,72,72,0,195.3820000000001,314.2949999999999,83,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,v2 +hold,72,72,72,0,300.15999999999985,314.2949999999999,66,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,v2 +hold +rebase,72,72,72,0,300.15999999999985,314.2949999999999,66,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,v2-fixed,72,72,72,0,198.38999999999987,314.2949999999999,84,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,v2-fixed +hold,72,72,72,0,296.80499999999955,314.2949999999999,68,0,0
+det-burstcaplowrtt-pie-r2,pie,burstcaplowrtt,v2-fixed +hold +rebase,72,72,72,0,296.80499999999955,314.2949999999999,68,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,v2,76,70,70,0,185.52119999999996,213.0999999999998,75,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,v2 +hold,76,69,69,0,197.34219999999976,213.0999999999998,68,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,v2 +hold +rebase,76,69,69,0,197.34219999999976,213.0999999999998,68,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,v2-fixed,76,68,68,1,188.00599999999983,213.0999999999998,69,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,v2-fixed +hold,76,69,69,1,194.26679999999962,213.0999999999998,69,0,0
+det-burstcaplowrtt-red-r1,red,burstcaplowrtt,v2-fixed +hold +rebase,76,69,69,1,194.26679999999962,213.0999999999998,69,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,v2,85,76,76,0,182.69729999999993,206.24000000000015,74,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,v2 +hold,85,73,73,0,190.2481,206.24000000000015,69,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,v2 +hold +rebase,85,73,73,0,190.2481,206.24000000000015,69,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,v2-fixed,85,74,74,0,181.2103999999999,206.24000000000015,72,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,v2-fixed +hold,85,72,72,0,186.49999999999983,206.24000000000015,70,0,0
+det-burstcaplowrtt-red-r2,red,burstcaplowrtt,v2-fixed +hold +rebase,85,72,72,0,186.49999999999983,206.24000000000015,70,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,v2,64,60,60,1,109.56219999999979,144.845,64,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,v2 +hold,64,59,59,1,123.73479999999982,144.845,56,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,v2 +hold +rebase,64,59,59,1,123.73479999999982,144.845,56,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,v2-fixed,64,55,55,0,96.42659999999977,144.845,62,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,v2-fixed +hold,64,53,53,0,109.12139999999964,144.845,53,0,0
+det-burstcapshallow-fq_codel-r1,fq_codel,burstcapshallow,v2-fixed +hold +rebase,64,53,53,0,109.12139999999964,144.845,53,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,v2,65,62,62,1,114.83779999999979,147.625,68,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,v2 +hold,65,60,60,0,126.80839999999964,147.625,59,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,v2 +hold +rebase,65,60,60,0,126.80839999999964,147.625,59,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,v2-fixed,65,60,60,0,101.34559999999983,147.625,64,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,v2-fixed +hold,65,57,57,0,113.70219999999976,147.625,56,0,0
+det-burstcapshallow-fq_codel-r2,fq_codel,burstcapshallow,v2-fixed +hold +rebase,65,57,57,0,113.70219999999976,147.625,56,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,v2,71,71,71,1,191.12260000000003,219.75999999999988,67,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,v2 +hold,71,70,70,3,200.45439999999988,219.75999999999988,67,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,v2 +hold +rebase,71,70,70,3,200.45439999999988,219.75999999999988,67,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,v2-fixed,71,70,70,0,185.57479999999984,219.75999999999988,71,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,v2-fixed +hold,71,70,70,0,194.00589999999985,219.75999999999988,70,0,0
+det-burstcapshallow-pfifo-r1,pfifo,burstcapshallow,v2-fixed +hold +rebase,71,70,70,0,194.00589999999985,219.75999999999988,70,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,v2,77,76,76,0,188.89000000000001,223.35500000000005,75,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,v2 +hold,77,73,73,0,202.30599999999987,223.35500000000005,68,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,v2 +hold +rebase,77,73,73,0,202.30599999999987,223.35500000000005,68,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,v2-fixed,77,74,74,0,179.9910000000001,223.35500000000005,76,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,v2-fixed +hold,77,72,72,0,195.63179999999997,223.35500000000005,68,0,0
+det-burstcapshallow-pfifo-r2,pfifo,burstcapshallow,v2-fixed +hold +rebase,77,72,72,0,195.63179999999997,223.35500000000005,68,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,v2,70,69,69,1,194.84799999999984,223.52000000000004,70,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,v2 +hold,70,69,69,1,202.7643999999998,223.52000000000004,69,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,v2 +hold +rebase,70,69,69,1,202.7643999999998,223.52000000000004,69,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,v2-fixed,70,69,69,0,186.31479999999976,223.52000000000004,71,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,v2-fixed +hold,70,69,69,0,195.20619999999982,223.52000000000004,69,0,0
+det-burstcapshallow-pie-r1,pie,burstcapshallow,v2-fixed +hold +rebase,70,69,69,0,195.20619999999982,223.52000000000004,69,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,v2,74,73,73,0,200.3446,230.24499999999995,75,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,v2 +hold,74,73,73,0,209.32099999999988,230.24499999999995,72,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,v2 +hold +rebase,74,73,73,0,209.32099999999988,230.24499999999995,72,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,v2-fixed,74,73,73,0,193.99559999999974,230.24499999999995,77,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,v2-fixed +hold,74,73,73,0,201.65619999999976,230.24499999999995,72,0,0
+det-burstcapshallow-pie-r2,pie,burstcapshallow,v2-fixed +hold +rebase,74,73,73,0,201.65619999999976,230.24499999999995,72,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,v2,70,68,68,1,192.84359999999995,226.16000000000005,68,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,v2 +hold,70,69,69,2,201.71099999999993,226.16000000000005,69,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,v2 +hold +rebase,70,69,69,2,201.71099999999993,226.16000000000005,69,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,v2-fixed,70,68,68,1,186.65880000000007,226.16000000000005,70,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,v2-fixed +hold,70,68,68,0,194.52459999999977,226.16000000000005,68,0,0
+det-burstcapshallow-red-r1,red,burstcapshallow,v2-fixed +hold +rebase,70,68,68,0,194.52459999999977,226.16000000000005,68,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,v2,73,70,70,0,196.82269999999997,225.37500000000009,73,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,v2 +hold,73,70,70,0,203.74449999999993,225.37500000000009,68,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,v2 +hold +rebase,73,70,70,0,203.74449999999993,225.37500000000009,68,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,v2-fixed,73,70,70,1,187.87070000000008,225.37500000000009,73,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,v2-fixed +hold,73,70,70,0,196.52509999999995,225.37500000000009,69,0,0
+det-burstcapshallow-red-r2,red,burstcapshallow,v2-fixed +hold +rebase,73,70,70,0,196.52509999999995,225.37500000000009,69,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,v2,98,74,74,15,553.37,597.34,116,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,v2 +hold,98,24,24,12,591.4237999999998,597.34,22,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,v2 +hold +rebase,98,24,24,12,591.4237999999998,597.34,22,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,v2-fixed,98,77,77,4,544.8577999999995,597.34,131,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,v2-fixed +hold,98,25,25,3,590.0256000000002,597.34,24,0,0
+det-burstlong-fq_codel-r1,fq_codel,burstlong,v2-fixed +hold +rebase,98,25,25,3,590.0256000000002,597.34,24,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,v2,93,72,72,12,555.3137000000002,605.1199999999999,130,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,v2 +hold,93,31,31,14,598.4137000000001,605.1199999999999,25,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,v2 +hold +rebase,93,31,31,14,598.4137000000001,605.1199999999999,25,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,v2-fixed,93,76,76,10,550.1396,605.1199999999999,140,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,v2-fixed +hold,93,35,35,7,595.4207999999999,605.1199999999999,33,0,0
+det-burstlong-fq_codel-r2,fq_codel,burstlong,v2-fixed +hold +rebase,93,35,35,7,595.4207999999999,605.1199999999999,33,0,0
+det-burstlong-pfifo-r1,pfifo,burstlong,v2,72,59,59,0,1064.3221999999994,1219.605,216,0,0
+det-burstlong-pfifo-r1,pfifo,burstlong,v2 +hold,72,37,37,0,1209.4977999999996,1219.605,33,0,0
+det-burstlong-pfifo-r1,pfifo,burstlong,v2 +hold +rebase,72,37,37,0,1183.5629999999996,1219.605,35,1,1
+det-burstlong-pfifo-r1,pfifo,burstlong,v2-fixed,72,56,56,0,1132.9039999999993,1219.605,161,0,0
+det-burstlong-pfifo-r1,pfifo,burstlong,v2-fixed +hold,72,37,37,0,1208.9014000000002,1219.605,33,0,0
+det-burstlong-pfifo-r1,pfifo,burstlong,v2-fixed +hold +rebase,72,36,36,0,1114.0067999999999,1219.605,32,1,1
+det-burstlong-pfifo-r2,pfifo,burstlong,v2,81,74,74,0,1014.3426999999995,1208.3450000000003,190,0,0
+det-burstlong-pfifo-r2,pfifo,burstlong,v2 +hold,81,37,37,0,1198.1561000000002,1208.3450000000003,35,0,0
+det-burstlong-pfifo-r2,pfifo,burstlong,v2 +hold +rebase,81,39,39,0,1153.3636999999994,1208.3450000000003,37,1,1
+det-burstlong-pfifo-r2,pfifo,burstlong,v2-fixed,81,70,70,0,1114.5022,1208.3450000000003,169,0,0
+det-burstlong-pfifo-r2,pfifo,burstlong,v2-fixed +hold,81,36,36,0,1192.8487999999998,1208.3450000000003,34,0,0
+det-burstlong-pfifo-r2,pfifo,burstlong,v2-fixed +hold +rebase,81,36,36,0,1192.8487999999998,1208.3450000000003,34,0,0
+det-burstlong-pie-r1,pie,burstlong,v2,43,43,43,0,423.30930000000006,1231.6499999999994,250,0,0
+det-burstlong-pie-r1,pie,burstlong,v2 +hold,43,36,36,0,1217.1254999999999,1231.6499999999994,35,0,0
+det-burstlong-pie-r1,pie,burstlong,v2 +hold +rebase,43,36,36,0,1217.1254999999999,1231.6499999999994,35,0,0
+det-burstlong-pie-r1,pie,burstlong,v2-fixed,43,43,43,0,945.1940999999999,1231.6499999999994,346,0,0
+det-burstlong-pie-r1,pie,burstlong,v2-fixed +hold,43,36,36,0,1216.2857999999994,1231.6499999999994,36,0,0
+det-burstlong-pie-r1,pie,burstlong,v2-fixed +hold +rebase,43,36,36,0,1216.2857999999994,1231.6499999999994,36,0,0
+det-burstlong-pie-r2,pie,burstlong,v2,39,37,37,0,380.7829999999996,1238.0500000000002,246,0,0
+det-burstlong-pie-r2,pie,burstlong,v2 +hold,39,38,38,0,1224.308,1238.0500000000002,38,0,0
+det-burstlong-pie-r2,pie,burstlong,v2 +hold +rebase,39,38,38,0,1224.308,1238.0500000000002,38,0,0
+det-burstlong-pie-r2,pie,burstlong,v2-fixed,39,39,39,0,955.4489999999996,1238.0500000000002,332,0,0
+det-burstlong-pie-r2,pie,burstlong,v2-fixed +hold,39,38,38,0,1223.2930000000003,1238.0500000000002,38,0,0
+det-burstlong-pie-r2,pie,burstlong,v2-fixed +hold +rebase,39,38,38,0,1223.2930000000003,1238.0500000000002,38,0,0
+det-burstlong-red-r1,red,burstlong,v2,47,41,41,0,1141.5190000000002,1221.5899999999997,148,0,0
+det-burstlong-red-r1,red,burstlong,v2 +hold,47,36,36,0,1210.7809999999995,1221.5899999999997,36,0,0
+det-burstlong-red-r1,red,burstlong,v2 +hold +rebase,47,36,36,0,1210.7809999999995,1221.5899999999997,36,0,0
+det-burstlong-red-r1,red,burstlong,v2-fixed,47,39,39,0,1171.0639999999996,1221.5899999999997,92,0,0
+det-burstlong-red-r1,red,burstlong,v2-fixed +hold,47,36,36,0,1209.9509999999998,1221.5899999999997,36,0,0
+det-burstlong-red-r1,red,burstlong,v2-fixed +hold +rebase,47,36,36,0,1209.9509999999998,1221.5899999999997,36,0,0
+det-burstlong-red-r2,red,burstlong,v2,49,44,44,0,1035.0272999999997,1215.5550000000003,153,0,0
+det-burstlong-red-r2,red,burstlong,v2 +hold,49,36,36,0,1204.7323999999999,1215.5550000000003,36,0,0
+det-burstlong-red-r2,red,burstlong,v2 +hold +rebase,49,36,36,0,1204.7323999999999,1215.5550000000003,36,0,0
+det-burstlong-red-r2,red,burstlong,v2-fixed,49,46,46,0,1158.0951,1215.5550000000003,114,0,0
+det-burstlong-red-r2,red,burstlong,v2-fixed +hold,49,36,36,0,1203.0494,1215.5550000000003,36,0,0
+det-burstlong-red-r2,red,burstlong,v2-fixed +hold +rebase,49,36,36,0,1203.0494,1215.5550000000003,36,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,v2,20,19,19,4,17.47440000000001,25.510000000000037,19,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,v2 +hold,20,19,19,6,17.56780000000004,25.510000000000037,19,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,v2 +hold +rebase,20,19,19,6,17.56780000000004,25.510000000000037,19,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,v2-fixed,20,19,19,2,17.078400000000045,25.510000000000037,19,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,v2-fixed +hold,20,18,18,2,17.099200000000017,25.510000000000037,18,0,0
+det-bursttiny-fq_codel-r1,fq_codel,bursttiny,v2-fixed +hold +rebase,20,18,18,2,17.099200000000017,25.510000000000037,18,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,v2,19,16,16,2,13.813899999999922,21.344999999999942,16,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,v2 +hold,19,16,16,3,14.099499999999924,21.344999999999942,16,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,v2 +hold +rebase,19,16,16,3,14.099499999999924,21.344999999999942,16,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,v2-fixed,19,16,16,0,13.356199999999976,21.344999999999942,16,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,v2-fixed +hold,19,16,16,0,13.670499999999922,21.344999999999942,16,0,0
+det-bursttiny-fq_codel-r2,fq_codel,bursttiny,v2-fixed +hold +rebase,19,16,16,0,13.670499999999922,21.344999999999942,16,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,v2,36,36,36,1,29.03409999999995,37.17499999999998,36,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,v2 +hold,36,36,36,1,29.288199999999946,37.17499999999998,36,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,v2 +hold +rebase,36,36,36,1,29.288199999999946,37.17499999999998,36,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,v2-fixed,36,36,36,1,29.090199999999914,37.17499999999998,36,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,v2-fixed +hold,36,35,35,1,28.403499999999916,37.17499999999998,35,0,0
+det-bursttiny-pfifo-r1,pfifo,bursttiny,v2-fixed +hold +rebase,36,35,35,1,28.403499999999916,37.17499999999998,35,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,v2,35,34,34,0,25.66860000000017,34.7500000000001,34,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,v2 +hold,35,34,34,0,25.515800000000105,34.7500000000001,34,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,v2 +hold +rebase,35,34,34,0,25.515800000000105,34.7500000000001,34,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,v2-fixed,35,33,33,0,24.89620000000003,34.7500000000001,33,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,v2-fixed +hold,35,33,33,1,24.533200000000058,34.7500000000001,33,0,0
+det-bursttiny-pfifo-r2,pfifo,bursttiny,v2-fixed +hold +rebase,35,33,33,1,24.533200000000058,34.7500000000001,33,0,0
+det-bursttiny-pie-r1,pie,bursttiny,v2,36,33,33,2,39.236199999999954,51.700000000000024,33,0,0
+det-bursttiny-pie-r1,pie,bursttiny,v2 +hold,36,33,33,2,41.49389999999994,51.700000000000024,32,0,0
+det-bursttiny-pie-r1,pie,bursttiny,v2 +hold +rebase,36,33,33,2,41.49389999999994,51.700000000000024,32,0,0
+det-bursttiny-pie-r1,pie,bursttiny,v2-fixed,36,33,33,5,39.56379999999989,51.700000000000024,32,0,0
+det-bursttiny-pie-r1,pie,bursttiny,v2-fixed +hold,36,33,33,2,41.01889999999993,51.700000000000024,32,0,0
+det-bursttiny-pie-r1,pie,bursttiny,v2-fixed +hold +rebase,36,33,33,2,41.01889999999993,51.700000000000024,32,0,0
+det-bursttiny-pie-r2,pie,bursttiny,v2,36,35,35,1,30.869100000000007,41.28500000000005,33,0,0
+det-bursttiny-pie-r2,pie,bursttiny,v2 +hold,36,35,35,1,32.18719999999995,41.28500000000005,33,0,0
+det-bursttiny-pie-r2,pie,bursttiny,v2 +hold +rebase,36,35,35,1,32.18719999999995,41.28500000000005,33,0,0
+det-bursttiny-pie-r2,pie,bursttiny,v2-fixed,36,36,36,2,31.53459999999998,41.28500000000005,34,0,0
+det-bursttiny-pie-r2,pie,bursttiny,v2-fixed +hold,36,36,36,3,31.743499999999948,41.28500000000005,36,0,0
+det-bursttiny-pie-r2,pie,bursttiny,v2-fixed +hold +rebase,36,36,36,3,31.743499999999948,41.28500000000005,36,0,0
+det-bursttiny-red-r1,red,bursttiny,v2,37,34,34,3,34.50150000000001,49.53000000000007,34,0,0
+det-bursttiny-red-r1,red,bursttiny,v2 +hold,37,34,34,4,35.3034,49.53000000000007,34,0,0
+det-bursttiny-red-r1,red,bursttiny,v2 +hold +rebase,37,34,34,4,35.3034,49.53000000000007,34,0,0
+det-bursttiny-red-r1,red,bursttiny,v2-fixed,37,34,34,1,34.562699999999964,49.53000000000007,34,0,0
+det-bursttiny-red-r1,red,bursttiny,v2-fixed +hold,37,34,34,1,34.74239999999999,49.53000000000007,34,0,0
+det-bursttiny-red-r1,red,bursttiny,v2-fixed +hold +rebase,37,34,34,1,34.74239999999999,49.53000000000007,34,0,0
+det-bursttiny-red-r2,red,bursttiny,v2,37,35,35,2,32.22859999999995,44.36500000000005,35,0,0
+det-bursttiny-red-r2,red,bursttiny,v2 +hold,37,35,35,3,33.70730000000001,44.36500000000005,35,0,0
+det-bursttiny-red-r2,red,bursttiny,v2 +hold +rebase,37,35,35,3,33.70730000000001,44.36500000000005,35,0,0
+det-bursttiny-red-r2,red,bursttiny,v2-fixed,37,35,35,2,32.75659999999991,44.36500000000005,35,0,0
+det-bursttiny-red-r2,red,bursttiny,v2-fixed +hold,37,35,35,2,33.519399999999884,44.36500000000005,35,0,0
+det-bursttiny-red-r2,red,bursttiny,v2-fixed +hold +rebase,37,35,35,2,33.519399999999884,44.36500000000005,35,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,v2,18,18,18,12,27.840000000000053,38.93999999999999,25,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,v2 +hold,18,17,17,7,33.68319999999992,38.93999999999999,20,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,v2 +hold +rebase,18,17,17,7,33.68319999999992,38.93999999999999,20,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,v2-fixed,18,17,17,1,26.06279999999994,38.93999999999999,21,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,v2-fixed +hold,18,17,17,0,30.464999999999918,38.93999999999999,18,0,0
+det-burstudp-fq_codel-r1,fq_codel,burstudp,v2-fixed +hold +rebase,18,17,17,0,30.464999999999918,38.93999999999999,18,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,v2,28,26,26,6,34.48209999999992,55.7,29,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,v2 +hold,28,26,26,5,39.23439999999988,55.7,26,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,v2 +hold +rebase,28,26,26,5,39.23439999999988,55.7,26,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,v2-fixed,28,26,26,1,33.85529999999992,55.7,27,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,v2-fixed +hold,28,26,26,3,37.80619999999993,55.7,26,0,0
+det-burstudp-fq_codel-r2,fq_codel,burstudp,v2-fixed +hold +rebase,28,26,26,3,37.80619999999993,55.7,26,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,v2,73,72,72,1,198.26450000000006,231.54500000000004,73,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,v2 +hold,73,72,72,0,208.53410000000002,231.54500000000004,72,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,v2 +hold +rebase,73,72,72,0,208.53410000000002,231.54500000000004,72,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,v2-fixed,73,72,72,0,196.34669999999994,231.54500000000004,73,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,v2-fixed +hold,73,71,71,0,206.57209999999984,231.54500000000004,71,0,0
+det-burstudp-pfifo-r1,pfifo,burstudp,v2-fixed +hold +rebase,73,71,71,0,206.57209999999984,231.54500000000004,71,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,v2,74,74,74,0,195.65499999999966,220.37,77,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,v2 +hold,74,74,74,0,201.3599999999997,220.37,73,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,v2 +hold +rebase,74,74,74,0,201.3599999999997,220.37,73,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,v2-fixed,74,74,74,0,194.44339999999963,220.37,73,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,v2-fixed +hold,74,73,73,0,199.47159999999977,220.37,72,0,0
+det-burstudp-pfifo-r2,pfifo,burstudp,v2-fixed +hold +rebase,74,73,73,0,199.47159999999977,220.37,72,0,0
+det-burstudp-pie-r1,pie,burstudp,v2,74,70,70,1,186.2084999999999,243.78999999999988,78,0,0
+det-burstudp-pie-r1,pie,burstudp,v2 +hold,74,70,70,1,220.33699999999976,243.78999999999988,70,0,0
+det-burstudp-pie-r1,pie,burstudp,v2 +hold +rebase,74,70,70,1,220.33699999999976,243.78999999999988,70,0,0
+det-burstudp-pie-r1,pie,burstudp,v2-fixed,74,70,70,1,190.0342999999997,243.78999999999988,79,0,0
+det-burstudp-pie-r1,pie,burstudp,v2-fixed +hold,74,69,69,0,220.1422999999997,243.78999999999988,69,0,0
+det-burstudp-pie-r1,pie,burstudp,v2-fixed +hold +rebase,74,69,69,0,220.1422999999997,243.78999999999988,69,0,0
+det-burstudp-pie-r2,pie,burstudp,v2,74,72,72,1,184.41249999999985,224.0199999999998,82,0,0
+det-burstudp-pie-r2,pie,burstudp,v2 +hold,74,72,72,1,205.28209999999953,224.0199999999998,72,0,0
+det-burstudp-pie-r2,pie,burstudp,v2 +hold +rebase,74,72,72,1,205.28209999999953,224.0199999999998,72,0,0
+det-burstudp-pie-r2,pie,burstudp,v2-fixed,74,71,71,1,177.9809,224.0199999999998,81,0,0
+det-burstudp-pie-r2,pie,burstudp,v2-fixed +hold,74,71,71,1,204.25489999999974,224.0199999999998,71,0,0
+det-burstudp-pie-r2,pie,burstudp,v2-fixed +hold +rebase,74,71,71,1,204.25489999999974,224.0199999999998,71,0,0
+det-burstudp-red-r1,red,burstudp,v2,71,67,67,1,191.62799999999993,225.50499999999985,69,0,0
+det-burstudp-red-r1,red,burstudp,v2 +hold,71,67,67,1,199.1474999999997,225.50499999999985,67,0,0
+det-burstudp-red-r1,red,burstudp,v2 +hold +rebase,71,67,67,1,199.1474999999997,225.50499999999985,67,0,0
+det-burstudp-red-r1,red,burstudp,v2-fixed,71,67,67,1,191.2799999999999,225.50499999999985,68,0,0
+det-burstudp-red-r1,red,burstudp,v2-fixed +hold,71,67,67,0,196.97049999999973,225.50499999999985,67,0,0
+det-burstudp-red-r1,red,burstudp,v2-fixed +hold +rebase,71,67,67,0,196.97049999999973,225.50499999999985,67,0,0
+det-burstudp-red-r2,red,burstudp,v2,72,72,72,2,197.05959999999982,223.54500000000004,72,0,0
+det-burstudp-red-r2,red,burstudp,v2 +hold,72,72,72,3,202.75379999999976,223.54500000000004,72,0,0
+det-burstudp-red-r2,red,burstudp,v2 +hold +rebase,72,72,72,3,202.75379999999976,223.54500000000004,72,0,0
+det-burstudp-red-r2,red,burstudp,v2-fixed,72,72,72,1,195.07999999999984,223.54500000000004,72,0,0
+det-burstudp-red-r2,red,burstudp,v2-fixed +hold,72,72,72,1,199.68479999999985,223.54500000000004,72,0,0
+det-burstudp-red-r2,red,burstudp,v2-fixed +hold +rebase,72,72,72,1,199.68479999999985,223.54500000000004,72,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r1,fq_codel,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-fq_codel-r2,fq_codel,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r1,pfifo,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pfifo-r2,pfifo,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r1,pie,calm030,v2,0,0,0,1,0.0,0.0,0,0,0
+det-calm030-pie-r1,pie,calm030,v2 +hold,0,0,0,1,0.0,0.0,0,0,0
+det-calm030-pie-r1,pie,calm030,v2 +hold +rebase,0,0,0,1,0.0,0.0,0,0,0
+det-calm030-pie-r1,pie,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r1,pie,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r1,pie,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r2,pie,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r2,pie,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r2,pie,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r2,pie,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r2,pie,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-pie-r2,pie,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r1,red,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r1,red,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r1,red,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r1,red,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r1,red,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r1,red,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r2,red,calm030,v2,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r2,red,calm030,v2 +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r2,red,calm030,v2 +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r2,red,calm030,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r2,red,calm030,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-calm030-red-r2,red,calm030,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,v2,2,1,1,1,0.4289999999999985,3.014999999999999,1,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,v2 +hold,2,1,1,1,0.8580000000000005,3.014999999999999,1,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,v2 +hold +rebase,2,1,1,1,0.8580000000000005,3.014999999999999,1,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,v2-fixed,2,1,1,0,0.46199999999999974,3.014999999999999,1,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,v2-fixed +hold,2,1,1,0,0.9899999999999984,3.014999999999999,1,0,0
+det-calm065-fq_codel-r1,fq_codel,calm065,v2-fixed +hold +rebase,2,1,1,0,0.9899999999999984,3.014999999999999,1,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,v2,8,1,1,0,0.49499999999999744,12.03500000000001,1,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,v2 +hold,8,1,1,0,0.7920000000000016,12.03500000000001,1,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,v2 +hold +rebase,8,1,1,0,0.7920000000000016,12.03500000000001,1,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,v2-fixed,8,3,3,0,1.4849999999999994,12.03500000000001,3,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,v2-fixed +hold,8,3,3,0,2.3453000000000017,12.03500000000001,3,0,0
+det-calm065-fq_codel-r2,fq_codel,calm065,v2-fixed +hold +rebase,8,3,3,0,2.3453000000000017,12.03500000000001,3,0,0
+det-calm065-pfifo-r1,pfifo,calm065,v2,3,2,2,0,0.0,3.7550000000000097,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,v2 +hold,3,1,1,0,0.0,3.7550000000000097,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,v2 +hold +rebase,3,1,1,0,0.0,3.7550000000000097,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,v2-fixed,3,2,2,0,0.0,3.7550000000000097,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,v2-fixed +hold,3,2,2,0,0.0,3.7550000000000097,0,0,0
+det-calm065-pfifo-r1,pfifo,calm065,v2-fixed +hold +rebase,3,2,2,0,0.0,3.7550000000000097,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,v2,1,0,0,1,0.0,1.045,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,v2 +hold,1,0,0,1,0.0,1.045,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,v2 +hold +rebase,1,0,0,1,0.0,1.045,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,v2-fixed,1,0,0,1,0.0,1.045,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,v2-fixed +hold,1,0,0,1,0.0,1.045,0,0,0
+det-calm065-pfifo-r2,pfifo,calm065,v2-fixed +hold +rebase,1,0,0,1,0.0,1.045,0,0,0
+det-calm065-pie-r1,pie,calm065,v2,4,1,1,0,0.49499999999999744,4.355000000000004,1,0,0
+det-calm065-pie-r1,pie,calm065,v2 +hold,4,1,1,1,0.7259999999999991,4.355000000000004,1,0,0
+det-calm065-pie-r1,pie,calm065,v2 +hold +rebase,4,1,1,1,0.7259999999999991,4.355000000000004,1,0,0
+det-calm065-pie-r1,pie,calm065,v2-fixed,4,1,1,0,0.5279999999999987,4.355000000000004,1,0,0
+det-calm065-pie-r1,pie,calm065,v2-fixed +hold,4,1,1,0,0.6600000000000037,4.355000000000004,1,0,0
+det-calm065-pie-r1,pie,calm065,v2-fixed +hold +rebase,4,1,1,0,0.6600000000000037,4.355000000000004,1,0,0
+det-calm065-pie-r2,pie,calm065,v2,1,0,0,2,0.0,1.0200000000000102,0,0,0
+det-calm065-pie-r2,pie,calm065,v2 +hold,1,0,0,2,0.0,1.0200000000000102,0,0,0
+det-calm065-pie-r2,pie,calm065,v2 +hold +rebase,1,0,0,2,0.0,1.0200000000000102,0,0,0
+det-calm065-pie-r2,pie,calm065,v2-fixed,1,0,0,1,0.0,1.0200000000000102,0,0,0
+det-calm065-pie-r2,pie,calm065,v2-fixed +hold,1,0,0,2,0.0,1.0200000000000102,0,0,0
+det-calm065-pie-r2,pie,calm065,v2-fixed +hold +rebase,1,0,0,2,0.0,1.0200000000000102,0,0,0
+det-calm065-red-r1,red,calm065,v2,3,0,0,0,0.0,4.494999999999997,0,0,0
+det-calm065-red-r1,red,calm065,v2 +hold,3,0,0,0,0.0,4.494999999999997,0,0,0
+det-calm065-red-r1,red,calm065,v2 +hold +rebase,3,0,0,0,0.0,4.494999999999997,0,0,0
+det-calm065-red-r1,red,calm065,v2-fixed,3,0,0,0,0.0,4.494999999999997,0,0,0
+det-calm065-red-r1,red,calm065,v2-fixed +hold,3,0,0,0,0.0,4.494999999999997,0,0,0
+det-calm065-red-r1,red,calm065,v2-fixed +hold +rebase,3,0,0,0,0.0,4.494999999999997,0,0,0
+det-calm065-red-r2,red,calm065,v2,3,0,0,0,0.0,5.085000000000001,0,0,0
+det-calm065-red-r2,red,calm065,v2 +hold,3,0,0,0,0.0,5.085000000000001,0,0,0
+det-calm065-red-r2,red,calm065,v2 +hold +rebase,3,0,0,0,0.0,5.085000000000001,0,0,0
+det-calm065-red-r2,red,calm065,v2-fixed,3,0,0,0,0.0,5.085000000000001,0,0,0
+det-calm065-red-r2,red,calm065,v2-fixed +hold,3,0,0,0,0.0,5.085000000000001,0,0,0
+det-calm065-red-r2,red,calm065,v2-fixed +hold +rebase,3,0,0,0,0.0,5.085000000000001,0,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,v2,20,9,9,1,6.763399999999973,69.07999999999998,11,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,v2 +hold,20,11,11,2,23.278199999999973,69.07999999999998,13,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,v2 +hold +rebase,20,11,11,2,23.278199999999973,69.07999999999998,13,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,v2-fixed,20,18,18,7,27.936600000000002,69.07999999999998,26,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,v2-fixed +hold,20,12,12,2,61.20819999999999,69.07999999999998,12,0,0
+det-calm090-fq_codel-r1,fq_codel,calm090,v2-fixed +hold +rebase,20,12,12,2,61.20819999999999,69.07999999999998,12,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,v2,21,15,15,1,10.823499999999981,33.88500000000006,15,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,v2 +hold,21,15,15,0,15.552999999999994,33.88500000000006,14,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,v2 +hold +rebase,21,15,15,0,15.552999999999994,33.88500000000006,14,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,v2-fixed,21,20,20,12,20.136200000000006,33.88500000000006,22,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,v2-fixed +hold,21,10,10,5,27.53980000000003,33.88500000000006,10,0,0
+det-calm090-fq_codel-r2,fq_codel,calm090,v2-fixed +hold +rebase,21,10,10,5,27.53980000000003,33.88500000000006,10,0,0
+det-calm090-pfifo-r1,pfifo,calm090,v2,56,18,18,0,17.58859999999999,65.70499999999993,17,0,0
+det-calm090-pfifo-r1,pfifo,calm090,v2 +hold,56,17,17,0,22.068799999999957,65.70499999999993,17,0,0
+det-calm090-pfifo-r1,pfifo,calm090,v2 +hold +rebase,56,17,17,0,22.068799999999957,65.70499999999993,17,0,0
+det-calm090-pfifo-r1,pfifo,calm090,v2-fixed,56,33,33,0,35.06219999999989,65.70499999999993,33,0,0
+det-calm090-pfifo-r1,pfifo,calm090,v2-fixed +hold,56,36,36,2,43.475399999999894,65.70499999999993,35,0,0
+det-calm090-pfifo-r1,pfifo,calm090,v2-fixed +hold +rebase,56,36,36,2,43.475399999999894,65.70499999999993,35,0,0
+det-calm090-pfifo-r2,pfifo,calm090,v2,65,25,25,0,31.495099999999987,84.85,24,0,0
+det-calm090-pfifo-r2,pfifo,calm090,v2 +hold,65,26,26,0,41.06809999999998,84.85,25,0,0
+det-calm090-pfifo-r2,pfifo,calm090,v2 +hold +rebase,65,26,26,0,41.06809999999998,84.85,25,0,0
+det-calm090-pfifo-r2,pfifo,calm090,v2-fixed,65,42,42,0,52.98809999999994,84.85,39,0,0
+det-calm090-pfifo-r2,pfifo,calm090,v2-fixed +hold,65,46,46,1,58.27379999999997,84.85,43,0,0
+det-calm090-pfifo-r2,pfifo,calm090,v2-fixed +hold +rebase,65,46,46,1,58.27379999999997,84.85,43,0,0
+det-calm090-pie-r1,pie,calm090,v2,19,4,4,0,4.487999999999985,49.63000000000001,4,0,0
+det-calm090-pie-r1,pie,calm090,v2 +hold,19,3,3,0,32.168499999999995,49.63000000000001,3,0,0
+det-calm090-pie-r1,pie,calm090,v2 +hold +rebase,19,3,3,0,32.168499999999995,49.63000000000001,3,0,0
+det-calm090-pie-r1,pie,calm090,v2-fixed,19,16,16,1,27.567999999999998,49.63000000000001,22,0,0
+det-calm090-pie-r1,pie,calm090,v2-fixed +hold,19,9,9,1,44.31650000000002,49.63000000000001,9,0,0
+det-calm090-pie-r1,pie,calm090,v2-fixed +hold +rebase,19,9,9,1,44.31650000000002,49.63000000000001,9,0,0
+det-calm090-pie-r2,pie,calm090,v2,7,5,5,0,31.715899999999987,411.445,32,0,0
+det-calm090-pie-r2,pie,calm090,v2 +hold,7,5,5,0,383.6566,411.445,6,0,0
+det-calm090-pie-r2,pie,calm090,v2 +hold +rebase,7,5,5,0,383.6566,411.445,6,0,0
+det-calm090-pie-r2,pie,calm090,v2-fixed,7,7,7,0,287.04499999999996,411.445,188,0,0
+det-calm090-pie-r2,pie,calm090,v2-fixed +hold,7,0,0,0,411.445,411.445,0,0,0
+det-calm090-pie-r2,pie,calm090,v2-fixed +hold +rebase,7,0,0,0,411.445,411.445,0,0,0
+det-calm090-red-r1,red,calm090,v2,71,16,16,0,11.051199999999968,83.865,15,0,0
+det-calm090-red-r1,red,calm090,v2 +hold,71,20,20,0,15.33779999999998,83.865,19,0,0
+det-calm090-red-r1,red,calm090,v2 +hold +rebase,71,20,20,0,15.33779999999998,83.865,19,0,0
+det-calm090-red-r1,red,calm090,v2-fixed,71,59,59,1,46.73439999999992,83.865,56,0,0
+det-calm090-red-r1,red,calm090,v2-fixed +hold,71,57,57,2,55.012599999999935,83.865,49,0,0
+det-calm090-red-r1,red,calm090,v2-fixed +hold +rebase,71,57,57,2,55.012599999999935,83.865,49,0,0
+det-calm090-red-r2,red,calm090,v2,48,14,14,0,14.285599999999977,83.40500000000007,14,0,0
+det-calm090-red-r2,red,calm090,v2 +hold,48,17,17,0,25.80379999999998,83.40500000000007,16,0,0
+det-calm090-red-r2,red,calm090,v2 +hold +rebase,48,17,17,0,25.80379999999998,83.40500000000007,16,0,0
+det-calm090-red-r2,red,calm090,v2-fixed,48,45,45,1,48.14539999999998,83.40500000000007,43,0,0
+det-calm090-red-r2,red,calm090,v2-fixed +hold,48,34,34,1,69.87859999999998,83.40500000000007,30,0,0
+det-calm090-red-r2,red,calm090,v2-fixed +hold +rebase,48,34,34,1,69.87859999999998,83.40500000000007,30,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,v2,9,6,6,5,4.180700000000002,11.859999999999989,6,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,v2 +hold,9,7,7,4,4.8844999999999885,11.859999999999989,6,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,v2 +hold +rebase,9,7,7,4,4.8844999999999885,11.859999999999989,6,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,v2-fixed,9,8,8,13,5.609300000000005,11.859999999999989,8,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,v2-fixed +hold,9,7,7,12,6.9604,11.859999999999989,6,0,0
+det-calmcbr090-fq_codel-r1,fq_codel,calmcbr090,v2-fixed +hold +rebase,9,7,7,12,6.9604,11.859999999999989,6,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,v2,17,11,11,5,9.765000000000011,30.58499999999998,13,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,v2 +hold,17,10,10,3,13.78299999999999,30.58499999999998,11,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,v2 +hold +rebase,17,10,10,3,13.78299999999999,30.58499999999998,11,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,v2-fixed,17,11,11,16,13.042999999999992,30.58499999999998,13,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,v2-fixed +hold,17,8,8,9,20.221499999999978,30.58499999999998,7,0,0
+det-calmcbr090-fq_codel-r2,fq_codel,calmcbr090,v2-fixed +hold +rebase,17,8,8,9,20.221499999999978,30.58499999999998,7,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,v2,33,12,12,0,12.430200000000017,38.74500000000001,12,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,v2 +hold,33,10,10,0,14.470700000000003,38.74500000000001,10,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,v2 +hold +rebase,33,10,10,0,14.470700000000003,38.74500000000001,10,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,v2-fixed,33,24,24,0,22.682999999999968,38.74500000000001,23,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,v2-fixed +hold,33,25,25,0,25.099199999999964,38.74500000000001,24,0,0
+det-calmcbr090-pfifo-r1,pfifo,calmcbr090,v2-fixed +hold +rebase,33,25,25,0,25.099199999999964,38.74500000000001,24,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,v2,40,14,14,0,12.863,42.01500000000007,14,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,v2 +hold,40,14,14,0,16.503600000000006,42.01500000000007,14,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,v2 +hold +rebase,40,14,14,0,16.503600000000006,42.01500000000007,14,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,v2-fixed,40,27,27,0,20.967399999999977,42.01500000000007,26,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,v2-fixed +hold,40,28,28,1,23.00679999999999,42.01500000000007,27,0,0
+det-calmcbr090-pfifo-r2,pfifo,calmcbr090,v2-fixed +hold +rebase,40,28,28,1,23.00679999999999,42.01500000000007,27,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,v2,41,15,15,0,14.393900000000018,43.40999999999991,15,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,v2 +hold,41,14,14,0,13.823199999999996,43.40999999999991,14,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,v2 +hold +rebase,41,14,14,0,13.823199999999996,43.40999999999991,14,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,v2-fixed,41,26,26,1,21.378499999999935,43.40999999999991,25,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,v2-fixed +hold,41,28,28,1,22.028499999999948,43.40999999999991,26,0,0
+det-calmcbr090-pie-r1,pie,calmcbr090,v2-fixed +hold +rebase,41,28,28,1,22.028499999999948,43.40999999999991,26,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,v2,41,14,14,0,5.6473999999999975,37.61000000000005,11,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,v2 +hold,41,13,13,0,7.522800000000004,37.61000000000005,10,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,v2 +hold +rebase,41,13,13,0,7.522800000000004,37.61000000000005,10,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,v2-fixed,41,21,21,1,14.047000000000008,37.61000000000005,19,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,v2-fixed +hold,41,23,23,0,18.5552,37.61000000000005,20,0,0
+det-calmcbr090-pie-r2,pie,calmcbr090,v2-fixed +hold +rebase,41,23,23,0,18.5552,37.61000000000005,20,0,0
+det-calmcbr090-red-r1,red,calmcbr090,v2,35,12,12,0,8.460699999999953,35.134999999999984,12,0,0
+det-calmcbr090-red-r1,red,calmcbr090,v2 +hold,35,12,12,0,8.550199999999965,35.134999999999984,12,0,0
+det-calmcbr090-red-r1,red,calmcbr090,v2 +hold +rebase,35,12,12,0,8.550199999999965,35.134999999999984,12,0,0
+det-calmcbr090-red-r1,red,calmcbr090,v2-fixed,35,29,29,0,15.465699999999964,35.134999999999984,28,0,0
+det-calmcbr090-red-r1,red,calmcbr090,v2-fixed +hold,35,28,28,0,16.049499999999963,35.134999999999984,27,0,0
+det-calmcbr090-red-r1,red,calmcbr090,v2-fixed +hold +rebase,35,28,28,0,16.049499999999963,35.134999999999984,27,0,0
+det-calmcbr090-red-r2,red,calmcbr090,v2,34,15,15,0,9.183999999999994,34.295,15,0,0
+det-calmcbr090-red-r2,red,calmcbr090,v2 +hold,34,15,15,0,9.782500000000017,34.295,15,0,0
+det-calmcbr090-red-r2,red,calmcbr090,v2 +hold +rebase,34,15,15,0,9.782500000000017,34.295,15,0,0
+det-calmcbr090-red-r2,red,calmcbr090,v2-fixed,34,24,24,3,14.872499999999981,34.295,23,0,0
+det-calmcbr090-red-r2,red,calmcbr090,v2-fixed +hold,34,25,25,4,19.69299999999999,34.295,23,0,0
+det-calmcbr090-red-r2,red,calmcbr090,v2-fixed +hold +rebase,34,25,25,4,19.69299999999999,34.295,23,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,v2,20,18,18,4,57.62179999999999,75.575,22,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,v2 +hold,20,13,13,3,70.41129999999998,75.575,12,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,v2 +hold +rebase,20,13,13,3,70.41129999999998,75.575,12,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,v2-fixed,20,17,17,2,63.8548,75.575,20,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,v2-fixed +hold,20,13,13,1,71.03389999999999,75.575,13,0,0
+det-capacity-fq_codel-r1,fq_codel,capacity,v2-fixed +hold +rebase,20,13,13,1,71.03389999999999,75.575,13,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,v2,25,20,20,3,60.77000000000001,77.44500000000001,24,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,v2 +hold,25,17,17,3,67.4448,77.44500000000001,16,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,v2 +hold +rebase,25,17,17,3,67.4448,77.44500000000001,16,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,v2-fixed,25,20,20,2,66.0618,77.44500000000001,23,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,v2-fixed +hold,25,17,17,2,69.21,77.44500000000001,15,0,0
+det-capacity-fq_codel-r2,fq_codel,capacity,v2-fixed +hold +rebase,25,17,17,2,69.21,77.44500000000001,15,0,0
+det-capacity-pfifo-r1,pfifo,capacity,v2,29,21,21,0,130.1485,156.89999999999998,28,0,0
+det-capacity-pfifo-r1,pfifo,capacity,v2 +hold,29,20,20,0,144.94249999999994,156.89999999999998,20,0,0
+det-capacity-pfifo-r1,pfifo,capacity,v2 +hold +rebase,29,20,20,0,144.94249999999994,156.89999999999998,20,0,0
+det-capacity-pfifo-r1,pfifo,capacity,v2-fixed,29,21,21,1,136.10249999999996,156.89999999999998,27,0,0
+det-capacity-pfifo-r1,pfifo,capacity,v2-fixed +hold,29,20,20,1,147.76999999999995,156.89999999999998,20,0,0
+det-capacity-pfifo-r1,pfifo,capacity,v2-fixed +hold +rebase,29,20,20,1,147.76999999999995,156.89999999999998,20,0,0
+det-capacity-pfifo-r2,pfifo,capacity,v2,26,23,23,1,137.5654,157.89,34,0,0
+det-capacity-pfifo-r2,pfifo,capacity,v2 +hold,26,22,22,1,149.72820000000002,157.89,20,0,0
+det-capacity-pfifo-r2,pfifo,capacity,v2 +hold +rebase,26,22,22,1,149.72820000000002,157.89,20,0,0
+det-capacity-pfifo-r2,pfifo,capacity,v2-fixed,26,24,24,1,142.21659999999997,157.89,29,0,0
+det-capacity-pfifo-r2,pfifo,capacity,v2-fixed +hold,26,23,23,1,151.29179999999997,157.89,22,0,0
+det-capacity-pfifo-r2,pfifo,capacity,v2-fixed +hold +rebase,26,23,23,1,151.29179999999997,157.89,22,0,0
+det-capacity-pie-r1,pie,capacity,v2,23,22,22,0,91.79139999999998,167.53499999999997,39,0,0
+det-capacity-pie-r1,pie,capacity,v2 +hold,23,22,22,0,160.95129999999995,167.53499999999997,20,0,0
+det-capacity-pie-r1,pie,capacity,v2 +hold +rebase,23,22,22,0,160.95129999999995,167.53499999999997,20,0,0
+det-capacity-pie-r1,pie,capacity,v2-fixed,23,22,22,0,106.58249999999998,167.53499999999997,47,0,0
+det-capacity-pie-r1,pie,capacity,v2-fixed +hold,23,21,21,0,161.14929999999995,167.53499999999997,19,0,0
+det-capacity-pie-r1,pie,capacity,v2-fixed +hold +rebase,23,21,21,0,161.14929999999995,167.53499999999997,19,0,0
+det-capacity-pie-r2,pie,capacity,v2,24,24,24,1,100.06550000000003,161.635,43,0,0
+det-capacity-pie-r2,pie,capacity,v2 +hold,24,24,24,0,155.15700000000004,161.635,22,0,0
+det-capacity-pie-r2,pie,capacity,v2 +hold +rebase,24,24,24,0,155.15700000000004,161.635,22,0,0
+det-capacity-pie-r2,pie,capacity,v2-fixed,24,24,24,0,114.926,161.635,41,0,0
+det-capacity-pie-r2,pie,capacity,v2-fixed +hold,24,24,24,0,154.53000000000003,161.635,22,0,0
+det-capacity-pie-r2,pie,capacity,v2-fixed +hold +rebase,24,24,24,0,154.53000000000003,161.635,22,0,0
+det-capacity-red-r1,red,capacity,v2,25,20,20,0,133.9176,153.67,31,0,0
+det-capacity-red-r1,red,capacity,v2 +hold,25,20,20,0,146.17589999999996,153.67,20,0,0
+det-capacity-red-r1,red,capacity,v2 +hold +rebase,25,20,20,0,146.17589999999996,153.67,20,0,0
+det-capacity-red-r1,red,capacity,v2-fixed,25,21,21,2,140.13599999999997,153.67,23,0,0
+det-capacity-red-r1,red,capacity,v2-fixed +hold,25,21,21,0,148.02899999999994,153.67,21,0,0
+det-capacity-red-r1,red,capacity,v2-fixed +hold +rebase,25,21,21,0,148.02899999999994,153.67,21,0,0
+det-capacity-red-r2,red,capacity,v2,34,29,29,0,138.67470000000003,163.015,40,0,0
+det-capacity-red-r2,red,capacity,v2 +hold,34,29,29,0,149.77339999999998,163.015,30,0,0
+det-capacity-red-r2,red,capacity,v2 +hold +rebase,34,29,29,0,149.77339999999998,163.015,30,0,0
+det-capacity-red-r2,red,capacity,v2-fixed,34,30,30,0,145.6893,163.015,35,0,0
+det-capacity-red-r2,red,capacity,v2-fixed +hold,34,28,28,0,154.3943,163.015,28,0,0
+det-capacity-red-r2,red,capacity,v2-fixed +hold +rebase,34,28,28,0,154.3943,163.015,28,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,v2,16,15,15,0,54.15820000000002,67.47,23,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,v2 +hold,16,14,14,1,59.059599999999996,67.47,11,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,v2 +hold +rebase,16,14,14,1,59.059599999999996,67.47,11,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,v2-fixed,16,15,15,2,54.60000000000001,67.47,21,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,v2-fixed +hold,16,14,14,2,60.5784,67.47,13,0,0
+det-cbr-fq_codel-r1,fq_codel,cbr,v2-fixed +hold +rebase,16,14,14,2,60.5784,67.47,13,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,v2,21,20,20,5,53.62019999999998,73.80999999999999,34,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,v2 +hold,21,17,17,2,64.64479999999999,73.80999999999999,17,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,v2 +hold +rebase,21,17,17,2,64.64479999999999,73.80999999999999,17,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,v2-fixed,21,17,17,5,55.30240000000001,73.80999999999999,29,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,v2-fixed +hold,21,15,15,2,63.66139999999998,73.80999999999999,14,0,0
+det-cbr-fq_codel-r2,fq_codel,cbr,v2-fixed +hold +rebase,21,15,15,2,63.66139999999998,73.80999999999999,14,0,0
+det-cbr-pfifo-r1,pfifo,cbr,v2,21,21,21,1,166.24450000000002,180.74499999999998,28,0,0
+det-cbr-pfifo-r1,pfifo,cbr,v2 +hold,21,20,20,1,173.46900000000002,180.74499999999998,20,0,0
+det-cbr-pfifo-r1,pfifo,cbr,v2 +hold +rebase,21,20,20,1,173.46900000000002,180.74499999999998,20,0,0
+det-cbr-pfifo-r1,pfifo,cbr,v2-fixed,21,21,21,3,167.97749999999996,180.74499999999998,26,0,0
+det-cbr-pfifo-r1,pfifo,cbr,v2-fixed +hold,21,20,20,2,173.469,180.74499999999998,20,0,0
+det-cbr-pfifo-r1,pfifo,cbr,v2-fixed +hold +rebase,21,20,20,2,173.469,180.74499999999998,20,0,0
+det-cbr-pfifo-r2,pfifo,cbr,v2,26,21,21,0,164.69480000000004,194.935,33,0,0
+det-cbr-pfifo-r2,pfifo,cbr,v2 +hold,26,22,22,0,181.04499999999996,194.935,22,0,0
+det-cbr-pfifo-r2,pfifo,cbr,v2 +hold +rebase,26,22,22,0,181.04499999999996,194.935,22,0,0
+det-cbr-pfifo-r2,pfifo,cbr,v2-fixed,26,23,23,0,171.603,194.935,33,0,0
+det-cbr-pfifo-r2,pfifo,cbr,v2-fixed +hold,26,24,24,0,184.7274,194.935,24,0,0
+det-cbr-pfifo-r2,pfifo,cbr,v2-fixed +hold +rebase,26,24,24,0,184.7274,194.935,24,0,0
+det-cbr-pie-r1,pie,cbr,v2,20,20,20,0,96.52620000000002,193.03500000000003,48,0,0
+det-cbr-pie-r1,pie,cbr,v2 +hold,20,20,20,0,185.60019999999997,193.03500000000003,19,0,0
+det-cbr-pie-r1,pie,cbr,v2 +hold +rebase,20,20,20,0,185.60019999999997,193.03500000000003,19,0,0
+det-cbr-pie-r1,pie,cbr,v2-fixed,20,20,20,1,143.77199999999993,193.03500000000003,57,0,0
+det-cbr-pie-r1,pie,cbr,v2-fixed +hold,20,20,20,0,186.8542,193.03500000000003,19,0,0
+det-cbr-pie-r1,pie,cbr,v2-fixed +hold +rebase,20,20,20,0,186.8542,193.03500000000003,19,0,0
+det-cbr-pie-r2,pie,cbr,v2,22,21,21,0,95.88919999999997,194.21500000000003,49,0,0
+det-cbr-pie-r2,pie,cbr,v2 +hold,22,21,21,0,183.47200000000004,194.21500000000003,20,0,0
+det-cbr-pie-r2,pie,cbr,v2 +hold +rebase,22,21,21,0,183.47200000000004,194.21500000000003,20,0,0
+det-cbr-pie-r2,pie,cbr,v2-fixed,22,21,21,1,146.7548,194.21500000000003,58,0,0
+det-cbr-pie-r2,pie,cbr,v2-fixed +hold,22,21,21,1,184.89100000000002,194.21500000000003,20,0,0
+det-cbr-pie-r2,pie,cbr,v2-fixed +hold +rebase,22,21,21,1,184.89100000000002,194.21500000000003,20,0,0
+det-cbr-red-r1,red,cbr,v2,24,24,24,0,165.32780000000002,184.57,35,0,0
+det-cbr-red-r1,red,cbr,v2 +hold,24,24,24,0,173.27359999999993,184.57,24,0,0
+det-cbr-red-r1,red,cbr,v2 +hold +rebase,24,24,24,0,173.27359999999993,184.57,24,0,0
+det-cbr-red-r1,red,cbr,v2-fixed,24,24,24,0,170.3747,184.57,29,0,0
+det-cbr-red-r1,red,cbr,v2-fixed +hold,24,24,24,0,178.04769999999996,184.57,23,0,0
+det-cbr-red-r1,red,cbr,v2-fixed +hold +rebase,24,24,24,0,178.04769999999996,184.57,23,0,0
+det-cbr-red-r2,red,cbr,v2,27,24,24,0,165.61560000000003,187.08500000000004,34,0,0
+det-cbr-red-r2,red,cbr,v2 +hold,27,21,21,0,177.27900000000005,187.08500000000004,21,0,0
+det-cbr-red-r2,red,cbr,v2 +hold +rebase,27,21,21,0,177.27900000000005,187.08500000000004,21,0,0
+det-cbr-red-r2,red,cbr,v2-fixed,27,22,22,0,171.77740000000006,187.08500000000004,26,0,0
+det-cbr-red-r2,red,cbr,v2-fixed +hold,27,21,21,0,179.19560000000007,187.08500000000004,21,0,0
+det-cbr-red-r2,red,cbr,v2-fixed +hold +rebase,27,21,21,0,179.19560000000007,187.08500000000004,21,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,v2,2,1,1,3,0.609099999999998,2.844999999999999,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,v2 +hold,2,0,0,7,2.844999999999999,2.844999999999999,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,v2 +hold +rebase,2,0,0,4,0.0,2.844999999999999,0,8,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,v2-fixed,2,0,0,8,2.1190999999999995,2.844999999999999,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,v2-fixed +hold,2,0,0,11,2.844999999999999,2.844999999999999,0,0,0
+det-delaystep-fq_codel-r1,fq_codel,delaystep,v2-fixed +hold +rebase,2,0,0,0,2.844999999999999,2.844999999999999,0,6,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,v2,7,1,1,9,4.877299999999995,9.115000000000009,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,v2 +hold,7,1,1,10,5.776599999999998,9.115000000000009,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,v2 +hold +rebase,7,0,0,6,1.023299999999999,9.115000000000009,0,63,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,v2-fixed,7,0,0,11,5.083599999999997,9.115000000000009,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,v2-fixed +hold,7,0,0,10,6.969999999999999,9.115000000000009,0,0,0
+det-delaystep-fq_codel-r2,fq_codel,delaystep,v2-fixed +hold +rebase,7,0,0,1,5.934999999999999,9.115000000000009,0,5,0
+det-delaystep-pfifo-r1,pfifo,delaystep,v2,8,4,4,4,2.6589999999999776,6.839999999999975,4,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,v2 +hold,8,3,3,8,4.508499999999998,6.839999999999975,3,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,v2 +hold +rebase,8,3,3,4,1.963499999999982,6.839999999999975,3,9,0
+det-delaystep-pfifo-r1,pfifo,delaystep,v2-fixed,8,3,3,8,3.887999999999977,6.839999999999975,3,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,v2-fixed +hold,8,2,2,10,4.33299999999997,6.839999999999975,2,0,0
+det-delaystep-pfifo-r1,pfifo,delaystep,v2-fixed +hold +rebase,8,0,0,6,2.0224999999999795,6.839999999999975,0,7,0
+det-delaystep-pfifo-r2,pfifo,delaystep,v2,3,1,1,7,1.9283999999999963,3.04999999999999,1,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,v2 +hold,3,0,0,9,2.0449999999999946,3.04999999999999,0,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,v2 +hold +rebase,3,0,0,8,1.0049999999999955,3.04999999999999,0,33,0
+det-delaystep-pfifo-r2,pfifo,delaystep,v2-fixed,3,0,0,12,2.0449999999999946,3.04999999999999,0,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,v2-fixed +hold,3,0,0,10,2.0449999999999946,3.04999999999999,0,0,0
+det-delaystep-pfifo-r2,pfifo,delaystep,v2-fixed +hold +rebase,3,0,0,5,2.0449999999999946,3.04999999999999,0,5,0
+det-delaystep-pie-r1,pie,delaystep,v2,0,0,0,7,0.0,0.0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,v2 +hold,0,0,0,11,0.0,0.0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,v2 +hold +rebase,0,0,0,5,0.0,0.0,0,30,0
+det-delaystep-pie-r1,pie,delaystep,v2-fixed,0,0,0,11,0.0,0.0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,v2-fixed +hold,0,0,0,6,0.0,0.0,0,0,0
+det-delaystep-pie-r1,pie,delaystep,v2-fixed +hold +rebase,0,0,0,3,0.0,0.0,0,6,0
+det-delaystep-pie-r2,pie,delaystep,v2,2,0,0,5,4.164999999999999,4.164999999999999,0,0,0
+det-delaystep-pie-r2,pie,delaystep,v2 +hold,2,0,0,9,4.164999999999999,4.164999999999999,0,0,0
+det-delaystep-pie-r2,pie,delaystep,v2 +hold +rebase,2,0,0,7,4.164999999999999,4.164999999999999,0,5,0
+det-delaystep-pie-r2,pie,delaystep,v2-fixed,2,0,0,8,4.164999999999999,4.164999999999999,0,0,0
+det-delaystep-pie-r2,pie,delaystep,v2-fixed +hold,2,0,0,11,4.164999999999999,4.164999999999999,0,0,0
+det-delaystep-pie-r2,pie,delaystep,v2-fixed +hold +rebase,2,0,0,7,4.164999999999999,4.164999999999999,0,5,0
+det-delaystep-red-r1,red,delaystep,v2,3,1,1,10,1.8348999999999975,3.065000000000005,1,0,0
+det-delaystep-red-r1,red,delaystep,v2 +hold,3,1,1,17,3.065000000000005,3.065000000000005,0,0,0
+det-delaystep-red-r1,red,delaystep,v2 +hold +rebase,3,0,0,9,1.019999999999996,3.065000000000005,0,7,0
+det-delaystep-red-r1,red,delaystep,v2-fixed,3,1,1,16,1.8348999999999975,3.065000000000005,1,0,0
+det-delaystep-red-r1,red,delaystep,v2-fixed +hold,3,0,0,13,3.065000000000005,3.065000000000005,0,0,0
+det-delaystep-red-r1,red,delaystep,v2-fixed +hold +rebase,3,0,0,4,1.019999999999996,3.065000000000005,0,7,0
+det-delaystep-red-r2,red,delaystep,v2,2,0,0,8,2.599899999999998,2.974999999999998,0,0,0
+det-delaystep-red-r2,red,delaystep,v2 +hold,2,0,0,9,2.974999999999998,2.974999999999998,0,0,0
+det-delaystep-red-r2,red,delaystep,v2 +hold +rebase,2,0,0,5,2.974999999999998,2.974999999999998,0,6,0
+det-delaystep-red-r2,red,delaystep,v2-fixed,2,0,0,9,2.764900000000001,2.974999999999998,0,0,0
+det-delaystep-red-r2,red,delaystep,v2-fixed +hold,2,0,0,13,2.974999999999998,2.974999999999998,0,0,0
+det-delaystep-red-r2,red,delaystep,v2-fixed +hold +rebase,2,0,0,2,2.974999999999998,2.974999999999998,0,6,0
+det-onoff-fq_codel-r1,fq_codel,onoff,v2,25,24,24,4,27.338499999999982,47.52499999999998,26,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,v2 +hold,25,24,24,1,32.97499999999995,47.52499999999998,24,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,v2 +hold +rebase,25,24,24,1,32.97499999999995,47.52499999999998,24,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,v2-fixed,25,23,23,1,29.272999999999985,47.52499999999998,23,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,v2-fixed +hold,25,22,22,2,31.90949999999996,47.52499999999998,22,0,0
+det-onoff-fq_codel-r1,fq_codel,onoff,v2-fixed +hold +rebase,25,22,22,2,31.90949999999996,47.52499999999998,22,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,v2,27,24,24,6,28.87399999999998,49.07499999999999,27,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,v2 +hold,27,23,23,4,33.59099999999997,49.07499999999999,25,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,v2 +hold +rebase,27,23,23,4,33.59099999999997,49.07499999999999,25,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,v2-fixed,27,23,23,3,30.22699999999996,49.07499999999999,24,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,v2-fixed +hold,27,23,23,5,32.27099999999996,49.07499999999999,23,0,0
+det-onoff-fq_codel-r2,fq_codel,onoff,v2-fixed +hold +rebase,27,23,23,5,32.27099999999996,49.07499999999999,23,0,0
+det-onoff-pfifo-r1,pfifo,onoff,v2,68,64,64,0,138.07390000000004,182.00499999999997,67,0,0
+det-onoff-pfifo-r1,pfifo,onoff,v2 +hold,68,54,54,0,161.03789999999998,182.00499999999997,54,0,0
+det-onoff-pfifo-r1,pfifo,onoff,v2 +hold +rebase,68,54,54,0,161.03789999999998,182.00499999999997,54,0,0
+det-onoff-pfifo-r1,pfifo,onoff,v2-fixed,68,67,67,0,144.1033,182.00499999999997,68,0,0
+det-onoff-pfifo-r1,pfifo,onoff,v2-fixed +hold,68,52,52,0,163.1408,182.00499999999997,52,0,0
+det-onoff-pfifo-r1,pfifo,onoff,v2-fixed +hold +rebase,68,52,52,0,163.1408,182.00499999999997,52,0,0
+det-onoff-pfifo-r2,pfifo,onoff,v2,64,59,59,0,125.68949999999998,160.78000000000003,59,0,0
+det-onoff-pfifo-r2,pfifo,onoff,v2 +hold,64,52,52,0,145.09949999999986,160.78000000000003,52,0,0
+det-onoff-pfifo-r2,pfifo,onoff,v2 +hold +rebase,64,52,52,0,145.09949999999986,160.78000000000003,52,0,0
+det-onoff-pfifo-r2,pfifo,onoff,v2-fixed,64,60,60,0,126.96150000000002,160.78000000000003,60,0,0
+det-onoff-pfifo-r2,pfifo,onoff,v2-fixed +hold,64,50,50,0,146.82549999999992,160.78000000000003,50,0,0
+det-onoff-pfifo-r2,pfifo,onoff,v2-fixed +hold +rebase,64,50,50,0,146.82549999999992,160.78000000000003,50,0,0
+det-onoff-pie-r1,pie,onoff,v2,65,60,60,0,136.07319999999999,194.78999999999996,61,0,0
+det-onoff-pie-r1,pie,onoff,v2 +hold,65,51,51,0,171.39439999999985,194.78999999999996,51,0,0
+det-onoff-pie-r1,pie,onoff,v2 +hold +rebase,65,51,51,0,171.39439999999985,194.78999999999996,51,0,0
+det-onoff-pie-r1,pie,onoff,v2-fixed,65,64,64,0,139.6182,194.78999999999996,65,0,0
+det-onoff-pie-r1,pie,onoff,v2-fixed +hold,65,47,47,0,177.73119999999983,194.78999999999996,47,0,0
+det-onoff-pie-r1,pie,onoff,v2-fixed +hold +rebase,65,47,47,0,177.73119999999983,194.78999999999996,47,0,0
+det-onoff-pie-r2,pie,onoff,v2,72,65,65,0,151.26320000000004,205.315,67,0,0
+det-onoff-pie-r2,pie,onoff,v2 +hold,72,59,59,0,180.9133999999999,205.315,59,0,0
+det-onoff-pie-r2,pie,onoff,v2 +hold +rebase,72,59,59,0,180.9133999999999,205.315,59,0,0
+det-onoff-pie-r2,pie,onoff,v2-fixed,72,68,68,0,156.80919999999998,205.315,68,0,0
+det-onoff-pie-r2,pie,onoff,v2-fixed +hold,72,56,56,0,184.27559999999988,205.315,56,0,0
+det-onoff-pie-r2,pie,onoff,v2-fixed +hold +rebase,72,56,56,0,184.27559999999988,205.315,56,0,0
+det-onoff-red-r1,red,onoff,v2,73,72,72,0,157.15140000000002,198.77499999999986,73,0,0
+det-onoff-red-r1,red,onoff,v2 +hold,73,64,64,0,171.71819999999994,198.77499999999986,64,0,0
+det-onoff-red-r1,red,onoff,v2 +hold +rebase,73,64,64,0,171.71819999999994,198.77499999999986,64,0,0
+det-onoff-red-r1,red,onoff,v2-fixed,73,72,72,0,165.5084,198.77499999999986,73,0,0
+det-onoff-red-r1,red,onoff,v2-fixed +hold,73,61,61,0,176.44799999999995,198.77499999999986,61,0,0
+det-onoff-red-r1,red,onoff,v2-fixed +hold +rebase,73,61,61,0,176.44799999999995,198.77499999999986,61,0,0
+det-onoff-red-r2,red,onoff,v2,72,68,68,0,149.63329999999996,188.58,68,0,0
+det-onoff-red-r2,red,onoff,v2 +hold,72,63,63,0,166.37809999999993,188.58,63,0,0
+det-onoff-red-r2,red,onoff,v2 +hold +rebase,72,63,63,0,166.37809999999993,188.58,63,0,0
+det-onoff-red-r2,red,onoff,v2-fixed,72,69,69,0,153.22120000000007,188.58,69,0,0
+det-onoff-red-r2,red,onoff,v2-fixed +hold,72,62,62,0,167.95199999999994,188.58,62,0,0
+det-onoff-red-r2,red,onoff,v2-fixed +hold +rebase,72,62,62,0,167.95199999999994,188.58,62,0,0
+det-ppbp-fq_codel-r1,fq_codel,ppbp,v2,18,1,1,1,0.5610000000000008,107.99500000000005,1,0,0
+det-ppbp-fq_codel-r1,fq_codel,ppbp,v2 +hold,18,3,3,1,9.0612,107.99500000000005,3,0,0
+det-ppbp-fq_codel-r1,fq_codel,ppbp,v2 +hold +rebase,18,3,3,1,9.0612,107.99500000000005,3,1,1
+det-ppbp-fq_codel-r1,fq_codel,ppbp,v2-fixed,18,17,17,2,93.82279999999997,107.99500000000005,22,0,0
+det-ppbp-fq_codel-r1,fq_codel,ppbp,v2-fixed +hold,18,5,5,2,103.67240000000004,107.99500000000005,4,0,0
+det-ppbp-fq_codel-r1,fq_codel,ppbp,v2-fixed +hold +rebase,18,5,5,2,103.67240000000004,107.99500000000005,4,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,v2,24,7,7,0,3.0360000000000023,118.925,5,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,v2 +hold,24,9,9,0,51.996200000000016,118.925,8,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,v2 +hold +rebase,24,9,9,0,51.996200000000016,118.925,8,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,v2-fixed,24,22,22,3,97.12279999999994,118.925,33,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,v2-fixed +hold,24,11,11,1,113.84119999999997,118.925,10,0,0
+det-ppbp-fq_codel-r2,fq_codel,ppbp,v2-fixed +hold +rebase,24,11,11,1,113.84119999999997,118.925,10,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,v2,67,9,9,0,15.746399999999973,434.1899999999998,11,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,v2 +hold,67,13,13,0,104.1196,434.1899999999998,20,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,v2 +hold +rebase,67,13,13,0,104.1196,434.1899999999998,20,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,v2-fixed,67,55,55,0,343.8033999999999,434.1899999999998,93,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,v2-fixed +hold,67,37,37,0,418.7247999999996,434.1899999999998,35,0,0
+det-ppbp-pfifo-r1,pfifo,ppbp,v2-fixed +hold +rebase,67,37,37,0,418.7247999999996,434.1899999999998,35,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,v2,81,8,8,0,11.456900000000022,424.2999999999997,8,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,v2 +hold,81,10,10,0,81.30470000000003,424.2999999999997,12,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,v2 +hold +rebase,81,10,10,0,81.30470000000003,424.2999999999997,12,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,v2-fixed,81,79,79,0,356.5927999999998,424.2999999999997,97,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,v2-fixed +hold,81,61,61,0,403.3253000000001,424.2999999999997,52,0,0
+det-ppbp-pfifo-r2,pfifo,ppbp,v2-fixed +hold +rebase,81,61,61,0,403.3253000000001,424.2999999999997,52,0,0
+det-ppbp-pie-r1,pie,ppbp,v2,34,4,4,0,15.443999999999988,410.95,13,0,0
+det-ppbp-pie-r1,pie,ppbp,v2 +hold,34,4,4,0,141.4242,410.95,8,0,0
+det-ppbp-pie-r1,pie,ppbp,v2 +hold +rebase,34,4,4,0,133.1082,410.95,8,1,1
+det-ppbp-pie-r1,pie,ppbp,v2-fixed,34,32,32,0,284.8596000000001,410.95,113,0,0
+det-ppbp-pie-r1,pie,ppbp,v2-fixed +hold,34,15,15,0,404.65559999999994,410.95,14,0,0
+det-ppbp-pie-r1,pie,ppbp,v2-fixed +hold +rebase,34,15,15,0,404.65559999999994,410.95,14,0,0
+det-ppbp-pie-r2,pie,ppbp,v2,33,6,6,0,9.635999999999996,385.39500000000015,9,0,0
+det-ppbp-pie-r2,pie,ppbp,v2 +hold,33,6,6,0,122.87640000000003,385.39500000000015,8,0,0
+det-ppbp-pie-r2,pie,ppbp,v2 +hold +rebase,33,5,5,0,106.07350000000004,385.39500000000015,7,1,1
+det-ppbp-pie-r2,pie,ppbp,v2-fixed,33,32,32,0,266.08570000000003,385.39500000000015,108,0,0
+det-ppbp-pie-r2,pie,ppbp,v2-fixed +hold,33,14,14,0,381.1380000000001,385.39500000000015,10,0,0
+det-ppbp-pie-r2,pie,ppbp,v2-fixed +hold +rebase,33,14,14,0,381.1380000000001,385.39500000000015,10,0,0
+det-ppbp-red-r1,red,ppbp,v2,97,5,5,0,16.137,380.7049999999998,9,0,0
+det-ppbp-red-r1,red,ppbp,v2 +hold,97,7,7,0,53.76899999999999,380.7049999999998,9,0,0
+det-ppbp-red-r1,red,ppbp,v2 +hold +rebase,97,7,7,0,53.76899999999999,380.7049999999998,9,0,0
+det-ppbp-red-r1,red,ppbp,v2-fixed,97,79,79,0,330.09199999999976,380.7049999999998,87,0,0
+det-ppbp-red-r1,red,ppbp,v2-fixed +hold,97,49,49,0,363.8719999999999,380.7049999999998,42,0,0
+det-ppbp-red-r1,red,ppbp,v2-fixed +hold +rebase,97,49,49,0,363.8719999999999,380.7049999999998,42,0,0
+det-ppbp-red-r2,red,ppbp,v2,89,5,5,0,11.227700000000006,394.87,9,0,0
+det-ppbp-red-r2,red,ppbp,v2 +hold,89,7,7,0,48.118399999999994,394.87,9,0,0
+det-ppbp-red-r2,red,ppbp,v2 +hold +rebase,89,7,7,0,48.118399999999994,394.87,9,0,0
+det-ppbp-red-r2,red,ppbp,v2-fixed,89,80,80,0,337.07699999999994,394.87,96,0,0
+det-ppbp-red-r2,red,ppbp,v2-fixed +hold,89,57,57,0,377.1762999999999,394.87,47,0,0
+det-ppbp-red-r2,red,ppbp,v2-fixed +hold +rebase,89,57,57,0,377.1762999999999,394.87,47,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,v2,37,36,36,22,168.64910000000006,196.4500000000001,50,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,v2 +hold,37,18,18,20,193.26990000000006,196.4500000000001,15,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,v2 +hold +rebase,37,18,18,20,193.26990000000006,196.4500000000001,15,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,v2-fixed,37,36,36,7,162.61500000000004,196.4500000000001,47,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,v2-fixed +hold,37,18,18,6,193.84869999999998,196.4500000000001,11,0,0
+det-ramp-fq_codel-r1,fq_codel,ramp,v2-fixed +hold +rebase,37,18,18,6,193.84869999999998,196.4500000000001,11,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,v2,39,34,34,22,159.7342,183.15999999999994,44,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,v2 +hold,39,22,22,23,178.6750999999999,183.15999999999994,14,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,v2 +hold +rebase,39,22,22,23,178.6750999999999,183.15999999999994,14,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,v2-fixed,39,35,35,4,157.944,183.15999999999994,40,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,v2-fixed +hold,39,24,24,2,176.31029999999993,183.15999999999994,15,0,0
+det-ramp-fq_codel-r2,fq_codel,ramp,v2-fixed +hold +rebase,39,24,24,2,176.31029999999993,183.15999999999994,15,0,0
+det-ramp-pfifo-r1,pfifo,ramp,v2,99,83,83,0,443.0815999999997,570.3799999999999,117,0,0
+det-ramp-pfifo-r1,pfifo,ramp,v2 +hold,99,77,77,0,534.4774,570.3799999999999,69,0,0
+det-ramp-pfifo-r1,pfifo,ramp,v2 +hold +rebase,99,77,77,0,534.4774,570.3799999999999,69,0,0
+det-ramp-pfifo-r1,pfifo,ramp,v2-fixed,99,86,86,0,487.07639999999947,570.3799999999999,105,0,0
+det-ramp-pfifo-r1,pfifo,ramp,v2-fixed +hold,99,72,72,0,538.4561999999995,570.3799999999999,61,0,0
+det-ramp-pfifo-r1,pfifo,ramp,v2-fixed +hold +rebase,99,72,72,0,538.4561999999995,570.3799999999999,61,0,0
+det-ramp-pfifo-r2,pfifo,ramp,v2,95,74,74,0,429.12899999999996,549.3699999999999,113,0,0
+det-ramp-pfifo-r2,pfifo,ramp,v2 +hold,95,65,65,0,528.9689999999996,549.3699999999999,50,0,0
+det-ramp-pfifo-r2,pfifo,ramp,v2 +hold +rebase,95,65,65,0,528.9689999999996,549.3699999999999,50,0,0
+det-ramp-pfifo-r2,pfifo,ramp,v2-fixed,95,82,82,0,466.03199999999987,549.3699999999999,97,0,0
+det-ramp-pfifo-r2,pfifo,ramp,v2-fixed +hold,95,65,65,0,531.1469999999997,549.3699999999999,45,0,0
+det-ramp-pfifo-r2,pfifo,ramp,v2-fixed +hold +rebase,95,65,65,0,531.1469999999997,549.3699999999999,45,0,0
+det-ramp-pie-r1,pie,ramp,v2,117,93,93,1,301.11499999999967,592.2550000000001,154,0,0
+det-ramp-pie-r1,pie,ramp,v2 +hold,117,79,79,1,563.1824000000001,592.2550000000001,52,0,0
+det-ramp-pie-r1,pie,ramp,v2 +hold +rebase,117,79,79,1,563.1824000000001,592.2550000000001,52,0,0
+det-ramp-pie-r1,pie,ramp,v2-fixed,117,92,92,1,389.22069999999985,592.2550000000001,156,0,0
+det-ramp-pie-r1,pie,ramp,v2-fixed +hold,117,78,78,2,566.4848,592.2550000000001,48,0,0
+det-ramp-pie-r1,pie,ramp,v2-fixed +hold +rebase,117,78,78,2,566.4848,592.2550000000001,48,0,0
+det-ramp-pie-r2,pie,ramp,v2,96,87,87,0,294.70940000000013,548.0099999999995,125,0,0
+det-ramp-pie-r2,pie,ramp,v2 +hold,96,55,55,1,536.1379999999995,548.0099999999995,36,0,0
+det-ramp-pie-r2,pie,ramp,v2 +hold +rebase,96,55,55,1,536.1379999999995,548.0099999999995,36,0,0
+det-ramp-pie-r2,pie,ramp,v2-fixed,96,87,87,0,375.21860000000027,548.0099999999995,135,0,0
+det-ramp-pie-r2,pie,ramp,v2-fixed +hold,96,53,53,1,536.1331999999995,548.0099999999995,35,0,0
+det-ramp-pie-r2,pie,ramp,v2-fixed +hold +rebase,96,53,53,1,536.1331999999995,548.0099999999995,35,0,0
+det-ramp-red-r1,red,ramp,v2,111,104,104,0,458.6560000000002,559.1099999999999,123,0,0
+det-ramp-red-r1,red,ramp,v2 +hold,111,66,66,1,543.9834999999998,559.1099999999999,46,0,0
+det-ramp-red-r1,red,ramp,v2 +hold +rebase,111,66,66,1,543.9834999999998,559.1099999999999,46,0,0
+det-ramp-red-r1,red,ramp,v2-fixed,111,103,103,0,489.8920000000001,559.1099999999999,108,0,0
+det-ramp-red-r1,red,ramp,v2-fixed +hold,111,59,59,1,545.1945,559.1099999999999,40,0,0
+det-ramp-red-r1,red,ramp,v2-fixed +hold +rebase,111,59,59,1,545.1945,559.1099999999999,40,0,0
+det-ramp-red-r2,red,ramp,v2,78,72,72,1,454.3639999999998,560.1200000000001,106,0,0
+det-ramp-red-r2,red,ramp,v2 +hold,78,49,49,1,547.8810000000002,560.1200000000001,34,0,0
+det-ramp-red-r2,red,ramp,v2 +hold +rebase,78,49,49,1,547.8810000000002,560.1200000000001,34,0,0
+det-ramp-red-r2,red,ramp,v2-fixed,78,71,71,1,486.334,560.1200000000001,87,0,0
+det-ramp-red-r2,red,ramp,v2-fixed +hold,78,46,46,1,546.9165,560.1200000000001,29,0,0
+det-ramp-red-r2,red,ramp,v2-fixed +hold +rebase,78,46,46,1,546.9165,560.1200000000001,29,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,v2,0,0,0,1,0.0,0.0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,v2 +hold,0,0,0,2,0.0,0.0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,v2 +hold +rebase,0,0,0,2,0.0,0.0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,v2-fixed +hold,0,0,0,0,0.0,0.0,0,0,0
+det-randloss-fq_codel-r1,fq_codel,randloss,v2-fixed +hold +rebase,0,0,0,0,0.0,0.0,0,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,v2,4,1,1,1,0.4619999999999962,6.840000000000003,1,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,v2 +hold,4,1,1,1,0.7930999999999955,6.840000000000003,1,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,v2 +hold +rebase,4,1,1,1,0.7930999999999955,6.840000000000003,1,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,v2-fixed,4,2,2,1,0.5609999999999999,6.840000000000003,1,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,v2-fixed +hold,4,1,1,3,0.7930999999999955,6.840000000000003,1,0,0
+det-randloss-fq_codel-r2,fq_codel,randloss,v2-fixed +hold +rebase,4,1,1,3,0.7930999999999955,6.840000000000003,1,0,0
+det-randloss-pfifo-r1,pfifo,randloss,v2,1,0,0,2,0.0,1.0249999999999986,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,v2 +hold,1,0,0,4,0.0,1.0249999999999986,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,v2 +hold +rebase,1,0,0,4,0.0,1.0249999999999986,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,v2-fixed,1,0,0,0,0.0,1.0249999999999986,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,v2-fixed +hold,1,0,0,2,0.0,1.0249999999999986,0,0,0
+det-randloss-pfifo-r1,pfifo,randloss,v2-fixed +hold +rebase,1,0,0,2,0.0,1.0249999999999986,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,v2,0,0,0,2,0.0,0.0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,v2 +hold,0,0,0,3,0.0,0.0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,v2 +hold +rebase,0,0,0,3,0.0,0.0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,v2-fixed,0,0,0,1,0.0,0.0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,v2-fixed +hold,0,0,0,1,0.0,0.0,0,0,0
+det-randloss-pfifo-r2,pfifo,randloss,v2-fixed +hold +rebase,0,0,0,1,0.0,0.0,0,0,0
+det-randloss-pie-r1,pie,randloss,v2,3,2,2,2,0.7853999999999957,3.160000000000025,2,0,0
+det-randloss-pie-r1,pie,randloss,v2 +hold,3,2,2,4,0.9317999999999955,3.160000000000025,2,0,0
+det-randloss-pie-r1,pie,randloss,v2 +hold +rebase,3,2,2,4,0.9317999999999955,3.160000000000025,2,0,0
+det-randloss-pie-r1,pie,randloss,v2-fixed,3,2,2,4,0.7523999999999944,3.160000000000025,2,0,0
+det-randloss-pie-r1,pie,randloss,v2-fixed +hold,3,2,2,2,0.9317999999999955,3.160000000000025,2,0,0
+det-randloss-pie-r1,pie,randloss,v2-fixed +hold +rebase,3,2,2,2,0.9317999999999955,3.160000000000025,2,0,0
+det-randloss-pie-r2,pie,randloss,v2,1,1,1,3,0.5940000000000012,1.6550000000000011,1,0,0
+det-randloss-pie-r2,pie,randloss,v2 +hold,1,1,1,4,1.4568000000000012,1.6550000000000011,1,0,0
+det-randloss-pie-r2,pie,randloss,v2 +hold +rebase,1,1,1,4,1.4568000000000012,1.6550000000000011,1,0,0
+det-randloss-pie-r2,pie,randloss,v2-fixed,1,1,1,0,1.4568000000000012,1.6550000000000011,1,0,0
+det-randloss-pie-r2,pie,randloss,v2-fixed +hold,1,1,1,3,1.4568000000000012,1.6550000000000011,1,0,0
+det-randloss-pie-r2,pie,randloss,v2-fixed +hold +rebase,1,1,1,3,1.4568000000000012,1.6550000000000011,1,0,0
+det-randloss-red-r1,red,randloss,v2,0,0,0,1,0.0,0.0,0,0,0
+det-randloss-red-r1,red,randloss,v2 +hold,0,0,0,2,0.0,0.0,0,0,0
+det-randloss-red-r1,red,randloss,v2 +hold +rebase,0,0,0,2,0.0,0.0,0,0,0
+det-randloss-red-r1,red,randloss,v2-fixed,0,0,0,0,0.0,0.0,0,0,0
+det-randloss-red-r1,red,randloss,v2-fixed +hold,0,0,0,3,0.0,0.0,0,0,0
+det-randloss-red-r1,red,randloss,v2-fixed +hold +rebase,0,0,0,3,0.0,0.0,0,0,0
+det-randloss-red-r2,red,randloss,v2,1,0,0,1,0.0,1.0099999999999998,0,0,0
+det-randloss-red-r2,red,randloss,v2 +hold,1,0,0,2,0.0,1.0099999999999998,0,0,0
+det-randloss-red-r2,red,randloss,v2 +hold +rebase,1,0,0,2,0.0,1.0099999999999998,0,0,0
+det-randloss-red-r2,red,randloss,v2-fixed,1,0,0,1,0.0,1.0099999999999998,0,0,0
+det-randloss-red-r2,red,randloss,v2-fixed +hold,1,0,0,2,0.0,1.0099999999999998,0,0,0
+det-randloss-red-r2,red,randloss,v2-fixed +hold +rebase,1,0,0,2,0.0,1.0099999999999998,0,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,v2,43,41,41,4,97.38899999999987,112.29999999999993,42,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,v2 +hold,43,41,41,5,99.2749999999998,112.29999999999993,39,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,v2 +hold +rebase,43,41,41,5,99.2749999999998,112.29999999999993,39,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,v2-fixed,43,42,42,1,94.97999999999988,112.29999999999993,44,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,v2-fixed +hold,43,40,40,2,97.85449999999985,112.29999999999993,39,0,0
+det-revdelay-fq_codel-r1,fq_codel,revdelay,v2-fixed +hold +rebase,43,40,40,2,97.85449999999985,112.29999999999993,39,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,v2,47,44,44,4,102.55079999999981,121.2249999999999,47,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,v2 +hold,47,45,45,4,105.47719999999981,121.2249999999999,45,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,v2 +hold +rebase,47,45,45,4,105.47719999999981,121.2249999999999,45,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,v2-fixed,47,43,43,1,100.03579999999992,121.2249999999999,47,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,v2-fixed +hold,47,43,43,1,101.96889999999993,121.2249999999999,43,0,0
+det-revdelay-fq_codel-r2,fq_codel,revdelay,v2-fixed +hold +rebase,47,43,43,1,101.96889999999993,121.2249999999999,43,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,v2,72,72,72,0,179.22769999999977,205.42999999999998,73,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,v2 +hold,72,72,72,0,181.72929999999982,205.42999999999998,71,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,v2 +hold +rebase,72,72,72,0,181.72929999999982,205.42999999999998,71,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,v2-fixed,72,72,72,1,178.37259999999975,205.42999999999998,72,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,v2-fixed +hold,72,72,72,1,179.94729999999979,205.42999999999998,71,0,0
+det-revdelay-pfifo-r1,pfifo,revdelay,v2-fixed +hold +rebase,72,72,72,1,179.94729999999979,205.42999999999998,71,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,v2,76,73,73,0,188.1558,214.9300000000001,66,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,v2 +hold,76,72,72,0,193.49789999999993,214.9300000000001,63,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,v2 +hold +rebase,76,72,72,0,193.49789999999993,214.9300000000001,63,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,v2-fixed,76,72,72,0,187.51229999999987,214.9300000000001,68,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,v2-fixed +hold,76,72,72,0,191.3413999999999,214.9300000000001,68,0,0
+det-revdelay-pfifo-r2,pfifo,revdelay,v2-fixed +hold +rebase,76,72,72,0,191.3413999999999,214.9300000000001,68,0,0
+det-revdelay-pie-r1,pie,revdelay,v2,76,74,74,0,200.63949999999997,287.8050000000001,80,0,0
+det-revdelay-pie-r1,pie,revdelay,v2 +hold,76,74,74,0,264.1269999999997,287.8050000000001,71,0,0
+det-revdelay-pie-r1,pie,revdelay,v2 +hold +rebase,76,74,74,0,264.1269999999997,287.8050000000001,71,0,0
+det-revdelay-pie-r1,pie,revdelay,v2-fixed,76,74,74,0,206.41700000000003,287.8050000000001,84,0,0
+det-revdelay-pie-r1,pie,revdelay,v2-fixed +hold,76,74,74,0,262.2624999999998,287.8050000000001,74,0,0
+det-revdelay-pie-r1,pie,revdelay,v2-fixed +hold +rebase,76,74,74,0,262.2624999999998,287.8050000000001,74,0,0
+det-revdelay-pie-r2,pie,revdelay,v2,73,72,72,1,197.92399999999992,281.08500000000004,82,0,0
+det-revdelay-pie-r2,pie,revdelay,v2 +hold,73,72,72,3,260.4799999999998,281.08500000000004,68,0,0
+det-revdelay-pie-r2,pie,revdelay,v2 +hold +rebase,73,72,72,3,260.4799999999998,281.08500000000004,68,0,0
+det-revdelay-pie-r2,pie,revdelay,v2-fixed,73,72,72,0,201.38999999999984,281.08500000000004,81,0,0
+det-revdelay-pie-r2,pie,revdelay,v2-fixed +hold,73,72,72,0,258.0219999999997,281.08500000000004,71,0,0
+det-revdelay-pie-r2,pie,revdelay,v2-fixed +hold +rebase,73,72,72,0,258.0219999999997,281.08500000000004,71,0,0
+det-revdelay-red-r1,red,revdelay,v2,76,74,74,1,192.0863999999996,223.51499999999973,71,0,0
+det-revdelay-red-r1,red,revdelay,v2 +hold,76,74,74,1,197.08039999999957,223.51499999999973,71,0,0
+det-revdelay-red-r1,red,revdelay,v2 +hold +rebase,76,74,74,1,197.08039999999957,223.51499999999973,71,0,0
+det-revdelay-red-r1,red,revdelay,v2-fixed,76,74,74,1,191.8595999999997,223.51499999999973,72,0,0
+det-revdelay-red-r1,red,revdelay,v2-fixed +hold,76,74,74,1,196.45999999999955,223.51499999999973,71,0,0
+det-revdelay-red-r1,red,revdelay,v2-fixed +hold +rebase,76,74,74,1,196.45999999999955,223.51499999999973,71,0,0
+det-revdelay-red-r2,red,revdelay,v2,73,72,72,0,201.07259999999982,225.03499999999997,69,0,0
+det-revdelay-red-r2,red,revdelay,v2 +hold,73,72,72,0,205.1771999999997,225.03499999999997,70,0,0
+det-revdelay-red-r2,red,revdelay,v2 +hold +rebase,73,72,72,0,205.1771999999997,225.03499999999997,70,0,0
+det-revdelay-red-r2,red,revdelay,v2-fixed,73,72,72,0,200.56459999999967,225.03499999999997,72,0,0
+det-revdelay-red-r2,red,revdelay,v2-fixed +hold,73,72,72,0,202.6107999999998,225.03499999999997,72,0,0
+det-revdelay-red-r2,red,revdelay,v2-fixed +hold +rebase,73,72,72,0,202.6107999999998,225.03499999999997,72,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,v2,41,32,32,9,46.227000000000075,75.67500000000004,39,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,v2 +hold,41,26,26,6,55.79520000000005,75.67500000000004,23,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,v2 +hold +rebase,41,26,26,6,55.79520000000005,75.67500000000004,23,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,v2-fixed,41,29,29,8,48.41600000000001,75.67500000000004,31,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,v2-fixed +hold,41,25,25,5,55.39310000000001,75.67500000000004,23,0,0
+det-tcpbbr-fq_codel-r1,fq_codel,tcpbbr,v2-fixed +hold +rebase,41,25,25,5,55.39310000000001,75.67500000000004,23,0,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,v2,36,31,31,15,36.36329999999996,60.04499999999996,32,0,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,v2 +hold,36,24,24,13,43.23279999999996,60.04499999999996,22,0,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,v2 +hold +rebase,36,24,24,13,43.23279999999996,60.04499999999996,22,0,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,v2-fixed,36,29,29,6,37.90239999999988,60.04499999999996,30,0,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,v2-fixed +hold,36,24,24,4,43.08379999999996,60.04499999999996,23,0,0
+det-tcpbbr-fq_codel-r2,fq_codel,tcpbbr,v2-fixed +hold +rebase,36,24,24,4,43.08379999999996,60.04499999999996,23,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,v2,68,66,66,0,165.9826,292.8700000000001,94,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,v2 +hold,68,60,60,0,273.837,292.8700000000001,60,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,v2 +hold +rebase,68,59,59,0,219.93820000000008,292.8700000000001,61,3,3
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,v2-fixed,68,62,62,1,238.38220000000004,292.8700000000001,75,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,v2-fixed +hold,68,60,60,1,272.45100000000014,292.8700000000001,60,0,0
+det-tcpbbr-pfifo-r1,pfifo,tcpbbr,v2-fixed +hold +rebase,68,62,62,1,201.60279999999997,292.8700000000001,63,3,3
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,v2,62,60,60,0,150.68799999999987,289.54500000000013,102,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,v2 +hold,62,60,60,0,273.1435999999998,289.54500000000013,56,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,v2 +hold +rebase,62,60,60,0,252.09909999999994,289.54500000000013,59,1,1
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,v2-fixed,62,60,60,0,220.46319999999997,289.54500000000013,80,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,v2-fixed +hold,62,60,60,0,272.1576999999998,289.54500000000013,57,0,0
+det-tcpbbr-pfifo-r2,pfifo,tcpbbr,v2-fixed +hold +rebase,62,60,60,0,230.85870000000006,289.54500000000013,59,2,2
+det-tcpbbr-pie-r1,pie,tcpbbr,v2,68,67,67,0,244.34899999999988,308.15999999999997,97,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,v2 +hold,68,61,61,1,289.8983999999999,308.15999999999997,56,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,v2 +hold +rebase,68,61,61,1,289.8983999999999,308.15999999999997,56,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,v2-fixed,68,62,62,0,267.1769999999999,308.15999999999997,74,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,v2-fixed +hold,68,61,61,0,287.79819999999995,308.15999999999997,59,0,0
+det-tcpbbr-pie-r1,pie,tcpbbr,v2-fixed +hold +rebase,68,61,61,0,287.79819999999995,308.15999999999997,59,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,v2,67,63,63,2,260.79629999999986,317.9950000000003,91,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,v2 +hold,67,60,60,1,301.8988000000001,317.9950000000003,59,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,v2 +hold +rebase,67,60,60,1,301.8988000000001,317.9950000000003,59,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,v2-fixed,67,63,63,0,275.6529000000001,317.9950000000003,77,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,v2-fixed +hold,67,60,60,0,301.6678,317.9950000000003,59,0,0
+det-tcpbbr-pie-r2,pie,tcpbbr,v2-fixed +hold +rebase,67,60,60,0,301.6678,317.9950000000003,59,0,0
+det-tcpbbr-red-r1,red,tcpbbr,v2,67,65,65,0,233.54319999999987,297.78999999999996,96,0,0
+det-tcpbbr-red-r1,red,tcpbbr,v2 +hold,67,60,60,0,279.7765999999999,297.78999999999996,59,0,0
+det-tcpbbr-red-r1,red,tcpbbr,v2 +hold +rebase,67,60,60,0,279.7765999999999,297.78999999999996,59,0,0
+det-tcpbbr-red-r1,red,tcpbbr,v2-fixed,67,63,63,0,268.03539999999987,297.78999999999996,73,0,0
+det-tcpbbr-red-r1,red,tcpbbr,v2-fixed +hold,67,60,60,0,278.61299999999983,297.78999999999996,60,0,0
+det-tcpbbr-red-r1,red,tcpbbr,v2-fixed +hold +rebase,67,60,60,0,278.61299999999983,297.78999999999996,60,1,1
+det-tcpbbr-red-r2,red,tcpbbr,v2,60,60,60,0,258.8024999999997,287.88999999999993,72,0,0
+det-tcpbbr-red-r2,red,tcpbbr,v2 +hold,60,60,60,0,274.2485999999999,287.88999999999993,56,0,0
+det-tcpbbr-red-r2,red,tcpbbr,v2 +hold +rebase,60,60,60,0,274.2485999999999,287.88999999999993,56,0,0
+det-tcpbbr-red-r2,red,tcpbbr,v2-fixed,60,60,60,0,265.7273999999998,287.88999999999993,63,0,0
+det-tcpbbr-red-r2,red,tcpbbr,v2-fixed +hold,60,60,60,0,271.74059999999974,287.88999999999993,56,0,0
+det-tcpbbr-red-r2,red,tcpbbr,v2-fixed +hold +rebase,60,60,60,0,271.74059999999974,287.88999999999993,56,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,v2,34,30,30,14,55.58180000000008,74.86500000000007,32,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,v2 +hold,34,29,29,12,63.95500000000004,74.86500000000007,25,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,v2 +hold +rebase,34,29,29,12,63.95500000000004,74.86500000000007,25,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,v2-fixed,34,30,30,7,55.11460000000003,74.86500000000007,30,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,v2-fixed +hold,34,27,27,6,62.28200000000004,74.86500000000007,23,0,0
+det-tcpcubic-fq_codel-r1,fq_codel,tcpcubic,v2-fixed +hold +rebase,34,27,27,6,62.28200000000004,74.86500000000007,23,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,v2,30,25,25,8,46.7412999999999,68.34999999999998,28,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,v2 +hold,30,23,23,5,50.89129999999992,68.34999999999998,22,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,v2 +hold +rebase,30,23,23,5,50.89129999999992,68.34999999999998,22,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,v2-fixed,30,24,24,4,46.849799999999874,68.34999999999998,26,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,v2-fixed +hold,30,21,21,2,50.125299999999875,68.34999999999998,21,0,0
+det-tcpcubic-fq_codel-r2,fq_codel,tcpcubic,v2-fixed +hold +rebase,30,21,21,2,50.125299999999875,68.34999999999998,21,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,v2,60,60,60,0,258.8778,296.2599999999999,75,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,v2 +hold,60,60,60,0,273.24839999999983,296.2599999999999,59,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,v2 +hold +rebase,60,59,59,0,257.40599999999984,296.2599999999999,58,1,1
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,v2-fixed,60,60,60,0,262.7041999999999,296.2599999999999,66,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,v2-fixed +hold,60,60,60,0,269.49299999999977,296.2599999999999,60,0,0
+det-tcpcubic-pfifo-r1,pfifo,tcpcubic,v2-fixed +hold +rebase,60,46,46,0,205.3333999999999,296.2599999999999,46,2,2
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,v2,62,60,60,0,263.2191999999999,294.68,75,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,v2 +hold,62,60,60,0,270.9389999999997,294.68,60,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,v2 +hold +rebase,62,60,60,0,270.9389999999997,294.68,60,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,v2-fixed,62,60,60,0,266.12829999999974,294.68,64,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,v2-fixed +hold,62,60,60,0,267.9359999999998,294.68,60,0,0
+det-tcpcubic-pfifo-r2,pfifo,tcpcubic,v2-fixed +hold +rebase,62,60,60,0,266.6159999999999,294.68,62,1,1
+det-tcpcubic-pie-r1,pie,tcpcubic,v2,103,87,87,2,95.94330000000012,156.79000000000002,81,0,0
+det-tcpcubic-pie-r1,pie,tcpcubic,v2 +hold,103,63,63,1,126.97060000000003,156.79000000000002,62,0,0
+det-tcpcubic-pie-r1,pie,tcpcubic,v2 +hold +rebase,103,63,63,1,126.97060000000003,156.79000000000002,62,0,0
+det-tcpcubic-pie-r1,pie,tcpcubic,v2-fixed,103,85,85,1,98.83839999999995,156.79000000000002,80,0,0
+det-tcpcubic-pie-r1,pie,tcpcubic,v2-fixed +hold,103,61,61,0,130.8662999999999,156.79000000000002,59,0,0
+det-tcpcubic-pie-r1,pie,tcpcubic,v2-fixed +hold +rebase,103,61,61,0,130.8662999999999,156.79000000000002,59,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,v2,102,91,91,2,91.12709999999988,150.90000000000018,88,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,v2 +hold,102,62,62,1,126.04390000000004,150.90000000000018,61,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,v2 +hold +rebase,102,62,62,1,126.04390000000004,150.90000000000018,61,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,v2-fixed,102,85,85,0,86.14029999999983,150.90000000000018,83,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,v2-fixed +hold,102,62,62,0,124.63100000000004,150.90000000000018,60,0,0
+det-tcpcubic-pie-r2,pie,tcpcubic,v2-fixed +hold +rebase,102,62,62,0,124.63100000000004,150.90000000000018,60,0,0
+det-tcpcubic-red-r1,red,tcpcubic,v2,71,70,70,0,174.29849999999982,277.84999999999985,100,0,0
+det-tcpcubic-red-r1,red,tcpcubic,v2 +hold,71,60,60,0,256.4433,277.84999999999985,49,0,0
+det-tcpcubic-red-r1,red,tcpcubic,v2 +hold +rebase,71,60,60,0,256.4433,277.84999999999985,49,0,0
+det-tcpcubic-red-r1,red,tcpcubic,v2-fixed,71,68,68,0,193.33330000000004,277.84999999999985,94,0,0
+det-tcpcubic-red-r1,red,tcpcubic,v2-fixed +hold,71,61,61,0,253.85869999999989,277.84999999999985,51,0,0
+det-tcpcubic-red-r1,red,tcpcubic,v2-fixed +hold +rebase,71,61,61,0,253.85869999999989,277.84999999999985,51,0,0
+det-tcpcubic-red-r2,red,tcpcubic,v2,67,56,56,2,89.27299999999984,282.49499999999995,87,0,0
+det-tcpcubic-red-r2,red,tcpcubic,v2 +hold,67,59,59,1,250.02700000000002,282.49499999999995,52,0,0
+det-tcpcubic-red-r2,red,tcpcubic,v2 +hold +rebase,67,58,58,1,237.7695,282.49499999999995,52,1,1
+det-tcpcubic-red-r2,red,tcpcubic,v2-fixed,67,64,64,0,179.24800000000005,282.49499999999995,90,0,0
+det-tcpcubic-red-r2,red,tcpcubic,v2-fixed +hold,67,62,62,0,254.58899999999997,282.49499999999995,54,0,0
+det-tcpcubic-red-r2,red,tcpcubic,v2-fixed +hold +rebase,67,56,56,0,197.79999999999995,282.49499999999995,51,3,3
+det-splitcap-fq_codel-r1,fq_codel,splitcap,v2,73,69,69,8,150.32949999999957,189.13499999999976,74,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,v2 +hold,73,66,66,7,162.43749999999943,189.13499999999976,63,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,v2 +hold +rebase,73,66,66,7,162.43749999999943,189.13499999999976,63,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,v2-fixed,73,70,70,3,151.11299999999972,189.13499999999976,72,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,v2-fixed +hold,73,67,67,1,160.71199999999956,189.13499999999976,65,0,0
+det-splitcap-fq_codel-r1,fq_codel,splitcap,v2-fixed +hold +rebase,73,67,67,1,160.71199999999956,189.13499999999976,65,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,v2,73,66,66,9,145.73699999999974,175.44499999999994,70,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,v2 +hold,73,64,64,10,151.46149999999972,175.44499999999994,63,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,v2 +hold +rebase,73,64,64,10,151.46149999999972,175.44499999999994,63,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,v2-fixed,73,67,67,3,144.57399999999961,175.44499999999994,70,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,v2-fixed +hold,73,65,65,2,150.3394999999996,175.44499999999994,63,0,0
+det-splitcap-fq_codel-r2,fq_codel,splitcap,v2-fixed +hold +rebase,73,65,65,2,150.3394999999996,175.44499999999994,63,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,v2,126,108,108,0,307.8144999999994,363.86499999999984,110,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,v2 +hold,126,108,108,0,333.93499999999904,363.86499999999984,104,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,v2 +hold +rebase,126,108,108,0,333.93499999999904,363.86499999999984,104,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,v2-fixed,126,109,109,0,312.8924999999996,363.86499999999984,105,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,v2-fixed +hold,126,109,109,0,332.46449999999936,363.86499999999984,106,0,0
+det-splitcap-pfifo-r1,pfifo,splitcap,v2-fixed +hold +rebase,126,109,109,0,332.46449999999936,363.86499999999984,106,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,v2,120,111,111,2,302.98899999999963,354.6699999999999,110,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,v2 +hold,120,109,109,3,324.1139999999992,354.6699999999999,105,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,v2 +hold +rebase,120,109,109,3,324.1139999999992,354.6699999999999,105,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,v2-fixed,120,111,111,2,306.6439999999996,354.6699999999999,113,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,v2-fixed +hold,120,108,108,3,323.88419999999934,354.6699999999999,105,0,0
+det-splitcap-pfifo-r2,pfifo,splitcap,v2-fixed +hold +rebase,120,108,108,3,323.88419999999934,354.6699999999999,105,0,0
+det-splitcap-pie-r1,pie,splitcap,v2,115,110,110,0,310.36299999999994,454.92999999999995,127,0,0
+det-splitcap-pie-r1,pie,splitcap,v2 +hold,115,110,110,0,425.7494999999996,454.92999999999995,109,0,0
+det-splitcap-pie-r1,pie,splitcap,v2 +hold +rebase,115,110,110,0,425.7494999999996,454.92999999999995,109,0,0
+det-splitcap-pie-r1,pie,splitcap,v2-fixed,115,110,110,0,324.29189999999977,454.92999999999995,130,0,0
+det-splitcap-pie-r1,pie,splitcap,v2-fixed +hold,115,110,110,0,426.4812999999996,454.92999999999995,110,0,0
+det-splitcap-pie-r1,pie,splitcap,v2-fixed +hold +rebase,115,110,110,0,426.4812999999996,454.92999999999995,110,0,0
+det-splitcap-pie-r2,pie,splitcap,v2,113,108,108,2,306.0821999999998,442.8100000000003,118,0,0
+det-splitcap-pie-r2,pie,splitcap,v2 +hold,113,108,108,3,417.1687999999994,442.8100000000003,103,0,0
+det-splitcap-pie-r2,pie,splitcap,v2 +hold +rebase,113,108,108,3,417.1687999999994,442.8100000000003,103,0,0
+det-splitcap-pie-r2,pie,splitcap,v2-fixed,113,109,109,4,319.436,442.8100000000003,122,0,0
+det-splitcap-pie-r2,pie,splitcap,v2-fixed +hold,113,108,108,2,416.78559999999965,442.8100000000003,104,0,0
+det-splitcap-pie-r2,pie,splitcap,v2-fixed +hold +rebase,113,108,108,2,416.78559999999965,442.8100000000003,104,0,0
+det-splitcap-red-r1,red,splitcap,v2,128,111,111,0,302.5266999999997,365.40000000000015,119,0,0
+det-splitcap-red-r1,red,splitcap,v2 +hold,128,110,110,0,327.0263999999997,365.40000000000015,110,0,0
+det-splitcap-red-r1,red,splitcap,v2 +hold +rebase,128,110,110,0,327.0263999999997,365.40000000000015,110,0,0
+det-splitcap-red-r1,red,splitcap,v2-fixed,128,111,111,3,308.4292,365.40000000000015,116,0,0
+det-splitcap-red-r1,red,splitcap,v2-fixed +hold,128,109,109,2,327.3467999999995,365.40000000000015,109,0,0
+det-splitcap-red-r1,red,splitcap,v2-fixed +hold +rebase,128,109,109,2,327.3467999999995,365.40000000000015,109,0,0
+det-splitcap-red-r2,red,splitcap,v2,123,109,109,1,302.74699999999956,356.89000000000016,111,0,0
+det-splitcap-red-r2,red,splitcap,v2 +hold,123,108,108,3,320.7205999999994,356.89000000000016,106,0,0
+det-splitcap-red-r2,red,splitcap,v2 +hold +rebase,123,108,108,3,320.7205999999994,356.89000000000016,106,0,0
+det-splitcap-red-r2,red,splitcap,v2-fixed,123,108,108,2,308.6371999999995,356.89000000000016,107,0,0
+det-splitcap-red-r2,red,splitcap,v2-fixed +hold,123,108,108,2,320.2607999999995,356.89000000000016,107,0,0
+det-splitcap-red-r2,red,splitcap,v2-fixed +hold +rebase,123,108,108,2,320.2607999999995,356.89000000000016,107,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,v2,18,17,17,9,30.59500000000011,45.51500000000013,17,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,v2 +hold,18,16,16,5,35.28100000000008,45.51500000000013,15,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,v2 +hold +rebase,18,16,16,5,35.28100000000008,45.51500000000013,15,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,v2-fixed,18,17,17,7,30.55000000000008,45.51500000000013,17,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,v2-fixed +hold,18,17,17,4,34.91700000000006,45.51500000000013,17,0,0
+det-splitudp-fq_codel-r1,fq_codel,splitudp,v2-fixed +hold +rebase,18,17,17,4,34.91700000000006,45.51500000000013,17,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,v2,16,15,15,10,28.257999999999853,42.540000000000006,15,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,v2 +hold,16,15,15,7,33.40999999999984,42.540000000000006,15,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,v2 +hold +rebase,16,15,15,7,33.40999999999984,42.540000000000006,15,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,v2-fixed,16,16,16,8,29.656999999999933,42.540000000000006,15,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,v2-fixed +hold,16,15,15,8,34.366999999999976,42.540000000000006,14,0,0
+det-splitudp-fq_codel-r2,fq_codel,splitudp,v2-fixed +hold +rebase,16,15,15,8,34.366999999999976,42.540000000000006,14,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,v2,74,72,72,0,210.40899999999985,237.74500000000012,73,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,v2 +hold,74,70,70,0,221.37499999999983,237.74500000000012,70,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,v2 +hold +rebase,74,70,70,0,221.37499999999983,237.74500000000012,70,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,v2-fixed,74,72,72,0,211.866,237.74500000000012,74,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,v2-fixed +hold,74,70,70,1,221.47399999999985,237.74500000000012,70,0,0
+det-splitudp-pfifo-r1,pfifo,splitudp,v2-fixed +hold +rebase,74,70,70,1,221.47399999999985,237.74500000000012,70,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,v2,81,74,74,1,204.0236,236.60499999999985,73,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,v2 +hold,81,75,75,1,214.4371999999996,236.60499999999985,74,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,v2 +hold +rebase,81,75,75,1,214.4371999999996,236.60499999999985,74,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,v2-fixed,81,75,75,1,207.3355999999999,236.60499999999985,75,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,v2-fixed +hold,81,74,74,1,214.2145999999997,236.60499999999985,74,0,0
+det-splitudp-pfifo-r2,pfifo,splitudp,v2-fixed +hold +rebase,81,74,74,1,214.2145999999997,236.60499999999985,74,0,0
+det-splitudp-pie-r1,pie,splitudp,v2,72,72,72,2,190.55990000000003,238.36000000000004,78,0,0
+det-splitudp-pie-r1,pie,splitudp,v2 +hold,72,71,71,2,224.41999999999985,238.36000000000004,71,0,0
+det-splitudp-pie-r1,pie,splitudp,v2 +hold +rebase,72,71,71,2,224.41999999999985,238.36000000000004,71,0,0
+det-splitudp-pie-r1,pie,splitudp,v2-fixed,72,72,72,2,193.40920000000003,238.36000000000004,77,0,0
+det-splitudp-pie-r1,pie,splitudp,v2-fixed +hold,72,71,71,3,223.64809999999983,238.36000000000004,71,0,0
+det-splitudp-pie-r1,pie,splitudp,v2-fixed +hold +rebase,72,71,71,3,223.64809999999983,238.36000000000004,71,0,0
+det-splitudp-pie-r2,pie,splitudp,v2,78,74,74,1,191.49219999999997,242.64499999999995,82,0,0
+det-splitudp-pie-r2,pie,splitudp,v2 +hold,78,73,73,1,222.3580999999999,242.64499999999995,73,0,0
+det-splitudp-pie-r2,pie,splitudp,v2 +hold +rebase,78,73,73,1,222.3580999999999,242.64499999999995,73,0,0
+det-splitudp-pie-r2,pie,splitudp,v2-fixed,78,74,74,0,195.87729999999988,242.64499999999995,82,0,0
+det-splitudp-pie-r2,pie,splitudp,v2-fixed +hold,78,73,73,0,222.35809999999995,242.64499999999995,73,0,0
+det-splitudp-pie-r2,pie,splitudp,v2-fixed +hold +rebase,78,73,73,0,222.35809999999995,242.64499999999995,73,0,0
+det-splitudp-red-r1,red,splitudp,v2,75,69,69,2,179.2920999999997,234.44999999999996,72,0,0
+det-splitudp-red-r1,red,splitudp,v2 +hold,75,70,70,2,207.41239999999976,234.44999999999996,70,0,0
+det-splitudp-red-r1,red,splitudp,v2 +hold +rebase,75,70,70,2,207.41239999999976,234.44999999999996,70,0,0
+det-splitudp-red-r1,red,splitudp,v2-fixed,75,73,73,3,200.79729999999975,234.44999999999996,76,0,0
+det-splitudp-red-r1,red,splitudp,v2-fixed +hold,75,70,70,1,208.52419999999967,234.44999999999996,70,0,0
+det-splitudp-red-r1,red,splitudp,v2-fixed +hold +rebase,75,70,70,1,208.52419999999967,234.44999999999996,70,0,0
+det-splitudp-red-r2,red,splitudp,v2,82,74,74,2,191.50239999999985,241.35499999999996,76,0,0
+det-splitudp-red-r2,red,splitudp,v2 +hold,82,75,75,2,210.94499999999974,241.35499999999996,75,0,0
+det-splitudp-red-r2,red,splitudp,v2 +hold +rebase,82,75,75,2,210.94499999999974,241.35499999999996,75,0,0
+det-splitudp-red-r2,red,splitudp,v2-fixed,82,75,75,2,203.02279999999985,241.35499999999996,77,0,0
+det-splitudp-red-r2,red,splitudp,v2-fixed +hold,82,75,75,1,212.6905999999998,241.35499999999996,75,0,0
+det-splitudp-red-r2,red,splitudp,v2-fixed +hold +rebase,82,75,75,1,212.6905999999998,241.35499999999996,75,0,0
