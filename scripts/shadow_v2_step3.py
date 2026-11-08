@@ -48,7 +48,9 @@ import shadow_v2_step1 as s1  # noqa: E402
 
 ROOT, OUT, T = s1.ROOT, s1.OUT, s1.T
 F3_W = 30
-FLOORS = {"F1": 0.4713, "F2": 0.6280, "F3": 0.0066, "F4": 0.0634}  # Step 2, EWMA, 33 ms (F3 = W_g 30 variant)
+# Step 2 rule (10 % of the median end-of-run EWMA sigma over pfifo-r1 flows), EWMA, 33 ms (F3 = W_g 30 variant).
+# F4 re-derived after its unit fix (drain time was P * 8 / R with R in bytes, 8x too large): 0.0634 -> 0.0079.
+FLOORS = {"F1": 0.4713, "F2": 0.6280, "F3": 0.0066, "F4": 0.0079}
 FEATURES = ("F1", "F2", "F3", "F5")
 VARIANTS = ("keep", "reset")  # G across probe_rtt
 DELTA, Z_MAX, TAU_S, T_WARM_S, S_FREEZE, LAG_S = 2.0, 4.0, 60.0, 3.0, 0.125, 1.0
@@ -84,9 +86,34 @@ for _base, _fixed in (("fuse d: s1+s2+s3+sL", False), ("fuse d fixed", True)):
         HOLD.add(_base + _suffix) if _hold else None
         REBASE.add(_base + _suffix) if _rb else None
         FIXED.add(_base + _suffix) if _fixed else None
+# Loss-gate variants (2026-11-08, user: change only the gate). The loss term s_L counts positively only when
+# the gate is open (closed: only its negative part). Kinds: growth = F2 or F3 score > 0 in the last 3 ticks
+# (the Step 4 gate); level = z(F1) >= 1 in the last 3 ticks (a queue is standing); level2 = z(F1) >= 2;
+# either / both = growth or / and level; open = no gate; off = no loss term at all; "+cap" = additionally the
+# positive loss contribution inside one excursion of G (since G last was 0) is capped at G_ref / 4, half of
+# the alarm level (theta_on 0.25 = G_ref / 2), so loss alone cannot raise an alarm.
+# "-holdloss" = the hold rule's "loss within T_clear" clause removed (hold then needs z(F1) or z(F4) >= 1).
+GATE: dict[str, tuple[str, bool, bool]] = {}
+GATE_KINDS = (("growth", False, True), ("level", False, True), ("level2", False, True), ("either", False, True),
+              ("both", False, True), ("open", False, True), ("off", False, True), ("growth", True, True),
+              ("level", True, True), ("either", True, True), ("growth", False, False), ("level", False, False),
+              ("level", True, False))
+for _base, _fixed in (("fuse d: s1+s2+s3+sL", False), ("fuse d fixed", True)):
+    for _kind, _cap, _hl in GATE_KINDS:
+        _name = f"{_base} +hold gate:{_kind}{'+cap' if _cap else ''}{'' if _hl else ' -holdloss'}"
+        LOSS[_name] = ("fuse", FUSION["fuse d: s1+s2+s3+sL"])
+        HOLD.add(_name)
+        FIXED.add(_name) if _fixed else None
+        GATE[_name] = (_kind, _cap, _hl)
 T_RB_S = 1.0
 SHRINK = 0.5  # covariance shrinkage toward the diagonal (spec section 8)
 LOSS_FLOOR = 1e-3  # 0.1 % loss: numerical floor of the loss-rate sigma
+# F3's rate normaliser d_k (EWMA tau 10 s of the delivered rate, from the rendition x 1.03) is updated only on
+# the detector's own quiet ticks (score < S_FREEZE over the trailing 1 s), not masked, with data. The Step 1
+# tick files also carry a "d" frozen on GT3 CONGESTED (a truth leak, Step 1 stand-in); CAUSAL_D = False
+# reproduces it.
+CAUSAL_D = True
+TAU_D = 10.0
 NAME = "step3"
 EXTRA_CELLS: list[tuple[str, str | None, tuple[str, ...]]] = []  # (label, aqm or None, scenarios): per-cell tables
 CELL_THETAS = (0.15, 0.25, 0.4, 0.5)
@@ -104,6 +131,9 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
     probe = df.probe_rtt.to_numpy()
     x = {f: df[f].to_numpy().copy() for f in ("F1", "F2", "F3", "F4")}
     lost, sent = df.l.to_numpy(), df.n.to_numpy()
+    causal_d = CAUSAL_D and "rate" in df
+    if causal_d:
+        P_arr, rate_arr, v_d, a_d = df.P.to_numpy(), df.rate.to_numpy(), float(df.d0.iloc[0]), T / TAU_D
     kind, param = LOSS.get(feature, (None, None))
     fuse = param if kind == "fuse" else None
     if kind in ("rate", "fuse"):
@@ -121,6 +151,9 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
     rb_offset, rebases = 0.0, []
     rb_n = int(round(T_RB_S / T))
     last_loss_t = -math.inf
+    gate_kind, gate_cap, hold_loss = GATE.get(feature, ("growth", False, True))
+    cap_l = g_ref / 4 if (gate_cap and g_ref) else math.inf
+    g_loss = 0.0  # positive loss contribution in the current excursion of G
     zc_now = {f: 0.0 for f in feats}
     cov_f = fuse[1] if fuse and fuse[0] == "cov" else ()
     C = np.eye(len(cov_f)) if cov_f else None  # EWMA calm covariance of zc over cov_f  # F2 / F3 always run for the loss gate
@@ -150,6 +183,10 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
             continue
         recent_quiet = (k == 0) or (score[max(0, k - lag):k].max() < S_FREEZE) if g_ref else True
         calm = recent_quiet
+        if causal_d:
+            if calm:
+                v_d += a_d * (rate_arr[k] - v_d)
+            x["F3"][k] = (P_arr[k] - P_arr[k - F3_W]) * 8 / (v_d * F3_W * T) if k >= F3_W else np.nan
         if armed is None and fixed:
             armed = k
         if armed is None:
@@ -178,8 +215,18 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
                 zc_now[f] = 0.0
         zc1_hist[k], zc3_hist[k] = zc_now["F1"], zc_now["F3"]
         if kind in ("rate", "fuse"):
-            gate = any(s_f["F2"][j] > 0 or s_f["F3"][j] > 0 for j in range(max(0, k - 2), k + 1))
-            s_k = s_f["L"][k] if gate else min(0.0, s_f["L"][k])
+            j0 = max(0, k - 2)
+            growth = any(s_f["F2"][j] > 0 or s_f["F3"][j] > 0 for j in range(j0, k + 1))
+            z1w = zc1_hist[j0:k + 1]
+            z1max = float(np.nanmax(z1w)) if np.isfinite(z1w).any() else -math.inf
+            level, level2 = z1max >= DELTA / 2, z1max >= DELTA
+            gate = {"growth": growth, "level": level, "level2": level2, "either": growth or level,
+                    "both": growth and level, "open": True, "off": False}[gate_kind]
+            s_l = s_f["L"][k]
+            pos = max(0.0, s_l) if gate and gate_kind != "off" else 0.0
+            if gate_cap:
+                pos = min(pos, max(0.0, cap_l - g_loss))
+            s_k = pos + (min(0.0, s_l) if gate_kind != "off" else 0.0)
             if kind == "fuse":
                 mode, fs = fuse
                 if mode == "sum":
@@ -206,7 +253,7 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
             last_loss_t = t[k]
         if hold_on and s_k < 0:
             t_clear = max(0.3, 2 * (srtt_arr[k] / 1000 if np.isfinite(srtt_arr[k]) else 0.0))
-            if zc_now["F1"] >= DELTA / 2 or zc_now["F4"] >= DELTA / 2 or t[k] - last_loss_t <= t_clear:
+            if zc_now["F1"] >= DELTA / 2 or zc_now["F4"] >= DELTA / 2 or (hold_loss and t[k] - last_loss_t <= t_clear):
                 s_k = 0.0
         if rebase_on and k - armed >= rb_n:
             w = slice(k - rb_n + 1, k + 1)
@@ -225,6 +272,8 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
         if reset_probe and probe[k] and not probe[k - 1]:
             g = 0.0
         g = min(cap, max(0.0, g + s_k))
+        if kind == "fuse":
+            g_loss = 0.0 if g == 0.0 else g_loss + pos
         G[k], S[k] = g, s_k
         score[k] = g / (2 * g_ref) if g_ref else 0.0
         # statistics update on calm ticks (never for the fixed variant)
@@ -239,7 +288,7 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
             if cov_f:
                 zv = np.array([zc_now[f] for f in cov_f])
                 C += a * (np.outer(zv, zv) - C)
-    return {"G": G, "score": score, "armed": armed, "t": t, "srtt": df.srtt.to_numpy(), "rebases": rebases}
+    return {"G": G, "score": score, "armed": armed, "t": t, "srtt": df.srtt.to_numpy(), "rebases": rebases, "s_f": s_f}
 
 
 def loss_rate(df: pd.DataFrame, window_s: float = 0.1) -> np.ndarray:
@@ -293,6 +342,20 @@ def episodes(res: dict, theta: float) -> tuple[list[float], list[float]]:
 
 # ── workers ──────────────────────────────────────────────────────────────
 
+def f3_of(P: np.ndarray, d_k: np.ndarray) -> np.ndarray:
+    return (P - np.concatenate((np.full(F3_W, np.nan), P[:-F3_W]))) * 8 / (d_k * F3_W * T)
+
+
+def d_unfrozen(df: pd.DataFrame) -> np.ndarray:
+    """d_k updated on every unmasked tick with data (no score freeze): used outside run_cusum (calm-run statistics)."""
+    v, a, out = float(df.d0.iloc[0]), T / TAU_D, np.empty(len(df))
+    for k, (r, m, nd) in enumerate(zip(df.rate.to_numpy(), df.masked.to_numpy(), df.no_data.to_numpy())):
+        if not m and not nd:
+            v += a * (r - v)
+        out[k] = v
+    return out
+
+
 def load_flows(run_dir: Path) -> dict[str, pd.DataFrame]:
     run = d.Run(run_dir)
     out = {}
@@ -300,8 +363,8 @@ def load_flows(run_dir: Path) -> dict[str, pd.DataFrame]:
         f = run_dir / "shadow-v2" / "ticks" / f"{s}.csv"
         if f.exists():
             df = pd.read_csv(f)
-            P = df["P"].to_numpy()
-            df["F3"] = (P - np.concatenate((np.full(F3_W, np.nan), P[:-F3_W]))) * 8 / (df.d.to_numpy() * F3_W * T)
+            causal = CAUSAL_D and "rate" in df
+            df["F3"] = f3_of(df["P"].to_numpy(), d_unfrozen(df) if causal else df.d.to_numpy())
             out[s] = df
     return out
 

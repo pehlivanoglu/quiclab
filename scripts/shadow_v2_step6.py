@@ -3,8 +3,8 @@
 
     python3 scripts/shadow_v2_step6.py .runs/<campaign> [...]   # -> reports/detector-v2/step6.md, step6.csv
 
-Detectors (frozen after Step 5, user decisions: hold kept, rebase dropped): v2 = "fuse d +hold",
-v2-fixed = "fuse d fixed +hold" (scripts/shadow_v2_step3.py). G_ref and the v2-fixed scale fitted on the
+Detectors (frozen; user decisions: hold kept, rebase dropped, loss gate level+cap): v2 = "fuse d +hold gate:level+cap",
+v2-fixed = "fuse d fixed +hold gate:level+cap" (scripts/shadow_v2_step3.py). G_ref and the v2-fixed scale fitted on the
 calm pfifo-r1 runs only, as before; nothing else is fitted. score = G / (2 G_ref) in [0, 1]; theta_on 0.25, off below 0.125 for T_clear.
 v1 (shadow tuned:full, no grouping) appears only as the internal reference for weak cells and harm.
 
@@ -44,7 +44,7 @@ import shadow_v2_results as res_mod  # noqa: E402
 import shadow_v2_step3 as s3  # noqa: E402
 import shadow_v2_step5 as s5  # noqa: E402
 
-DETS = {"v2": "fuse d: s1+s2+s3+sL +hold", "v2-fixed": "fuse d fixed +hold"}
+DETS = {"v2": "fuse d: s1+s2+s3+sL +hold gate:level+cap", "v2-fixed": "fuse d fixed +hold gate:level+cap"}
 REF = "v1 (reference)"
 THETA = s3.THETA_ON
 BUFFERS_MS = (200, 400, 600)
@@ -262,7 +262,7 @@ def main(argv):
         return gt_score.summarize([r["v"][label]["score"] for r in rs])
 
     L = ["# Shadow v2, Step 6: generalization (frozen parameters)", "",
-         f"{len(res)} runs, theta_on {THETA}, theta_off {THETA / 2}. Frozen: hold kept, rebase dropped. "
+         f"{len(res)} runs, theta_on {THETA}, theta_off {THETA / 2}. Frozen: hold kept, rebase dropped, loss gate level+cap. "
          + ", ".join(f"{k} G_ref {g_ref[f]:.1f}" for k, f in DETS.items())
          + f" (calm pfifo-r1 only). Playback port vs recorded late_us (B 600 ms): {sum(r['mismatch'] for r in res)} mismatching frames. "
          + f"git {git}. Truth: " + (stamp.read_text().splitlines()[3] if stamp.exists() else "see TRUTH-SETTINGS") + ".", ""]
