@@ -506,17 +506,21 @@ def hop_metrics_file(run: Run, hop: tuple[str, str]) -> Path | None:
 # ── detector replay ──────────────────────────────────────────────────────
 
 def replay(run: Run, params: dict, samples_to: Path | None = None,
-           acks: dict[str, Path] | None = None) -> list[dict]:
+           acks: dict[str, Path] | None = None, grouping: str = "topology") -> list[dict]:
     """Detector events with run time t and subscriber, from moqx_shadow_replay.
 
     samples_to: also keep the first variant's per-ACK detector columns there,
     one <subscriber>.csv each (detector state for plots). acks: per subscriber,
-    a replacement per-ACK input file (e.g. the one-way-delay mode, owd_mode.py)."""
+    a replacement per-ACK input file (e.g. the one-way-delay mode, owd_mode.py).
+    grouping: "topology" (clients sharing a leaf queue form a group, oracle) or
+    "none" (group "" for every client: each judged on its own samples only)."""
     if not REPLAY.exists():
         sys.exit(f"replay binary missing: {REPLAY} (cmake -S shadow -B shadow/build -DCMAKE_BUILD_TYPE=Release && cmake --build shadow/build)")
     paths = {s: path_hops(run, run.pub, s) for s in run.subs}
     # Group = clients sharing their leaf queue (topology ground truth).
-    group_of = leaf_queues(run.topology, paths)
+    if grouping not in ("topology", "none"):
+        raise ValueError(f"grouping must be topology or none, not {grouping!r}")
+    group_of = leaf_queues(run.topology, paths) if grouping == "topology" else {s: "" for s in run.subs}
     with tempfile.TemporaryDirectory() as tmp:
         manifest = Path(tmp) / "manifest.tsv"
         lines = []
