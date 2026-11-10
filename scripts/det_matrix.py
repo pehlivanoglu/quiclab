@@ -324,6 +324,18 @@ def _git_commit() -> str:
     return out.stdout.strip() or "unknown"
 
 
+def _campaign_rel(arg: str) -> Path:
+    """--campaign as a folder under .runs/ (subfolders allowed, e.g. ip4/2026-11-08_det-base); a leading .runs/ is dropped."""
+    p = Path(arg)
+    if p.is_absolute():
+        p = p.resolve().relative_to(RUNS.resolve())
+    elif p.parts and p.parts[0] == ".runs":
+        p = Path(*p.parts[1:])
+    if not p.parts or ".." in p.parts:
+        raise SystemExit(f"--campaign must be a folder under .runs/: {arg!r}")
+    return p
+
+
 def write_manifest(campaign: Path, info: dict) -> None:
     """<campaign>/matrix.yaml: what this run matrix is, when it ran, how it went."""
     (campaign / "matrix.yaml").write_text(yaml.safe_dump(info, sort_keys=False))
@@ -337,7 +349,7 @@ def main() -> None:
     ap.add_argument("--skip-existing", action="store_true")
     ap.add_argument("--name", default=None,
                     help="matrix name; folder .runs/<YYYY-MM-DD_HHMM>_<name> (default: det-[<topology>-]<scenarios>)")
-    ap.add_argument("--campaign", default=None, help="existing folder under .runs/ to resume (with --skip-existing)")
+    ap.add_argument("--campaign", default=None, help="folder under .runs/ (subfolders allowed) to write or resume (with --skip-existing)")
     ap.add_argument("--topology", default="base", choices=sorted(TOPOLOGIES))
     args = ap.parse_args()
     if not det_eval.REPLAY.exists():
@@ -349,7 +361,7 @@ def main() -> None:
                          + "-".join(args.scenarios.split(",")))
     if any(c in name for c in "/\\ ") or not name:
         raise SystemExit(f"--name must be a non-empty folder name without spaces or slashes: {name!r}")
-    campaign = RUNS / (Path(args.campaign).name if args.campaign else f"{started:%Y-%m-%d_%H%M}_{name}")
+    campaign = RUNS / (_campaign_rel(args.campaign) if args.campaign else f"{started:%Y-%m-%d_%H%M}_{name}")
     resumed = (campaign / "matrix.yaml").exists()
     campaign.mkdir(parents=True, exist_ok=True)
     print(f"campaign: {campaign}", flush=True)
