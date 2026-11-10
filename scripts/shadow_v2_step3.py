@@ -114,6 +114,7 @@ LOSS_FLOOR = 1e-3  # 0.1 % loss: numerical floor of the loss-rate sigma
 # reproduces it.
 CAUSAL_D = True
 TAU_D = 10.0
+TICKS_DIR = "ticks"  # "ticks-owd": the same features from the one-way-delay mode dump (shadow_v2_report.py)
 NAME = "step3"
 EXTRA_CELLS: list[tuple[str, str | None, tuple[str, ...]]] = []  # (label, aqm or None, scenarios): per-cell tables
 CELL_THETAS = (0.15, 0.25, 0.4, 0.5)
@@ -360,7 +361,7 @@ def load_flows(run_dir: Path) -> dict[str, pd.DataFrame]:
     run = d.Run(run_dir)
     out = {}
     for s in run.subs:
-        f = run_dir / "shadow-v2" / "ticks" / f"{s}.csv"
+        f = run_dir / "shadow-v2" / TICKS_DIR / f"{s}.csv"
         if f.exists():
             df = pd.read_csv(f)
             causal = CAUSAL_D and "rate" in df
