@@ -95,3 +95,64 @@ def test_window_hits_only_count_clients_the_plan_expected(monkeypatch):
                {"start": 10, "end": 11, "kind": "cap", "target": "b", "expected": ["b1"]},
                {"start": 20, "end": 21, "kind": "rev", "target": "rev", "expected": []}]
     assert [b["hit"] for b in ga.measured_bursts(run, windows)] == [["a1"], ["b1"], []]
+
+
+def _result(events, snapshots, leaves):
+    return SimpleNamespace(events=events, snapshots=snapshots, leaves=leaves, final=snapshots[-1])
+
+
+def test_membership_events_counts_the_flows_own_events():
+    events = [{"t0": 10, "members": ["a", "b"]}, {"t0": 20, "members": ["a", "c"]}, {"t0": 30, "members": ["a", "b"]}]
+    snaps = [{"t": 11, "flows": {"a": {"member": False, "node": 1}, "b": {"member": False, "node": 1}, "c": {"member": False, "node": None}}},
+             {"t": 21, "flows": {"a": {"member": True, "node": 1}, "b": {"member": False, "node": 1}, "c": {"member": False, "node": None}}},
+             {"t": 31, "flows": {"a": {"member": True, "node": 1}, "b": {"member": True, "node": 1}, "c": {"member": False, "node": None}}}]
+    assert ga.membership_events(_result(events, snaps, {})) == {"a": 2, "b": 2}
+
+
+def test_private_window_outcomes_solo_silent_grouped():
+    events = [{"t0": 10.5, "members": ["a"]}, {"t0": 30.2, "members": ["b", "c"]}, {"t0": 50.0, "members": ["c"]},
+              {"t0": 51.0, "members": ["c", "d"]}]
+    windows = [{"start": 10, "end": 12, "cell": "private", "expected": ["a"]},
+               {"start": 20, "end": 22, "cell": "private", "expected": ["a"]},
+               {"start": 30, "end": 32, "cell": "private", "expected": ["b"]},
+               {"start": 50, "end": 52, "cell": "private", "expected": ["c"]},
+               {"start": 60, "end": 62, "cell": "shared", "expected": ["a", "b"]}]
+    assert ga.private_window_outcomes(_result(events, [{}], {}), windows) == {"n": 4, "solo": 1, "silent": 1, "grouped": 2}
+
+
+def test_confirmed_leaves_report_members_of_confirmed_leaves_only():
+    leaves = {1: {"kind": "leaf", "confirmed": True, "members": ["a", "b", "c"]},
+              2: {"kind": "leaf", "confirmed": False, "members": ["d", "e"]},
+              3: {"kind": "leaf", "confirmed": True, "members": ["f", "g"]}}
+    final = {"t": 1, "flows": {f: {"member": f != "c", "node": 1 if f in "abc" else 2 if f in "de" else 3}
+                               for f in "abcdefg"}}
+    assert set(ga.confirmed_leaves(_result([], [final], leaves))) == {frozenset("ab"), frozenset("fg")}
+
+
+def test_sessions_of_names_later_sessions_with_at():
+    run = SimpleNamespace(topology={"subscribers": {"sub-a": {}, "sub-b": {}, "sub-a@2": {}, "sub-ctrl": {}}},
+                          scenario={"events": [{"type": "leave", "subscriber": "sub-a", "at_s": 100},
+                                               {"type": "join", "subscriber": "sub-a", "at_s": 130},
+                                               {"type": "join", "subscriber": "sub-b", "at_s": 60},
+                                               {"type": "link", "at_s": 5}]})
+    assert ga.sessions_of(run) == {"sub-a": (0.0, 100), "sub-a@2": (130, None), "sub-b": (60, None), "sub-ctrl": (0.0, None)}
+
+
+def test_session_run_aliases_sessions_into_the_topology(tmp_path):
+    import yaml
+    (tmp_path / "publishers" / "pub").mkdir(parents=True)
+    for f in ("sub-a", "sub-a@2", "sub-b"):
+        (tmp_path / "publishers" / "pub" / f"{f}-acks.csv").write_text("mono_us\n")
+    (tmp_path / "topology.yaml").write_text(yaml.safe_dump({
+        "publishers": {"pub": {}}, "subscribers": {"sub-a": {"rate_kbps": 1000}, "sub-b": {"rate_kbps": 2500}},
+        "links": [{"from": "pub", "to": "router"}, {"from": "router", "to": "switch"},
+                  {"from": "switch", "to": "sub-a"}, {"from": "switch", "to": "sub-b"}]}))
+    (tmp_path / "scenario.yaml").write_text(yaml.safe_dump({"duration_s": 100, "routers": {"router": {"aqm": "pfifo"}},
+                                                             "events": []}))
+    (tmp_path / "events.csv").write_text("event,at_s,applied_s,applied_mono_ns,applied_unix_ns,target,detail,label,status\n"
+                                         "epoch,0,0,1000000000,2000000000,,,,applied\n")
+    run = ga.load_run(tmp_path)
+    assert isinstance(run, ga.SessionRun) and run.subs == ["sub-a", "sub-b", "sub-a@2"]
+    assert run.sid_of["sub-a@2"] == "sub-a" and run.topology["subscribers"]["sub-a@2"]["rate_kbps"] == 1000
+    assert {"from": "switch", "to": "sub-a@2"} in run.topology["links"]
+    assert run.sender_file("sub-a@2", "acks").name == "sub-a@2-acks.csv"

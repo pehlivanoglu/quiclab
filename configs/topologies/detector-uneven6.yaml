@@ -1,0 +1,57 @@
+# Grouping campaign N2 "uneven6" (reduced): three branches of unequal size behind one
+# non-bottleneck trunk. pub -> r1 -> r2, then r2 -> switch-a (2 clients),
+# r2 -> switch-b (5) and r2 -> switch-c (6); every r2 egress is a bottleneck,
+# r1 -> r2 is not (200 Mb/s). Access delays are distinct per client (5-45 ms).
+# sub-ctrl hangs off r1 (never congested). Capacity drops only, no cross
+# traffic. Used with grp-burst-uneven6.yaml (scripts/grouping_campaign.py);
+# Reduced variant of detector-uneven.yaml: branch C with 6 clients (1, 2.5, 2.5, 5, 5, 8 Mb/s).
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  a1: { connects_to: pub, rate_kbps: 5000 }
+  a2: { connects_to: pub, rate_kbps: 8000, phase_ms: 50 }
+  b1: { connects_to: pub, rate_kbps: 1000, phase_ms: 100 }
+  b2: { connects_to: pub, rate_kbps: 2500, phase_ms: 150 }
+  b3: { connects_to: pub, rate_kbps: 2500, phase_ms: 200 }
+  b4: { connects_to: pub, rate_kbps: 5000, phase_ms: 250 }
+  b5: { connects_to: pub, rate_kbps: 8000, phase_ms: 300 }
+  c1: { connects_to: pub, rate_kbps: 1000, phase_ms: 350 }
+  c2: { connects_to: pub, rate_kbps: 2500, phase_ms: 400 }
+  c3: { connects_to: pub, rate_kbps: 2500, phase_ms: 450 }
+  c4: { connects_to: pub, rate_kbps: 5000, phase_ms: 500 }
+  c5: { connects_to: pub, rate_kbps: 5000, phase_ms: 550 }
+  c6: { connects_to: pub, rate_kbps: 8000, phase_ms: 600 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500, phase_ms: 800 }
+
+routers:
+  r1:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+  r2:
+    queue_metrics: { enabled: true, interval_ms: 25, queue_interval_ms: 5 }
+
+switches:
+  switch-a: {}
+  switch-b: {}
+  switch-c: {}
+
+links:
+  - { from: pub, to: r1 }
+  - { from: r1, to: r2 }
+  - { from: r2, to: switch-a }
+  - { from: r2, to: switch-b }
+  - { from: r2, to: switch-c }
+  - { from: switch-a, to: a1 }
+  - { from: switch-a, to: a2 }
+  - { from: switch-b, to: b1 }
+  - { from: switch-b, to: b2 }
+  - { from: switch-b, to: b3 }
+  - { from: switch-b, to: b4 }
+  - { from: switch-b, to: b5 }
+  - { from: switch-c, to: c1 }
+  - { from: switch-c, to: c2 }
+  - { from: switch-c, to: c3 }
+  - { from: switch-c, to: c4 }
+  - { from: switch-c, to: c5 }
+  - { from: switch-c, to: c6 }
+  - { from: r1, to: sub-ctrl }

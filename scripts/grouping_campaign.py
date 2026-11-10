@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Grouping campaigns K1-K6: plan the runs, run them one after another, and
-write each campaign's grouping report as soon as its last run finishes.
+"""Grouping campaigns (development set K1-K6, held-out set N1-N5): plan the
+runs, run them one after another, and write each campaign's grouping report
+as soon as its last run finishes.
 
     python3 scripts/grouping_campaign.py --plan                       # write the YAMLs, print the budget, run nothing
-    python3 scripts/grouping_campaign.py --ks K1,K2,K3,K5,K6 --reps 3   # the whole thing (tmux)
+    python3 scripts/grouping_campaign.py --ks N1,N2,K1,K2,K3,K5,K6,N3,N4,N5   # the whole thing (tmux)
     python3 scripts/grouping_campaign.py --campaign .runs/<dir> --skip-existing   # resume
     python3 scripts/grouping_campaign.py --campaign .runs/<dir> --report-only     # (re)score only
+    python3 scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --compare .runs/<old>  # flag worse cells
 
 Grouping-only tooling: the shadow detector stays frozen (det_eval TUNED) and
 BBR is the only congestion control. It reuses det_matrix's topology numbers
@@ -15,35 +17,49 @@ After every run det_eval.score is attempted (the detector's own report, best
 effort) and the run's stimulus windows are copied to <run>/grouping/windows.json:
 grouping truth = a client is hit in a window when the OWD oracle shows a
 standing queue there AND the plan expected that client (two simultaneous
-events on different links cannot be told apart by the oracle alone).
+events on different links cannot be told apart by the oracle alone). Every
+window carries `stimulus_type` (capdrop | udp | tcp | trace) and `concurrent`
+(overlaps, within 1 s, a window on another bottleneck).
 
-Campaigns (rep = seed, same seed on every AQM; calm u ~0.65; capacity drops
-unless said otherwise; gaps U(10, 15) s):
-  K1 hier   split topology: cells u {1.3, 2.0} x d {1, 2, 4} x targets
-            up | a | b | a+b (same instant) | a+b@0.5 | a+b@1 | a+b@2 (b later)
-            | a+up (serial). AQMs: 4 uniform + mixa (r1 pfifo, r2 fq_codel)
-            + mixb (r1 fq_codel, r2 pfifo) + mixab (r1 pfifo; branches differ
-            on r2: switch-a pfifo, switch-b fq_codel). Hierarchy, false GLOBAL
-            on simultaneous independent events, delta_max / hold on offsets.
-  K2 part   detector topology: Poisson on/off capacity drops on the shared
-            link at one severity per run, u in {1.05, 1.1, 1.15, 1.3}; on
-            U(1, 4) s (15 % of them U(10, 20) s), off U(5, 20) s. pfifo (one
-            shared queue: every client is hit), fq_codel (per-flow queues: only
-            clients above their fair share are hit, so u sets the hit set; UDP
-            would not congest any client there). Partial events: which share of
-            a leaf alarms at light load (theta).
-  K3 rev    detector topology: revasym (reverse delays 5/40/80/120 ms per
-            client, forward unchanged) and revjit10 (10 ms reverse jitter on
-            every access link) with cap bursts; detector-rev topology:
-            revcross (UDP bursts on the ACK path only, router egress r1 -> r0
-            at 10 Mb/s, no forward congestion) and revcrossmix (the same
-            interleaved with forward cap bursts). pfifo (ACKs share the queue
-            with the bursts), fq_codel (ACKs isolated: a no-reverse-queue control).
-  K5 mixed  detector-access topology: cap bursts on the shared link + access
-            router egress drops per client (private) in one shuffled sequence;
-            sub-d joins at 60 s, sub-b leaves at 240 s. 4 AQMs.
-  K6 depth  tree8 topology: targets A | B | C | D | X (A+B) | Y (C+D) | root
-            | A+C (same instant). pfifo, fq_codel.
+Specification: grouping/campaign-v2-spec.md (scenarios, outputs, pass criteria;
+the criteria were written before the held-out runs). Rep = seed, same seed on
+every AQM; calm u ~0.65; capacity drops unless said otherwise; default cells
+u {1.3, 2.0} x d {1, 2, 4} s; gaps U(10, 15) s unless "independent timing"
+(one exponential process per bottleneck, mean 30 s, minimum 5 s, no scripted
+simultaneity; accidental overlaps are kept and flagged).
+
+Development set (the rules were developed on these):
+  K1 hier   split topology: cells x targets up | a | b | a+b (same instant,
+            the scripted worst case) | a+b@0.5 | a+b@2 | a+up. AQMs: 4 uniform
+            + mixab (r1 pfifo; branches differ on r2: switch-a pfifo, switch-b
+            fq_codel). 3 reps.
+  K2 part   detector topology: Poisson on/off capacity drops at one severity
+            per run, u in {1.05, 1.1, 1.15, 1.3}. pfifo, fq_codel. 3 reps.
+  K3 rev    revasym, revjit10 (detector topology), revcross, revcrossmix
+            (detector-rev topology). pfifo, fq_codel, 3 reps; scored with the
+            RTT and the OWD shadow (source shadow-owd).
+  K5 mixed  detector-access topology: 12 shared cap bursts + 16 private access
+            drops shuffled; sub-d joins at 60 s; nobody leaves. 4 AQMs, 3 reps.
+  K6 depth  tree8 topology (2.5 / 5 Mb/s per leaf since 2026-11-10): targets
+            A | B | C | D | X | Y | root | A+C. pfifo, fq_codel, 5 reps.
+Held-out set (5 reps each, pass criteria in the spec):
+  N1 indep  split topology, independent timing on up, a, b; 600 s. pfifo, pie, fq_codel.
+  N2 uneven detector-uneven topology (branches of 2, 5 and 9 clients; type
+            uneven6 = reduced branch C of 6), independent timing on A, B, C;
+            600 s. pfifo, pie, fq_codel.
+  N3 cross  split topology, cross traffic as the stimulus on the existing
+            routes: UDP constant rate (offered load u x capacity) or 2 / 4
+            Cubic bulk flows for 4 / 8 s, equal probability; independent timing;
+            600 s. pfifo, fq_codel.
+  N4 trace  detector-access topology: each client's access link replays a
+            scaled cellular trace (configs/traces, 200 ms steps, mean 2 x the
+            client's bitrate, below the bitrate 5-15 % of the run); shared cap
+            drops with U(10, 15) s gaps; 600 s. Private truth windows = the
+            trace below the client's wire rate. Shared link pfifo / fq_codel.
+  N5 churn  large topology (8 clients): every client alternates on (exp mean
+            90 s, min 20) / off (exp mean 30 s, min 5), sessions after the
+            first run as <client>@<n>; shared cap drops sized to the demand of
+            the clients that are on; 900 s. pfifo, fq_codel.
 """
 
 from __future__ import annotations
@@ -61,6 +77,7 @@ from argparse import Namespace
 from collections import Counter, defaultdict
 from pathlib import Path
 
+import numpy as np
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,7 +88,7 @@ import det_matrix as dm  # noqa: E402
 import grouping_adapter as ga  # noqa: E402
 import grouping_baselines as gb  # noqa: E402
 from grouping import Config  # noqa: E402
-from quiclab.config.scenario import load_scenario  # noqa: E402
+from quiclab.config.scenario import Scenario, load_scenario  # noqa: E402
 from quiclab.config.schema import load_topology  # noqa: E402
 from quiclab.runtime import remove_partial_run, run_finished  # noqa: E402
 
@@ -82,6 +99,9 @@ dm.TOPOLOGIES.setdefault("tree8", ("detector-tree8.yaml", "grp-burst-tree8.yaml"
     "A": ("r1", "switch-a", None), "B": ("r1", "switch-b", None), "C": ("r2", "switch-c", None),
     "D": ("r2", "switch-d", None)}, "root"))
 dm.TOPOLOGIES.setdefault("rev", ("detector-rev.yaml", "grp-burst-rev.yaml", {"main": ("r1", "switch", "shared")}, "main"))
+for _variant in ("uneven", "uneven6"):
+    dm.TOPOLOGIES.setdefault(_variant, (f"detector-{_variant}.yaml", f"grp-burst-{_variant}.yaml", {
+        "A": ("r2", "switch-a", None), "B": ("r2", "switch-b", None), "C": ("r2", "switch-c", None)}, "C"))
 
 U_CAP, D_CAP = (1.3, 2.0), (1, 2, 4)
 UNIFORM = list(dm.AQMS)
@@ -93,20 +113,43 @@ REV_ASYM_MS = (5, 40, 80, 120)
 REV_LINK, REV_LINK_MBPS = ("r0", "r1"), 10.0     # its reverse direction is the router egress r1 -> r0
 K2_U = (1.05, 1.1, 1.15, 1.3)
 K2_ON, K2_ON_LONG, K2_OFF, K2_P_LONG, K2_T_END = (1.0, 4.0), (10.0, 20.0), (5.0, 20.0), 0.15, 300.0
-JOIN_T, LEAVE_T, JOIN_SUB, LEAVE_SUB = 60.0, 240.0, "sub-d", "sub-b"
+JOIN_T, JOIN_SUB = 60.0, "sub-d"          # K5: sub-d joins; since v2 nobody leaves (K5 of 2026-11-06: sub-b left at 240 s)
+HIER_TARGETS = ["up", "a", "b", "a+b", "a+b@0.5", "a+b@2", "a+up"]   # v2 dropped a+b@1
+# Independent timing (N1-N3): one process per bottleneck, exponential gaps.
+INDEP_GAP_MEAN_S, INDEP_GAP_MIN_S, N_DURATION_S = 30.0, 5.0, 600.0
+CONCURRENT_S = 1.0                        # windows on different bottlenecks closer than this are `concurrent`
+TCP_FLOWS, TCP_D = (2, 4), (4, 8)         # N3 TCP bulk: Cubic flows x duration
+# N4 trace-driven access links.
+TRACES = ROOT / "configs" / "traces"
+TRACE_STEP_S, TRACE_MEAN_X, TRACE_BELOW, TRACE_MIN_MBPS = 0.2, 2.0, (0.05, 0.15), 0.1
+TRACE_EXCLUDE = ("EVDO", "UMTS")          # the spec names Mahimahi's LTE traces; the 3G ones stay in configs/traces unused
+TRACE_MERGE_S = 1.0                       # private dips closer than this are one window (as alarm flaps merge)
+# N5 churn: on / off times per client (exponential with a floor), seconds.
+N5_DURATION_S, N5_ON, N5_OFF = 900.0, (90.0, 20.0), (30.0, 5.0)
 ENGINE_SET = {"theta_J": 0.6, "theta_cov": 0.6}   # the sweep value used in every real-run result so far
-ONSET_SOURCES = ("shadow", "owd", "truth")
+SHADOW_OWD = "shadow-owd"                  # the frozen shadow on sender-side OWD instead of RTT
+ONSET_SOURCES = ("shadow", SHADOW_OWD, "owd", "truth")   # scored on every run
+PRIMARY = SHADOW_OWD                       # the main signal (user decision 2026-11-10); RTT shadow = comparison row
 
-# K -> topology, AQM ids, run types.
+# K -> topology, AQM ids, run types, reps, extra onset sources.
 CAMPAIGNS = {
-    "K1": {"topology": "split", "aqms": UNIFORM + list(MIXED), "types": ["hier"]},
-    "K2": {"topology": "base", "aqms": ["pfifo", "fq_codel"], "types": [f"part{round(u * 100)}" for u in K2_U]},
+    "K1": {"topology": "split", "aqms": UNIFORM + ["mixab"], "types": ["hier"], "reps": 3},
+    "K2": {"topology": "base", "aqms": ["pfifo", "fq_codel"], "types": [f"part{round(u * 100)}" for u in K2_U],
+           "reps": 3},
     "K3": {"topology": "base", "aqms": ["pfifo", "fq_codel"],
-           "types": ["revasym", "revjit10", "revcross", "revcrossmix"]},
-    "K5": {"topology": "access", "aqms": UNIFORM, "types": ["mixed"]},
-    "K6": {"topology": "tree8", "aqms": ["pfifo", "fq_codel"], "types": ["depth"]},
+           "types": ["revasym", "revjit10", "revcross", "revcrossmix"], "reps": 3},
+    "K5": {"topology": "access", "aqms": UNIFORM, "types": ["mixed"], "reps": 3},
+    "K6": {"topology": "tree8", "aqms": ["pfifo", "fq_codel"], "types": ["depth"], "reps": 5},
+    "N1": {"topology": "split", "aqms": ["pfifo", "pie", "fq_codel"], "types": ["indep"], "reps": 5},
+    "N2": {"topology": "uneven", "aqms": ["pfifo", "pie", "fq_codel"], "types": ["uneven"], "reps": 5},
+    "N3": {"topology": "split", "aqms": ["pfifo", "fq_codel"], "types": ["cross"], "reps": 5},
+    "N4": {"topology": "access", "aqms": ["pfifo", "fq_codel"], "types": ["trace"], "reps": 5},
+    # No SBD baseline columns: DCW / rmcatSBD / dcSBD need one common time span over
+    # long-lived flows (sbd_baselines.flow_table) and cannot follow sessions.
+    "N5": {"topology": "large", "aqms": ["pfifo", "fq_codel"], "types": ["churn"], "reps": 5, "baselines": False},
 }
-TYPE_TOPOLOGY = {"revcross": "rev", "revcrossmix": "rev"}   # types that need another topology than the campaign's
+TYPE_TOPOLOGY = {"revcross": "rev", "revcrossmix": "rev", "uneven6": "uneven6"}   # types on another topology
+HELD_OUT = ("N1", "N2", "N3", "N4", "N5")   # grouping scores only with --score-held-out (after the rule freeze)
 
 
 # ---------------------------------------------------------------- planning
@@ -118,9 +161,18 @@ def _cap_event(n: dict, tgt: str, at: float, u: float, d: float, label: str) -> 
             {"at_s": round(at + d, 3), "type": "link", **h["link"], "bandwidth_mbps": h["base"], "label": "burst-end"}]
 
 
-def _window(start: float, end: float, kind: str, target: str, cell: str, expected: list[str]) -> dict:
+def _window(start: float, end: float, kind: str, target: str, cell: str, expected: list[str],
+            stimulus_type: str = "capdrop", **extra) -> dict:
     return {"start": round(start, 3), "end": round(end, 3), "kind": kind, "target": target, "cell": cell,
-            "expected": sorted(expected)}
+            "expected": sorted(expected), "stimulus_type": stimulus_type, "concurrent": False, **extra}
+
+
+def flag_concurrent(windows: list[dict]) -> list[dict]:
+    """`concurrent`: the window overlaps, within CONCURRENT_S, a window on another target."""
+    for w in windows:
+        w["concurrent"] = any(v["target"] != w["target"] and v["start"] - CONCURRENT_S <= w["end"]
+                              and w["start"] - CONCURRENT_S <= v["end"] for v in windows)
+    return windows
 
 
 def cap_cells(targets: list[str], rng: random.Random, repeats: int = 1) -> list[tuple[float, float, str]]:
@@ -149,7 +201,7 @@ def cap_sequence(n: dict, cells: list[tuple[float, float, str]], rng: random.Ran
 
 def plan_hier(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
     rng = random.Random(seed)
-    return cap_sequence(n, cap_cells(["up", "a", "b", "a+b", "a+b@0.5", "a+b@1", "a+b@2", "a+up"], rng), rng)
+    return cap_sequence(n, cap_cells(HIER_TARGETS, rng), rng)
 
 
 def plan_depth(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
@@ -202,17 +254,11 @@ def plan_mixed(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
     cells = [(u, d, n["default"]) for u in U_CAP for d in D_CAP] * 2   # 12 shared windows (6 were too few to judge)
     cells += [(u, d, c) for u in U_CAP for d in (2, 4) for c in clients]
     rng.shuffle(cells)
-    # The joining client has no access events before it joins, the leaving one
-    # none after it leaves: the leaver's cells are forced early enough to fit.
-    slot = D_CAP[-1] + dm.GAP_S[1]
+    # The joining client has no access events before it joins.
     events, windows, t = [], [], dm.WARMUP_S
     pending = list(cells)
     while pending:
-        leaving = [c for c in pending if c[2] == LEAVE_SUB]
-        if leaving and t >= LEAVE_T - 10 - slot * len(leaving):
-            pool = leaving
-        else:
-            pool = [c for c in pending if (t > JOIN_T + 10 or c[2] != JOIN_SUB) and (t < LEAVE_T - 10 or c[2] != LEAVE_SUB)]
+        pool = [c for c in pending if t > JOIN_T + 10 or c[2] != JOIN_SUB]
         u, d, tgt = pool[0]
         pending.remove(pool[0])
         if tgt in n["hops"]:
@@ -226,27 +272,239 @@ def plan_mixed(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
                         "label": "burst-end"}]
             windows.append(_window(t, t + d, "access", tgt, "private", [tgt]))
         t += d + rng.uniform(*dm.GAP_S)
-    events += [{"at_s": JOIN_T, "type": "join", "subscriber": JOIN_SUB},
-               {"at_s": LEAVE_T, "type": "leave", "subscriber": LEAVE_SUB}]
-    return events, windows, round(max(t - dm.GAP_S[0], LEAVE_T + 30) + dm.TAIL_S)
+    events.append({"at_s": JOIN_T, "type": "join", "subscriber": JOIN_SUB})
+    return events, windows, round(t - dm.GAP_S[0] + dm.TAIL_S)
 
 
-def plan_type(rtype: str, n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
+# ---- held-out set
+
+def indep_sequence(targets: list[str], seed: int, duration: float, make) -> tuple[list[dict], list[dict]]:
+    """Independent timing: one stimulus process per target with its own seeded
+    stream, random phase, exponential gaps (mean INDEP_GAP_MEAN_S, floor
+    INDEP_GAP_MIN_S). make(rng, target, t, k) -> (events, window, d) draws the
+    cell. Simultaneity is never scripted; overlaps are kept and flagged."""
+    events, windows = [], []
+    for i, tgt in enumerate(targets):
+        rng = random.Random(seed * 1000 + i)
+        t, k = dm.WARMUP_S + rng.uniform(0, INDEP_GAP_MEAN_S), 0
+        while True:
+            ev, w, d = make(rng, tgt, t, k)
+            if t + d > duration - dm.TAIL_S:
+                break
+            events += ev
+            windows.append(w)
+            k += 1
+            t += d + max(INDEP_GAP_MIN_S, rng.expovariate(1 / INDEP_GAP_MEAN_S))
+    events.sort(key=lambda e: e["at_s"])
+    return events, flag_concurrent(sorted(windows, key=lambda w: w["start"]))
+
+
+def plan_indep(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
+    """N1 / N2: capacity drops with independent timing on every bottleneck."""
+    def make(rng, tgt, t, k):
+        u, d = rng.choice(U_CAP), rng.choice(D_CAP)
+        return (_cap_event(n, tgt, t, u, d, f"burst u={u} d={d} {tgt}"),
+                _window(t, t + d, "cap", tgt, tgt, list(n["hops"][tgt]["clients"]), u=u), d)
+    events, windows = indep_sequence(sorted(n["hops"]), seed, N_DURATION_S, make)
+    return events, windows, N_DURATION_S
+
+
+def plan_cross(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
+    """N3: cross traffic on the bottleneck's traffic route as the stimulus. UDP
+    constant rate (offered load u x capacity, so rate = u x cap - video demand)
+    or TCP bulk (TCP_FLOWS Cubic flows for TCP_D s; u uncontrolled, the
+    achieved load is measured afterwards), equal probability."""
+    def make(rng, tgt, t, k):
+        h = n["hops"][tgt]
+        if rng.random() < 0.5:
+            u, d = rng.choice(U_CAP), rng.choice(D_CAP)
+            burst = {"route": h["route"], "burst": {"start_s": round(t, 3), "duration_s": d,
+                                                    "rate_mbps": round(u * h["base"] - h["demand"], 3)}}
+            return [{"at_s": round(t, 3), **burst}], _window(t, t + d, "udp", tgt, f"{tgt}:udp", list(h["clients"]),
+                                                            "udp", u=u), d
+        flows, d = rng.choice(TCP_FLOWS), rng.choice(TCP_D)
+        ev = {"at_s": round(t, 3), "type": "flow", "kind": "tcp", "id": f"tcp-{tgt}-{k}", "route": h["route"],
+              "duration_s": d, "cc": "cubic", "parallel": flows, "label": f"tcp x{flows} d={d} {tgt}"}
+        return [ev], _window(t, t + d, "tcp", tgt, f"{tgt}:tcp", list(h["clients"]), "tcp", u=None,
+                             tcp_flows=flows), d
+    events, windows = indep_sequence(sorted(n["hops"]), seed, N_DURATION_S, make)
+    udp: dict[str, list[dict]] = defaultdict(list)
+    for e in [e for e in events if "burst" in e]:
+        udp[e["route"]].append(e["burst"])
+    events = [e for e in events if "burst" not in e]
+    for route, bursts in sorted(udp.items()):
+        events.append({"at_s": 0, "type": "bursts", "id": f"udp-{route}", "route": route,
+                       "bursts": sorted(bursts, key=lambda b: b["start_s"])})
+    return events, windows, N_DURATION_S
+
+
+def load_trace(name: str) -> np.ndarray:
+    return np.loadtxt(TRACES / f"{name}.csv", delimiter=",", skiprows=1, usecols=1)
+
+
+def scale_trace(steps: np.ndarray, wire_mbps: float) -> tuple[float, float, bool]:
+    """Multiplier so the segment's mean is TRACE_MEAN_X x the client's wire rate;
+    when the time below the wire rate then falls outside TRACE_BELOW, the
+    multiplier is re-set so 10 % of the steps are below (adjusted = True)."""
+    mult = TRACE_MEAN_X * wire_mbps / float(steps.mean())
+    below = float((steps * mult < wire_mbps).mean())
+    adjusted = not TRACE_BELOW[0] <= below <= TRACE_BELOW[1]
+    if adjusted:
+        q = float(np.quantile(steps, 0.10))
+        if q > 0:
+            mult = wire_mbps / q
+            below = float((steps * mult < wire_mbps).mean())
+    return mult, below, adjusted
+
+
+def trace_segment(name: str, offset_s: float, duration: float) -> np.ndarray:
+    """duration / TRACE_STEP_S steps of the trace from offset_s, wrapped around when short."""
+    steps = load_trace(name)
+    k = int(round(duration / TRACE_STEP_S))
+    start = int(round(offset_s / TRACE_STEP_S)) % len(steps)
+    return steps[(start + np.arange(k)) % len(steps)]
+
+
+def plan_trace(n: dict, seed: int) -> tuple[list[dict], list[dict], float, dict]:
+    """N4: shared capacity drops (U(10, 15) s gaps, random default cells) plus
+    every client's access link replaying a different scaled cellular trace in
+    TRACE_STEP_S steps. Private truth windows: the trace below the wire rate."""
+    rng = random.Random(seed)
+    h = n["hops"][n["default"]]
+    events, windows, t = [], [], dm.WARMUP_S
+    while True:
+        u, d = rng.choice(U_CAP), rng.choice(D_CAP)
+        if t + d > N_DURATION_S - dm.TAIL_S:
+            break
+        events += _cap_event(n, n["default"], t, u, d, f"burst u={u} d={d}")
+        windows.append(_window(t, t + d, "cap", n["default"], "shared", list(h["clients"]), u=u))
+        t += d + rng.uniform(*dm.GAP_S)
+    names = sorted(x for x in json.loads((TRACES / "index.json").read_text()) if not any(e in x for e in TRACE_EXCLUDE))
+    rng.shuffle(names)
+    meta = {}
+    for i, c in enumerate(sorted(n["clients"])):
+        name = names[i % len(names)]
+        offset = round(rng.uniform(0, len(load_trace(name)) * TRACE_STEP_S), 1)
+        seg = trace_segment(name, offset, N_DURATION_S)
+        wire = n["clients"][c]
+        mult, below, adjusted = scale_trace(seg, wire)
+        cap = np.maximum(np.round(seg * mult, 3), TRACE_MIN_MBPS)
+        link = {"from": n["uplink"][c], "to": c}
+        prev = None
+        for k, rate in enumerate(cap):
+            if rate != prev:
+                events.append({"at_s": round(k * TRACE_STEP_S, 3), "type": "link", **link,
+                               "bandwidth_mbps": float(rate), "label": "trace"})
+                prev = rate
+        under = cap < wire
+        gap = int(round(TRACE_MERGE_S / TRACE_STEP_S))
+        k = 0
+        while k < len(under):
+            if under[k]:
+                j = k
+                while True:   # extend over the dip and any dip within TRACE_MERGE_S
+                    nxt = next((i for i in range(j + 1, min(j + 1 + gap, len(under))) if under[i]), None)
+                    if nxt is None:
+                        break
+                    j = nxt
+                windows.append(_window(k * TRACE_STEP_S, (j + 1) * TRACE_STEP_S, "access", c, "private", [c], "trace"))
+                k = j + 1
+            else:
+                k += 1
+        meta[c] = {"trace": name, "offset_s": offset, "multiplier": round(mult, 4), "wire_mbps": round(wire, 3),
+                   "mean_mbps": round(float(cap.mean()), 3), "below_fraction": round(below, 4),
+                   "target_below": list(TRACE_BELOW), "adjusted": adjusted, "n_private_windows": int(sum(
+                       1 for w in windows if w["target"] == c and w["cell"] == "private"))}
+    events.sort(key=lambda e: e["at_s"])
+    return events, flag_concurrent(sorted(windows, key=lambda w: w["start"])), N_DURATION_S, meta
+
+
+def churn_sessions(clients: list[str], rng: random.Random, duration: float) -> dict[str, list[tuple[float, float | None]]]:
+    """Per client: (join, leave) sessions; all start on at 0; on ~ exp(N5_ON),
+    off ~ exp(N5_OFF) with floors; a session needs N5_ON floor seconds before the tail."""
+    end = duration - dm.TAIL_S
+    out = {}
+    for c in clients:
+        sessions, t = [], 0.0
+        while True:
+            leave = t + max(N5_ON[1], rng.expovariate(1 / N5_ON[0]))
+            if leave > end - N5_ON[1]:
+                sessions.append((t, None))
+                break
+            sessions.append((t, round(leave, 3)))
+            t = round(leave + max(N5_OFF[1], rng.expovariate(1 / N5_OFF[0])), 3)
+            if t > end - N5_ON[1]:
+                break
+        out[c] = sessions
+    return out
+
+
+def plan_churn(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
+    """N5: clients join and leave (sessions after the first run as <client>@<k>);
+    shared capacity drops sized to the demand of the clients that are on;
+    `expected` = the sessions on for the whole window."""
+    rng = random.Random(seed)
+    clients = sorted(n["clients"])
+    sessions = churn_sessions(clients, rng, N5_DURATION_S)
+    events = []
+    for c, ss in sessions.items():
+        for k, (join, leave) in enumerate(ss, start=1):
+            if k > 1:
+                events.append({"at_s": join, "type": "join", "subscriber": c})
+            if leave is not None:
+                events.append({"at_s": leave, "type": "leave", "subscriber": c})
+    h = n["hops"][n["default"]]
+    windows, t = [], dm.WARMUP_S
+    while True:
+        u, d = rng.choice(U_CAP), rng.choice(D_CAP)
+        if t + d > N5_DURATION_S - dm.TAIL_S:
+            break
+        on = [(c, k) for c, ss in sessions.items() for k, (join, leave) in enumerate(ss, start=1)
+              if join <= t and (leave is None or leave >= t + d)]
+        demand = sum(n["clients"][c] for c, _ in on)
+        if demand > 0:
+            events += [{"at_s": round(t, 3), "type": "link", **h["link"], "bandwidth_mbps": round(demand / u, 3),
+                        "label": f"burst u={u} d={d}"},
+                       {"at_s": round(t + d, 3), "type": "link", **h["link"], "bandwidth_mbps": h["base"],
+                        "label": "burst-end"}]
+            windows.append(_window(t, t + d, "cap", n["default"], "shared",
+                                   [Scenario.session_id(c, k) for c, k in on], u=u,
+                                   demand_on_mbps=round(demand, 3), n_on=len(on)))
+        t += d + rng.uniform(*dm.GAP_S)
+    events.sort(key=lambda e: e["at_s"])
+    return events, windows, N5_DURATION_S
+
+
+def plan_type(rtype: str, n: dict, seed: int) -> tuple[list[dict], list[dict], float, dict]:
+    """(events, windows, duration_s, run metadata) of one run type."""
+    meta: dict = {}
     if rtype == "hier":
-        return plan_hier(n, seed)
-    if rtype == "depth":
-        return plan_depth(n, seed)
-    if rtype.startswith("part"):
-        return plan_part(n, seed, int(rtype[4:]) / 100)
-    if rtype == "revcross":
-        return plan_revcross(n, seed, mix=False)
-    if rtype == "revcrossmix":
-        return plan_revcross(n, seed, mix=True)
-    if rtype == "revasym" or rtype.startswith("revjit"):
-        return plan_revbursts(n, seed)
-    if rtype == "mixed":
-        return plan_mixed(n, seed)
-    raise ValueError(rtype)
+        out = plan_hier(n, seed)
+    elif rtype == "depth":
+        out = plan_depth(n, seed)
+    elif rtype.startswith("part"):
+        out = plan_part(n, seed, int(rtype[4:]) / 100)
+    elif rtype == "revcross":
+        out = plan_revcross(n, seed, mix=False)
+    elif rtype == "revcrossmix":
+        out = plan_revcross(n, seed, mix=True)
+    elif rtype == "revasym" or rtype.startswith("revjit"):
+        out = plan_revbursts(n, seed)
+    elif rtype == "mixed":
+        out = plan_mixed(n, seed)
+    elif rtype in ("indep", "uneven", "uneven6"):
+        out = plan_indep(n, seed)
+    elif rtype == "cross":
+        out = plan_cross(n, seed)
+    elif rtype == "trace":
+        *out, meta = plan_trace(n, seed)
+        meta = {"traces": meta}
+    elif rtype == "churn":
+        out = plan_churn(n, seed)
+    else:
+        raise ValueError(rtype)
+    events, windows, duration = out
+    return events, flag_concurrent(windows), duration, meta
 
 
 def apply_links(data: dict, rtype: str, n: dict) -> None:
@@ -264,20 +522,28 @@ def apply_links(data: dict, rtype: str, n: dict) -> None:
 
 
 def apply_aqm(data: dict, aqm: str, n: dict) -> None:
-    def queue(name: str, limit: int | None) -> dict:
+    """Set the AQM on every router, keeping the base file's queue limits (router
+    wide and per egress) and the mixed variants' per-router / per-egress AQMs."""
+    cap_to = {h["link"]["to"]: h["base"] for h in n["hops"].values()}
+
+    def queue(name: str, limit: int | None, cap: float | None = None) -> dict:
         out = {"aqm": name, "queue_limit_packets": limit, **dm.AQMS[name]}
-        if name == "red":
-            out.update(dm.red_thresholds(n, limit))
+        if name == "red":   # thresholds at the egress's own capacity when known, else the smallest bottleneck's
+            out.update(dm.red_thresholds({"hops": {"x": {"base": cap}}} if cap else n, limit))
         return out
 
     per_router, per_egress = MIXED.get(aqm, {}), MIXED_EGRESS.get(aqm, {})
     for rid, router in data["routers"].items():
         name = per_router.get(rid, aqm if aqm in dm.AQMS else "pfifo")
         limit = router.get("queue_limit_packets")
+        base_egress = {peer: q.get("queue_limit_packets") for peer, q in (router.get("egress") or {}).items()}
         router.clear()
         router.update(queue(name, limit))
-        if rid in per_egress:
-            router["egress"] = {peer: queue(q, limit) for peer, q in per_egress[rid].items()}
+        egress = {peer: queue(name, lim, cap_to.get(peer)) for peer, lim in base_egress.items()}
+        for peer, q in per_egress.get(rid, {}).items():
+            egress[peer] = queue(q, base_egress.get(peer, limit), cap_to.get(peer))
+        if egress:
+            router["egress"] = egress
 
 
 def topology_of(k: str, rtype: str) -> str:
@@ -290,15 +556,19 @@ def scenario_for(k: str, rtype: str, aqm: str, rep: int, kdir: Path) -> tuple[Pa
     topo_file, base_file, *_ = dm.TOPOLOGIES[topology]
     n = dm.topology_numbers(topology)
     data = yaml.safe_load((ROOT / "configs" / "scenarios" / base_file).read_text())
-    events, windows, duration = plan_type(rtype, n, seed=rep)
+    events, windows, duration, meta = plan_type(rtype, n, seed=rep)
     data["events"], data["duration_s"] = events, duration
     apply_links(data, rtype, n)
     apply_aqm(data, aqm, n)
     gen = kdir / "_gen"
     gen.mkdir(parents=True, exist_ok=True)
-    out = gen / f"{run_id(rtype, aqm, rep)}.yaml"
+    rid = run_id(rtype, aqm, rep)
+    out = gen / f"{rid}.yaml"
     out.write_text(yaml.safe_dump(data, sort_keys=False))
-    (gen / f"{run_id(rtype, aqm, rep)}-windows.json").write_text(json.dumps(windows, indent=1))
+    (gen / f"{rid}-windows.json").write_text(json.dumps(windows, indent=1))
+    (gen / f"{rid}-plan.json").write_text(json.dumps({
+        "campaign": k, "type": rtype, "topology": topology, "aqm": aqm, "rep": rep, "seed": rep,
+        "duration_s": duration, "git": git_commit(), **meta}, indent=1))
     return out, ROOT / "configs" / "topologies" / topo_file, duration
 
 
@@ -306,8 +576,9 @@ def run_id(rtype: str, aqm: str, rep: int) -> str:
     return f"grp-{rtype}-{aqm}-r{rep}"
 
 
-def cells_of(k: str, reps: int) -> list[tuple[str, str, int]]:
+def cells_of(k: str, reps: int | None = None) -> list[tuple[str, str, int]]:
     c = CAMPAIGNS[k]
+    reps = reps or c["reps"]
     return [(rtype, aqm, rep) for rep in range(1, reps + 1) for aqm in c["aqms"] for rtype in c["types"]]
 
 
@@ -318,16 +589,21 @@ def git_commit() -> str:
     return out.stdout.strip() or "unknown"
 
 
-def run_campaign(k: str, kdir: Path, reps: int, skip_existing: bool, dry: bool) -> float:
-    """Plan (and unless dry, run) every cell of K; returns the planned seconds of emulation."""
+def run_campaign(k: str, kdir: Path, reps: int | None, skip_existing: bool, dry: bool, only: str = "") -> float:
+    """Plan (and unless dry, run) every cell of K whose run id contains `only`;
+    returns the planned seconds of emulation."""
     kdir.mkdir(parents=True, exist_ok=True)
+    reps = reps or CAMPAIGNS[k]["reps"]
     man_path = kdir / "manifest.yaml"
     manifest = yaml.safe_load(man_path.read_text()) if man_path.exists() else {
-        "campaign": k, "started": datetime.datetime.now().isoformat(timespec="seconds"), "finished": None,
-        "git": git_commit(), "reps": reps, "aqms": CAMPAIGNS[k]["aqms"], "types": CAMPAIGNS[k]["types"], "runs": {}}
+        "campaign": k, "held_out": k in HELD_OUT, "started": datetime.datetime.now().isoformat(timespec="seconds"),
+        "finished": None, "git": git_commit(), "reps": reps, "aqms": CAMPAIGNS[k]["aqms"],
+        "types": CAMPAIGNS[k]["types"], "runs": {}}
     total = 0.0
     for rtype, aqm, rep in cells_of(k, reps):
         rid = run_id(rtype, aqm, rep)
+        if only and only not in rid:
+            continue
         scenario, topo_file, duration = scenario_for(k, rtype, aqm, rep, kdir)
         load_scenario(scenario, load_topology(topo_file))   # schema check before anything runs
         total += duration
@@ -348,16 +624,125 @@ def run_campaign(k: str, kdir: Path, reps: int, skip_existing: bool, dry: bool) 
         else:
             (run_dir / "grouping").mkdir(exist_ok=True)
             shutil.copy(kdir / "_gen" / f"{rid}-windows.json", run_dir / "grouping" / "windows.json")
+            shutil.copy(kdir / "_gen" / f"{rid}-plan.json", run_dir / "grouping" / "plan.json")
             try:
                 det_eval.score(run_dir)
             except (Exception, SystemExit) as e:  # best effort here; score again later with det_eval.py score
                 print(f"   det_eval.score failed on {rid}: {e!r}", flush=True)
+            try:
+                print("   " + infra_line(infra_check(run_dir)), flush=True)
+            except Exception as e:
+                print(f"   infra check failed on {rid}: {e!r}", flush=True)
             manifest["runs"][rid] = f"done {datetime.datetime.now():%Y-%m-%dT%H:%M:%S}"
         man_path.write_text(yaml.safe_dump(manifest, sort_keys=False))
     if not dry:
         manifest["finished"] = datetime.datetime.now().isoformat(timespec="seconds")
         man_path.write_text(yaml.safe_dump(manifest, sort_keys=False))
     return total
+
+
+# ---------------------------------------------------------------- infrastructure check
+
+def link_lag(rows: list[dict], label: str | None = None) -> dict | None:
+    """applied_s - at_s of the applied link events (optionally one label): did the
+    scenario runner keep up? n, p50, p99, max in seconds."""
+    lags = sorted(float(r["applied_s"]) - float(r["at_s"]) for r in rows
+                  if r["event"] == "link" and r.get("status") == "applied" and r.get("at_s") not in ("", None)
+                  and (label is None or r.get("label") == label))
+    if not lags:
+        return None
+    return {"n": len(lags), "p50": round(lags[len(lags) // 2], 4), "p99": round(lags[int(0.99 * (len(lags) - 1))], 4),
+            "max": round(lags[-1], 4)}
+
+
+def infra_check(run_dir: Path) -> dict:
+    """Did the run do what the plan says, without looking at any grouping result:
+    finished, clients / sessions present with sender files, event errors, link
+    event lag (trace replay keeps its 200 ms steps?), windows in which the OWD
+    oracle saw the expected clients congested, clients never hit, control
+    client congestion. Written to <run>/grouping/infra.json."""
+    run = ga.load_run(run_dir)
+    rows = run.events
+    truth = ga.truth_of(run)
+    windows = json.loads((run_dir / "grouping" / "windows.json").read_text()) \
+        if (run_dir / "grouping" / "windows.json").exists() else []
+    bursts = truth["bursts"]
+    shared = [b for b in bursts if len(b["expected"]) >= 2]
+    private = [b for b in bursts if len(b["expected"]) == 1]
+    expected_any = {c for b in bursts for c in b["expected"]}
+    hit_any = {c for b in bursts for c in b["hit"]}
+    errors = [{k: r.get(k) for k in ("event", "at_s", "target", "error")} for r in rows if r.get("error")]
+    missing = [s for s in run.subs for suffix in ("acks", "owd") if not run.sender_file(s, suffix).exists()]
+    planned_sessions = sorted(f for f in ga.sessions_of(run) if "@" in f)
+    out = {"run": run_dir.name, "finished": run_finished(run_dir), "duration_s": run.duration,
+           "clients": len(run.subs), "sessions_planned": len(planned_sessions),
+           "sessions_found": len([f for f in run.subs if "@" in f]),
+           "sender_files_missing": sorted(set(missing)),
+           "errors": len(errors), "first_errors": errors[:5],
+           "link_events": sum(r["event"] == "link" for r in rows),
+           "lag_all": link_lag(rows), "lag_trace": link_lag(rows, "trace"),
+           "windows": len(windows), "windows_hit": sum(bool(b["hit"]) for b in bursts),
+           "shared_windows": len(shared), "shared_hit2": sum(len(b["hit"]) >= 2 for b in shared),
+           "shared_hit_all": sum(set(b["hit"]) == set(b["expected"]) for b in shared),
+           "private_windows": len(private), "private_hit": sum(bool(b["hit"]) for b in private),
+           "clients_never_hit": sorted(expected_any - hit_any),
+           "ctrl_congested_bins": int(len(ga.congested_bins(run, ga.CTRL))) if ga.CTRL in run.subs else None}
+    (run_dir / "grouping").mkdir(exist_ok=True)
+    (run_dir / "grouping" / "infra.json").write_text(json.dumps(out, indent=1))
+    return out
+
+
+def infra_line(i: dict) -> str:
+    lag = i["lag_trace"] or i["lag_all"] or {}
+    flags = []
+    if not i["finished"]:
+        flags.append("UNFINISHED")
+    if i["errors"]:
+        flags.append(f"{i['errors']} event errors")
+    if i["sender_files_missing"]:
+        flags.append(f"missing files {i['sender_files_missing']}")
+    if i["lag_trace"] and i["lag_trace"]["max"] > TRACE_STEP_S:
+        flags.append(f"trace lag max {i['lag_trace']['max']} s > step")
+    if i["sessions_planned"] != i["sessions_found"]:
+        flags.append(f"sessions {i['sessions_found']}/{i['sessions_planned']}")
+    if i["clients_never_hit"]:
+        flags.append(f"never hit {i['clients_never_hit']}")
+    return (f"{i['run']}: clients {i['clients']}, windows hit {i['windows_hit']}/{i['windows']}, shared >=2 hit "
+            f"{i['shared_hit2']}/{i['shared_windows']}, private hit {i['private_hit']}/{i['private_windows']}, "
+            f"link events {i['link_events']} lag p99/max {lag.get('p99', '-')}/{lag.get('max', '-')} s, ctrl congested "
+            f"bins {i['ctrl_congested_bins']}" + (" | " + "; ".join(flags) if flags else " | ok"))
+
+
+def infra_report(k: str, kdir: Path) -> None:
+    """<kdir>/infra.md: one line per finished run (no grouping score)."""
+    runs = sorted(p for p in kdir.glob("grp-*") if (p / "events.csv").exists())
+    checks = []
+    for r in runs:
+        try:
+            checks.append(infra_check(r))
+        except Exception as e:
+            checks.append({"run": r.name, "error": repr(e)})
+    lines = [f"# Infrastructure check {k}", "", f"{len(runs)} runs, generated {datetime.datetime.now():%Y-%m-%d %H:%M}. "
+             "No grouping result is read here" + (" (held-out set: scored only with --score-held-out after the rule freeze)."
+                                                  if k in HELD_OUT else "."), "",
+             "| run | finished | clients | sessions found/planned | errors | link events | lag p99 / max s (trace if any) | "
+             "windows hit | shared >=2 hit / all hit | private hit | never hit | ctrl congested bins | missing files |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for i in checks:
+        if "error" in i:
+            lines.append(f"| {i['run']} | check failed: {i['error']} | | | | | | | | | | |")
+            continue
+        lag = i["lag_trace"] or i["lag_all"] or {}
+        lines.append(f"| {i['run']} | {i['finished']} | {i['clients']} | {i['sessions_found']}/{i['sessions_planned']} "
+                     f"| {i['errors']} | {i['link_events']} | {lag.get('p99', '-')} / {lag.get('max', '-')} "
+                     f"| {i['windows_hit']}/{i['windows']} | {i['shared_hit2']}/{i['shared_hit_all']}/{i['shared_windows']} "
+                     f"| {i['private_hit']}/{i['private_windows']} | {i['clients_never_hit']} | {i['ctrl_congested_bins']} "
+                     f"| {i['sender_files_missing']} |")
+    (kdir / "infra.md").write_text("\n".join(lines) + "\n")
+    print(f"infra: {kdir / 'infra.md'}", flush=True)
+    for i in checks:
+        if "error" not in i:
+            print("  " + infra_line(i), flush=True)
 
 
 # ---------------------------------------------------------------- reporting
@@ -367,9 +752,10 @@ def ecg_dir(src: str, tag: str = "") -> str:
     return "grouping" + (f"-{tag}" if tag else "") + ("" if src == "shadow" else f"-{src}")
 
 
-def score_run(run_dir: Path, cfg: Config, tag: str = "") -> dict:
+def score_run(run_dir: Path, cfg: Config, tag: str = "", sources: tuple[str, ...] = ONSET_SOURCES,
+              with_baselines: bool = True) -> dict:
     out = {"run": run_dir.name, "ecg": {}}
-    for src in ONSET_SOURCES:
+    for src in sources:
         a = Namespace(out=ecg_dir(src, tag), onsets=src, backdate_max=1.0, backdate_qd_ms=10.0,
                       warmup=det_eval.WARMUP_S, spread_only=False)
         try:
@@ -379,9 +765,11 @@ def score_run(run_dir: Path, cfg: Config, tag: str = "") -> dict:
         except Exception as e:
             out["ecg"][src] = {"error": repr(e)}
             traceback.print_exc()
+    if not with_baselines:
+        return out
     try:
         out["baselines"] = gb.process(run_dir, Namespace(methods=gb.METHODS, owd="oracle", dcw_th=0.8,
-                                                         ecg=[ecg_dir(s, tag) for s in ONSET_SOURCES],
+                                                         ecg=[ecg_dir(s, tag) for s in sources],
                                                          out_name=f"baselines{'-' + tag if tag else ''}.json"))
     except Exception as e:
         out["baselines"] = {"error": repr(e)}
@@ -401,6 +789,8 @@ def case_matrix(run_dir: Path, src: str, tag: str = "") -> Counter:
     for e in m["events"]:
         near = min(windows, key=lambda w: abs(w["start"] - e["t0"]), default=None)
         cell = near["cell"] if near and abs(near["start"] - e["t0"]) <= 3.0 else "none"
+        if near is not None and cell != "none" and near.get("concurrent"):
+            cell += " (concurrent)"
         out[(cell, e["case"])] += 1
     return out
 
@@ -414,24 +804,147 @@ def med(vals: list) -> float | None:
     return statistics.median(vals) if vals else None
 
 
-def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str = "") -> None:
-    sfx = f"-{tag}" if tag else ""
-    runs = sorted(p for p in kdir.glob("grp-*") if run_finished(p))
-    results = [score_run(r, cfg, tag) for r in runs]
-    (kdir / f"results{sfx}.json").write_text(json.dumps(results, indent=1, default=str))
-    lines = [f"# Grouping campaign {k}" + (f" ({tag})" if tag else ""), "",
-             f"{len(runs)} runs, engine overrides {over if over is not None else ENGINE_SET}, "
-             f"onset sources {', '.join(ONSET_SOURCES)}, truth = stimulus windows x OWD oracle x plan "
-             f"(pairs_leaf). Generated {datetime.datetime.now():%Y-%m-%d %H:%M}.", ""]
-    # 1. per type x AQM: medians over reps
-    lines += ["## Final grouping per type x AQM (median over reps; leaf precision / recall, t_correct s; "
-              "cov = share of pairs decided, shadow / owd / truth)", "",
-              "| type | aqm | n | ECG shadow | ECG owd | ECG truth | cov | DCW | rmcatSBD | dcSBD | spread p50/p90 ms (shadow) |",
-              "|---|---|---|---|---|---|---|---|---|---|---|"]
+def cell_of(run_name: str) -> tuple[str, str]:
+    parts = run_name.split("-")
+    return parts[1], "-".join(parts[2:-1])
+
+
+def shadow_of(r: dict, key: str, src: str = PRIMARY):
+    return r["ecg"].get(src, {}).get(key)
+
+
+def compare_cells(results: list[dict], old_dir: Path | None, tol: float = 0.05) -> dict[tuple[str, str], str]:
+    """Per (type, aqm): 'worse' when the median shadow precision or recall fell by
+    more than tol against the old campaign's results(-v12).json, else ''."""
+    if old_dir is None:
+        return {}
+    old_file = next((f for f in (old_dir / "results-v12.json", old_dir / "results.json") if f.exists()), None)
+    if old_file is None:
+        return {}
+    old = defaultdict(list)
+    for r in json.loads(old_file.read_text()):
+        old[cell_of(r["run"])].append(r)
+    new = defaultdict(list)
+    for r in results:
+        new[cell_of(r["run"])].append(r)
+    out = {}
+    for cell, rs in new.items():
+        if cell not in old:
+            continue
+        flags = []
+        for key in ("precision", "recall"):
+            a, b = med([shadow_of(r, key) for r in rs]), med([shadow_of(r, key) for r in old[cell]])
+            if a is not None and b is not None and a < b - tol:
+                flags.append(f"{key} {b:.2f} -> {a:.2f}")
+        out[cell] = "worse: " + ", ".join(flags) if flags else "same or better"
+    return out
+
+
+def criteria(k: str, results: list[dict], src: str = PRIMARY) -> list[str]:
+    """Pass criteria of grouping/campaign-v2-spec.md section 7 on one onset source
+    (PRIMARY = shadow-owd; the RTT shadow is printed as the comparison)."""
+    def shadow_of(r, key, s=src):   # noqa: F811 - the source is fixed for this block
+        return r["ecg"].get(s, {}).get(key)
     by_cell = defaultdict(list)
     for r in results:
-        parts = r["run"].split("-")
-        by_cell[(parts[1], "-".join(parts[2:-1]))].append(r)
+        by_cell[cell_of(r["run"])].append(r)
+    lines = []
+
+    def runs(aqms):
+        return [(cell, r) for cell, rs in sorted(by_cell.items()) if cell[1] in aqms for r in rs]
+
+    def check(name, pairs, ok_fn, detail_fn):
+        bad = [(cell, r["run"], detail_fn(r)) for cell, r in pairs if not ok_fn(r)]
+        verdict = "PASS" if pairs and not bad else ("no runs" if not pairs else "FAIL")
+        lines.append(f"- {verdict}: {name} ({len(pairs) - len(bad)}/{len(pairs)} runs)")
+        lines.extend(f"  - {run}: {detail}" for _, run, detail in bad)
+
+    def pr(r):
+        return f"P={fmt(shadow_of(r, 'precision'))} R={fmt(shadow_of(r, 'recall'))} cov={fmt(shadow_of(r, 'coverage'))} " \
+               f"fp={shadow_of(r, 'fp')} tree_correct={shadow_of(r, 'tree_correct')} ctrl_grouped={shadow_of(r, 'ctrl_grouped')}"
+
+    def ge(r, key, x):
+        v = shadow_of(r, key)
+        return v is not None and v >= x
+    if k in HELD_OUT:
+        lines.append(f"## Pass criteria ({k}, {src} source{'' if src == PRIMARY else ', comparison'}; spec section 7)")
+        lines.append("")
+    if k == "N1":
+        fifo = runs(("pfifo", "pie"))
+        check("pfifo/pie: zero confirmed cross-branch pairs, both leaves correct, P and R >= 0.95", fifo,
+              lambda r: shadow_of(r, "fp") == 0 and shadow_of(r, "tree_correct") is True
+              and ge(r, "precision", 0.95) and ge(r, "recall", 0.95), pr)
+        lines.append("- fq_codel (no threshold): confirmed cross-branch pairs per run: "
+                     + ", ".join(f"{r['run']}={shadow_of(r, 'fp')}" for _, r in runs(("fq_codel",))))
+    elif k == "N2":
+        check("pfifo/pie: three groups correct, P and R >= 0.95, coverage >= 0.7, sub-ctrl ungrouped",
+              runs(("pfifo", "pie")),
+              lambda r: shadow_of(r, "tree_correct") is True and ge(r, "precision", 0.95) and ge(r, "recall", 0.95)
+              and ge(r, "coverage", 0.7) and shadow_of(r, "ctrl_grouped") is False, pr)
+    elif k == "N3":
+        check("pfifo: final tree = the split topology's two leaves (udp and tcp windows in the case matrix)",
+              runs(("pfifo",)), lambda r: shadow_of(r, "tree_correct") is True, pr)
+    elif k == "N4":
+        def solo_share(r):   # among private windows that produced an event; silent ones are reported, not judged
+            pw = shadow_of(r, "private_windows") or {}
+            return pw["solo"] / (pw["solo"] + pw["grouped"]) if pw.get("solo", 0) + pw.get("grouped", 0) else None
+        check("shared group P and R >= 0.9, >= 90 % of private windows with an event end as solo events, sub-ctrl ungrouped",
+              runs(("pfifo", "fq_codel")),
+              lambda r: ge(r, "precision", 0.9) and ge(r, "recall", 0.9) and (solo_share(r) or 0) >= 0.9
+              and shadow_of(r, "ctrl_grouped") is False,
+              lambda r: pr(r) + f" private_solo={fmt(solo_share(r))} private={shadow_of(r, 'private_windows')}")
+    elif k == "N5":
+        check("sub-ctrl ungrouped; no session a confirmed member while off", runs(("pfifo", "fq_codel")),
+              lambda r: shadow_of(r, "ctrl_grouped") is False and (shadow_of(r, "off_membership") or 0) == 0,
+              lambda r: pr(r) + f" off_membership={shadow_of(r, 'off_membership')}")
+        for _, r in runs(("pfifo", "fq_codel")):
+            st = shadow_of(r, "session_stats") or {}
+            lines.append(f"- {r['run']}: sessions with >= 3 events {st.get('sessions_3_events')}, of them members "
+                         f"{st.get('members')}; membership event index p50 {fmt(st.get('event_index_p50'))}")
+    elif k in CAMPAIGNS:
+        lines.append(f"## {k}: development set, report only (cells worse than the previous campaign are flagged "
+                     "in the first table when --compare is given)")
+    if src == PRIMARY:
+        lines.append("- All fq_codel cells: no pass threshold; scored against both truths (leaf and link columns).")
+    return lines
+
+
+def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str = "",
+           compare: Path | None = None) -> None:
+    sfx = f"-{tag}" if tag else ""
+    sources = ONSET_SOURCES
+    with_baselines = CAMPAIGNS.get(k, {}).get("baselines", True)
+    runs = sorted(p for p in kdir.glob("grp-*") if run_finished(p))
+    results = [score_run(r, cfg, tag, sources, with_baselines) for r in runs]
+    (kdir / f"results{sfx}.json").write_text(json.dumps(results, indent=1, default=str))
+    scoring = {"scored": datetime.datetime.now().isoformat(timespec="seconds"), "engine_git": git_commit(),
+               "config": cfg.to_dict(), "sources": sources, "primary": PRIMARY}
+    (kdir / f"scoring{sfx}.json").write_text(json.dumps(scoring, indent=1, default=str))
+    worse = compare_cells(results, compare / k if compare else None)
+    lines = [f"# Grouping campaign {k}" + (f" ({tag})" if tag else "") + (" — held-out" if k in HELD_OUT else
+                                                                          " — development set"), "",
+             f"{len(runs)} runs, engine overrides {over if over is not None else ENGINE_SET}, engine tree "
+             f"`{scoring['engine_git']}` at scoring time (the runs' plan.json holds the planning tree), "
+             f"onset sources {', '.join(sources)} (primary {PRIMARY}; shadow = RTT comparison), truth = stimulus "
+             f"windows x OWD oracle x plan (pairs_leaf; link = pairs). Generated {datetime.datetime.now():%Y-%m-%d %H:%M}."
+             + ("" if with_baselines else " No SBD baseline columns: the baselines need one common span over "
+                                         "long-lived flows and cannot follow sessions."), ""]
+    lines += criteria(k, results) + [""]
+    if k in HELD_OUT:
+        lines += criteria(k, results, "shadow") + [""]
+    # 1. per type x AQM: medians over reps
+    lines += [f"## Final grouping per type x AQM (median over reps; leaf precision / recall, t_correct s; "
+              f"cov = share of pairs decided per source; link = {PRIMARY} P / R against 'share a link'; "
+              f"cross = confirmed cross-group pairs ({PRIMARY} fp, median / max); ctrl = runs with sub-ctrl in a leaf; "
+              "tree = runs whose confirmed leaves equal the truth groups; ev->member = median events a flow took "
+              "part in before it was reported a member)", "",
+              "| type | aqm | n | " + " | ".join(f"ECG {s}" for s in sources)
+              + f" | cov | link P / R | cross | ctrl | tree | ev->member | DCW | rmcatSBD | dcSBD | spread p50/p90 ms ({PRIMARY}) |"
+              + (" compare |" if worse else ""),
+              "|---|---|---|" + "---|" * len(sources) + "---|---|---|---|---|---|---|---|---|---|" + ("---|" if worse else "")]
+    by_cell = defaultdict(list)
+    for r in results:
+        by_cell[cell_of(r["run"])].append(r)
 
     def cell_str(rs, name):
         P = med([((r.get("baselines") or {}).get("methods") or {}).get(name, {}).get("final", {}).get("vs_leaf", {})
@@ -441,38 +954,47 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
         T = med([((r.get("baselines") or {}).get("methods") or {}).get(name, {}).get("t_correct") for r in rs])
         return f"{fmt(P)} / {fmt(R)}, {fmt(T)}"
     for (rtype, aqm), rs in sorted(by_cell.items()):
-        sp = [r["ecg"].get("shadow", {}).get("spread_onset_ms") for r in rs]
-        sp = [s for s in sp if s]
-        spread = f"{med([s['p50'] for s in sp]):.0f} / {med([s['p90'] for s in sp]):.0f}" if sp else "-"
-        ecg_names = [f"ecg:{ecg_dir(s, tag)}" for s in ONSET_SOURCES]
-        cov = " / ".join(fmt(med([r["ecg"].get(s, {}).get("coverage") for r in rs])) for s in ONSET_SOURCES)
-        lines.append(f"| {rtype} | {aqm} | {len(rs)} | " + " | ".join(cell_str(rs, n) for n in ecg_names)
-                     + f" | {cov} | " + " | ".join(cell_str(rs, n) for n in ("dcw", "rmcat_sbd", "dc_sbd"))
-                     + f" | {spread} |")
-    # 2. case matrix per type and source
-    for src in ONSET_SOURCES:
-        lines += ["", f"## ECG event cases per stimulus cell ({src} onsets, summed over AQMs and reps)", ""]
+        sp = [shadow_of(r, "spread_onset_ms") for r in rs]
+        sp = [x for x in sp if x]
+        spread = f"{med([x['p50'] for x in sp]):.0f} / {med([x['p90'] for x in sp]):.0f}" if sp else "-"
+        cov = " / ".join(fmt(med([shadow_of(r, "coverage", src) for r in rs])) for src in sources)
+        link = f"{fmt(med([shadow_of(r, 'precision_link') for r in rs]))} / {fmt(med([shadow_of(r, 'recall_link') for r in rs]))}"
+        fps = [shadow_of(r, "fp") for r in rs if shadow_of(r, "fp") is not None]
+        cross = f"{med(fps)} / {max(fps)}" if fps else "-"
+        ctrl = f"{sum(shadow_of(r, 'ctrl_grouped') is True for r in rs)}/{len(rs)}"
+        tree = f"{sum(shadow_of(r, 'tree_correct') is True for r in rs)}/{len(rs)}"
+        evm = med([v for r in rs for v in (shadow_of(r, "membership_events") or {}).values()])
+        lines.append(f"| {rtype} | {aqm} | {len(rs)} | "
+                     + " | ".join(cell_str(rs, f"ecg:{ecg_dir(src, tag)}") for src in sources)
+                     + f" | {cov} | {link} | {cross} | {ctrl} | {tree} | {fmt(evm)} | "
+                     + " | ".join(cell_str(rs, n) if with_baselines else "n/a" for n in ("dcw", "rmcat_sbd", "dc_sbd"))
+                     + f" | {spread} |" + (f" {worse.get((rtype, aqm), '-')} |" if worse else ""))
+    # 2. case matrix per type and source (concurrent windows as their own rows)
+    for src in sources:
+        lines += ["", f"## ECG event cases per stimulus cell ({src} onsets, summed over AQMs and reps; "
+                      "'(concurrent)' = windows overlapping another bottleneck's)", ""]
         per_type = defaultdict(Counter)
         for r in runs:
-            per_type[r.name.split("-")[1]] += case_matrix(r, src, tag)
+            per_type[cell_of(r.name)[0]] += case_matrix(r, src, tag)
         cases = sorted({c for cm in per_type.values() for _, c in cm})
         lines += ["| type | cell | " + " | ".join(cases) + " |", "|---|---|" + "---|" * len(cases)]
         for rtype, cm in sorted(per_type.items()):
             for cell in sorted({c for c, _ in cm}):
                 lines.append(f"| {rtype} | {cell} | " + " | ".join(str(cm[(cell, c)]) for c in cases) + " |")
     # 3. per run
-    lines += ["", "## Per run", "", "| run | source | cases | leaf P / R | cov | leaves | spread p50/p90 |",
-              "|---|---|---|---|---|---|---|"]
+    lines += ["", "## Per run", "", "| run | source | cases | leaf P / R | link P / R | cov | fp | ctrl | tree | leaves | "
+              "ev->member | spread p50/p90 |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in results:
-        for src in ONSET_SOURCES:
-            s = r["ecg"].get(src, {})
-            if "error" in s:
-                lines.append(f"| {r['run']} | {src} | error: {s['error']} | | | | |")
+        for src in sources:
+            s_ = r["ecg"].get(src, {})
+            if "error" in s_:
+                lines.append(f"| {r['run']} | {src} | error: {s_['error']} | | | | | | | | | |")
                 continue
-            sp = s.get("spread_onset_ms")
-            lines.append(f"| {r['run']} | {src} | {s.get('cases')} | {fmt(s.get('precision'))} / {fmt(s.get('recall'))} "
-                         f"| {fmt(s.get('coverage'))} | {s.get('leaves')} | "
-                         f"{f'{sp['p50']:.0f} / {sp['p90']:.0f}' if sp else '-'} |")
+            sp = s_.get("spread_onset_ms")
+            lines.append(f"| {r['run']} | {src} | {s_.get('cases')} | {fmt(s_.get('precision'))} / {fmt(s_.get('recall'))} "
+                         f"| {fmt(s_.get('precision_link'))} / {fmt(s_.get('recall_link'))} | {fmt(s_.get('coverage'))} "
+                         f"| {s_.get('fp')} | {s_.get('ctrl_grouped')} | {s_.get('tree_correct')} | {s_.get('leaves')} "
+                         f"| {s_.get('membership_events')} | {f'{sp['p50']:.0f} / {sp['p90']:.0f}' if sp else '-'} |")
     (kdir / f"report{sfx}.md").write_text("\n".join(lines) + "\n")
     print(f"report: {kdir / f'report{sfx}.md'}", flush=True)
 
@@ -481,8 +1003,12 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
 
 def main(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ks", default="K1,K2,K3,K5,K6")
-    ap.add_argument("--reps", type=int, default=3)
+    ap.add_argument("--ks", default="N1,N2,K1,K2,K3,K5,K6,N3,N4,N5", help="campaigns in run order")
+    ap.add_argument("--reps", type=int, default=None, help="override the campaigns' own rep counts (K 3, K6 and N 5)")
+    ap.add_argument("--compare", type=Path, help="older campaign dir: flag cells whose primary-source P/R got worse")
+    ap.add_argument("--only", default="", help="run only the cells whose run id contains this text (smoke runs)")
+    ap.add_argument("--score-held-out", action="store_true",
+                    help="produce grouping reports for N1-N5 (only after the rule freeze; until then they get infra.md)")
     ap.add_argument("--campaign", type=Path, help="existing .runs/<dir> to resume or report")
     ap.add_argument("--name", default="grp")
     ap.add_argument("--plan", action="store_true", help="write the YAMLs and the budget, run nothing")
@@ -515,15 +1041,24 @@ def main(argv: list[str]) -> None:
     budget = 0.0
     for k in ks:
         kdir = campaign / k
+        scorable = k not in HELD_OUT or a.score_held_out
         if a.report_only:
-            report(k, kdir, cfg, over, a.tag)
+            infra_report(k, kdir)
+            if scorable:
+                report(k, kdir, cfg, over, a.tag, a.compare)
+            else:
+                print(f"{k}: held-out, grouping not scored (pass --score-held-out after the rule freeze)", flush=True)
             continue
-        secs = run_campaign(k, kdir, a.reps, a.skip_existing, dry=a.plan)
+        secs = run_campaign(k, kdir, a.reps, a.skip_existing, dry=a.plan, only=a.only)
         budget += secs
-        n = len(cells_of(k, a.reps))
+        n = len([c for c in cells_of(k, a.reps) if not a.only or a.only in run_id(*c)])
         print(f"{k}: {n} runs, {secs / 3600:.1f} h of emulation (+ ~1 min setup each)", flush=True)
         if not a.plan:
-            report(k, kdir, cfg, over, a.tag)
+            infra_report(k, kdir)
+            if scorable:
+                report(k, kdir, cfg, over, a.tag, a.compare)
+            else:
+                print(f"{k}: held-out, grouping not scored (pass --score-held-out after the rule freeze)", flush=True)
     if a.plan:
         print(f"total: {budget / 3600:.1f} h of emulation")
 

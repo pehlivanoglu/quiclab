@@ -17,8 +17,11 @@ Detector and baselines:
 Grouping (ECG, `grouping/`, brief `grouping-implementation-v01.md`; results in `grouping/README.md`):
 
 - [x] v1.2 rules implemented behind `Config.V12` (README "Campaign results … v1.2"); K1–K6 ran 2026-11-06 (`.runs/ip8/2026-11-06_1526_grp`); all five re-scored in `report-v12.md` (K6 pfifo 3/3 correct trees; K1 21 runs, FIFO-like cells 1.0/1.0).
-- [ ] Decide whether v1.2 becomes the default (brief v2.0): compare `report.md` vs `report-v12.md` per K and the two synthetic tables; keep θ in config only for the v1.1 reproduction.
-- [ ] K5 rerun with the 12-shared-window plan (6 were too few to judge); K3 `revjit5` / `revjit20` if the jitter limit matters.
+- [x] v1.2 is the default and frozen (2026-11-10, commit d864058); truth and scoring frozen in the README.
+- [ ] Campaign v2 (`grouping/campaign-v2-spec.md`, 145 runs, 20.7 h): smoke `--ks N2 --only pfifo-r1` (17 clients) and `--ks N4 --only pfifo-r1` (trace lag in `infra.md` must stay under 0.2 s), then the full set with `--skip-existing` in tmux; development set `--report-only --compare .runs/ip8/2026-11-06_1526_grp`.
+- [ ] Rule changes still open (episode end as an event, in-episode metrics): try on K1–K6 only, then freeze + tag, then score N1–N5 once with `--report-only --score-held-out`, never touching rules or truth afterwards.
+- [ ] N5 limits: `det_eval.score` reads the first session of each client only; SBD baselines are off for N5 (no common span over sessions).
+- [ ] K3 `revjit5` / `revjit20` if the jitter limit matters.
 - [ ] fq_codel light load: report as "no shared congestion" (FQ-native truth would label these pairs negative; tight-link truth makes recall look low).
 - [ ] The owd source and the SBD baselines on the newscn-base and large campaigns need those campaigns rerun (high-rate clients lose OWD timestamps mid-run there).
 - [ ] Shadow replay should emit the backdated onset itself (today the adapter recovers it from `queue_delay_ms` ≥ 10 ms; spread p50 ≈ 80 ms, p90 ≈ 300 ms within a burst).

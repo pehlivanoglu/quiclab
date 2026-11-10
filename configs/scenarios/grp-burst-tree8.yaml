@@ -1,8 +1,9 @@
 # Event benchmark base for detector-tree8.yaml: calm bottlenecks at u ~0.65.
-# Video demand (wire x1.03): leaf 3.6 Mb/s -> 5.5 Mb/s links, X / Y 7.2 Mb/s
-# -> 11 Mb/s, root 14.4 Mb/s -> 22 Mb/s; client RTTs 20-100 ms; queues ~1 BDP
-# (root 160 packets ~ 87 ms at 22 Mb/s, X/Y 80 ~ 87 ms at 11, leaf 40 ~ 87 ms
-# at 5.5). scripts/grouping_campaign.py adds the events and sets duration_s.
+# Video demand (wire x1.03): leaf 7.73 Mb/s -> 11.9 Mb/s links, X / Y 15.45
+# -> 23.8 Mb/s, root 30.9 -> 47.5 Mb/s; client RTTs 20-100 ms; queues ~87 ms
+# (root 344 packets at 47.5 Mb/s, X/Y 172 at 23.8, leaf 86 at 11.9). Before
+# 2026-11-10 (campaign K6 of 2026-11-06): leaf 5.5, X/Y 11, root 22 Mb/s with
+# 1 / 2.5 Mb/s clients. scripts/grouping_campaign.py adds the events and sets duration_s.
 duration_s: 300
 
 link_defaults:
@@ -11,13 +12,13 @@ link_defaults:
 
 links:
   - { from: pub, to: rr, forward: { bandwidth_mbps: 1000, delay_ms: 5 }, reverse: { delay_ms: 5 } }
-  - { from: rr, to: r0, forward: { bandwidth_mbps: 22 } }
-  - { from: r0, to: r1, forward: { bandwidth_mbps: 11 } }
-  - { from: r0, to: r2, forward: { bandwidth_mbps: 11 } }
-  - { from: r1, to: switch-a, forward: { bandwidth_mbps: 5.5 } }
-  - { from: r1, to: switch-b, forward: { bandwidth_mbps: 5.5 } }
-  - { from: r2, to: switch-c, forward: { bandwidth_mbps: 5.5 } }
-  - { from: r2, to: switch-d, forward: { bandwidth_mbps: 5.5 } }
+  - { from: rr, to: r0, forward: { bandwidth_mbps: 47.5 } }
+  - { from: r0, to: r1, forward: { bandwidth_mbps: 23.8 } }
+  - { from: r0, to: r2, forward: { bandwidth_mbps: 23.8 } }
+  - { from: r1, to: switch-a, forward: { bandwidth_mbps: 11.9 } }
+  - { from: r1, to: switch-b, forward: { bandwidth_mbps: 11.9 } }
+  - { from: r2, to: switch-c, forward: { bandwidth_mbps: 11.9 } }
+  - { from: r2, to: switch-d, forward: { bandwidth_mbps: 11.9 } }
   - { from: switch-a, to: a1, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
   - { from: switch-a, to: a2, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
   - { from: switch-b, to: b1, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
@@ -29,9 +30,9 @@ links:
   - { from: rr, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
 
 routers:
-  rr: { aqm: pfifo, queue_limit_packets: 160 }
-  r0: { aqm: pfifo, queue_limit_packets: 80 }
-  r1: { aqm: pfifo, queue_limit_packets: 40 }
-  r2: { aqm: pfifo, queue_limit_packets: 40 }
+  rr: { aqm: pfifo, queue_limit_packets: 344 }
+  r0: { aqm: pfifo, queue_limit_packets: 172 }
+  r1: { aqm: pfifo, queue_limit_packets: 86 }
+  r2: { aqm: pfifo, queue_limit_packets: 86 }
 
 events: []

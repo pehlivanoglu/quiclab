@@ -12,7 +12,9 @@ Validated against one topology (`load_scenario`):
   - link events cannot change the capacity of a switch egress: congestion
     belongs on router egresses, switches only distribute
   - flows use declared traffic routes; flow ids are unique
-  - each subscriber joins and leaves at most once, leave after join
+  - a subscriber's join / leave events alternate in time (on at t=0 unless its
+    first event is a join); every session after the first runs as client
+    <subscriber>@<n>, with its own sender files
   - every event happens within duration_s
 """
 
@@ -198,7 +200,7 @@ class BurstsEvent(_Event):
 
 
 class JoinEvent(_Event):
-    """Subscriber connects now instead of at t=0."""
+    """Subscriber connects now instead of at t=0 (or again, after a leave)."""
 
     type: Literal["join"]
     subscriber: str
@@ -249,7 +251,27 @@ class Scenario(_StrictBase):
         return [e.id for e in self.events if e.type in ("flow", "ppbp", "bursts")]
 
     def join_at(self, subscriber: str) -> float:
-        return next((e.at_s for e in self.events if e.type == "join" and e.subscriber == subscriber), 0.0)
+        """First connection time (0 unless the subscriber's first event is a join)."""
+        return self.sessions(subscriber)[0][0]
+
+    def sessions(self, subscriber: str) -> list[tuple[float, float | None]]:
+        """(join, leave) per session in time order; leave None = until the end.
+        Session n >= 2 runs as client id `<subscriber>@<n>` (see session_id)."""
+        times = sorted((e.at_s, e.type) for e in self.events
+                       if e.type in ("join", "leave") and e.subscriber == subscriber)
+        out: list[tuple[float, float | None]] = []
+        if not times or times[0][1] == "leave":
+            out.append((0.0, None))
+        for t, kind in times:
+            if kind == "join":
+                out.append((t, None))
+            else:
+                out[-1] = (out[-1][0], t)
+        return out
+
+    @staticmethod
+    def session_id(subscriber: str, n: int) -> str:
+        return subscriber if n == 1 else f"{subscriber}@{n}"
 
     def check_against(self, topology: TopologyConfig) -> "Scenario":
         declared = {(link.from_, link.to) for link in topology.links}
@@ -280,8 +302,7 @@ class Scenario(_StrictBase):
 
         routes = topology.traffic.routes if topology.traffic is not None else {}
         flow_ids: set[str] = set()
-        joins: dict[str, float] = {}
-        leaves: dict[str, float] = {}
+        membership: dict[str, list[tuple[float, str]]] = {}
         for event in self.events:
             where = f"event at {event.at_s:g}s ({event.type})"
             if event.at_s > self.duration_s:
@@ -321,13 +342,18 @@ class Scenario(_StrictBase):
             else:
                 if event.subscriber not in topology.subscribers:
                     raise ValueError(f"{where}: {event.subscriber!r} is not a topology subscriber")
-                times = joins if event.type == "join" else leaves
-                if event.subscriber in times:
-                    raise ValueError(f"{where}: {event.subscriber!r} has two {event.type} events")
-                times[event.subscriber] = event.at_s
-        for sid, left in leaves.items():
-            if left <= joins.get(sid, 0.0):
-                raise ValueError(f"subscriber {sid!r} leaves before it joins")
+                membership.setdefault(event.subscriber, []).append((event.at_s, event.type))
+        for sid, times in membership.items():
+            times.sort()
+            on = times[0][1] == "leave"   # on from t=0 when the first event is a leave
+            last = -1.0
+            for t, kind in times:
+                if (kind == "join") == on:
+                    raise ValueError(f"subscriber {sid!r} {'leaves before it joins' if kind == 'leave' else 'joins twice'}"
+                                     f" at {t:g}s")
+                if t <= last:
+                    raise ValueError(f"subscriber {sid!r} has two membership events at {t:g}s")
+                on, last = kind == "join", t
         return self
 
 

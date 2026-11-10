@@ -9,6 +9,11 @@ and never writes under <run>/detector or <run>/baselines.
     python scripts/grouping_adapter.py RUN... --set delta=0.3 theta_J=0.6 theta_cov=0.6
     python scripts/grouping_adapter.py RUN... --onsets owd      # oracle delay detector
     python scripts/grouping_adapter.py RUN... --onsets truth    # burst truth as onsets
+    python scripts/grouping_adapter.py RUN... --onsets shadow-owd   # the shadow on sender-side OWD (owd_mode)
+
+Runs whose clients re-join (grouping campaign N5): every session has its own
+sender files (<sub>@<n>-acks.csv ...) and is a flow of its own (load_run ->
+SessionRun); window `expected` sets name sessions.
 
 Per run, under <run>/grouping/ (shadow) or <run>/grouping-<onsets>/ (oracles):
 onsets.jsonl (meta / obs / onset records), truth.json, spread.csv,
@@ -30,6 +35,9 @@ Mechanism A -> Onset, three sources (--onsets):
           (same residual as the shadow source after the engine's -mrtt/2
           alignment). No detection delay, no misses; the real cross-flow
           onset spread stays.
+  shadow-owd  the same frozen shadow replayed on owd_mode.owd_acks: rtt_us
+          replaced by the acked packet's one-way delay + R0 (reverse-path
+          delay leaves the input). Everything else as `shadow`.
   truth   detector/bursts.csv: every client the truth labels "hit" gets one
           onset per burst at the burst start, t_onset = t_arrival = start +
           mrtt/2 (aligned onset = burst start, spread 0). The idealized upper
@@ -61,6 +69,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 import det_eval as d  # noqa: E402
+import owd_mode  # noqa: E402
 from grouping import Config, FlowMeta, ObsSample, Onset, replay  # noqa: E402
 from grouping.engine import Engine  # noqa: E402
 from grouping.invariants import Invariants  # noqa: E402
@@ -68,6 +77,50 @@ from grouping.invariants import Invariants  # noqa: E402
 SHADOW_VARIANT, ON, OFF = "full", "pre_signal_on", "pre_signal_off"   # det_eval.replay(run, TUNED): variant "full" is the tuned setting
 OBS_WINDOW = 0.020
 TRAIL_S = 0.2
+
+
+class SessionRun(d.Run):
+    """A run whose clients re-joined: every session <sid>@<n> has its own sender
+    files and counts as a flow. The topology gets an alias node per session
+    (same links as the client) so the path and leaf-queue helpers work unchanged."""
+
+    def __init__(self, path: Path):
+        super().__init__(path)
+        self.sid_of = {s: s for s in self.subs}
+        for f in sorted((path / "publishers" / self.pub).glob("*@*-acks.csv")):
+            flow = f.name[:-len("-acks.csv")]
+            sid = flow.split("@")[0]
+            if sid not in self.topology["subscribers"]:
+                continue
+            self.sid_of[flow] = sid
+            self.topology["subscribers"][flow] = dict(self.topology["subscribers"][sid])
+            self.topology["links"] += [{**link, "to": flow} for link in self.topology["links"] if link["to"] == sid]
+        self.subs = list(self.sid_of)
+
+
+def load_run(run_dir: Path) -> d.Run:
+    run = d.Run(run_dir)
+    return SessionRun(run_dir) if any((run_dir / "publishers" / run.pub).glob("*@*-acks.csv")) else run
+
+
+def sessions_of(run: d.Run) -> dict[str, tuple[float, float | None]]:
+    """Flow -> (join, leave) from the scenario's join / leave events; the first
+    session is the client's own id, later ones <sid>@<n>."""
+    out = {}
+    for sid in run.topology["subscribers"]:
+        if "@" in sid:
+            continue
+        times = sorted((e["at_s"], e["type"]) for e in run.scenario.get("events", [])
+                       if e["type"] in ("join", "leave") and e["subscriber"] == sid)
+        sessions: list[list] = [] if times and times[0][1] == "join" else [[0.0, None]]
+        for t, kind in times:
+            if kind == "join":
+                sessions.append([t, None])
+            else:
+                sessions[-1][1] = t
+        for n, (join, leave) in enumerate(sessions, start=1):
+            out[sid if n == 1 else f"{sid}@{n}"] = (join, leave)
+    return out
 
 
 def merge_episodes(out: list[list[float]], warmup: float, merge_s: float = d.ALARM_MERGE_S) -> list[tuple[float, float]]:
@@ -177,7 +230,7 @@ def cwnd_obs(run: d.Run, sid: str, t_end: float) -> np.ndarray:
 
 def build(run_dir: Path, cfg: Config, backdate_max: float, warmup: float, qd_ms: float,
           source: str = "shadow") -> tuple[list, dict, list[dict]]:
-    run = d.Run(run_dir)
+    run = load_run(run_dir)
     truth = truth_of(run)
     t_end = run.duration
     rendition = {s: float(run.topology["subscribers"][s]["rate_kbps"]) * 1000 for s in run.subs}
@@ -186,9 +239,13 @@ def build(run_dir: Path, cfg: Config, backdate_max: float, warmup: float, qd_ms:
         a = pd.read_csv(run.sender_file(s, "acks"), usecols=["min_rtt_us"])
         mrtt[s] = float(a.min_rtt_us.min()) / 1e6
     onsets = []
-    if source == "shadow":
+    if source in ("shadow", "shadow-owd"):
         with tempfile.TemporaryDirectory() as tmp:
-            events = d.replay(run, d.TUNED, samples_to=Path(tmp))
+            acks = None
+            if source == "shadow-owd":
+                (Path(tmp) / "acks").mkdir()
+                acks = {s: owd_mode.owd_acks(run, s, Path(tmp) / "acks") for s in run.subs}
+            events = d.replay(run, d.TUNED, samples_to=Path(tmp), acks=acks)
             samples = {}
             for s in run.subs:
                 f = Path(tmp) / f"{s}.csv"
@@ -421,25 +478,114 @@ def process(run_dir: Path, cfg: Config, a) -> dict:
     res = replay.run(records, cfg, log_path=out / "evidence.jsonl", engine_factory=factory)
     pm = pair_metrics(res, truth, "pairs_leaf")
     pm_link = pair_metrics(res, truth, "pairs")
+    run = load_run(run_dir)
+    extra = outcome_metrics(res, truth, run, json.loads((run_dir / "grouping" / "windows.json").read_text())
+                            if (run_dir / "grouping" / "windows.json").exists() else [])
     metrics = {"run": run_dir.name, "onset_source": a.onsets, "config": cfg.to_dict(), "cases": dict(res.cases),
                "pairwise": pm, "pairwise_link": pm_link, "spans": replay.span_stats(res), "leaves": res.leaves,
                "final": res.final["flows"], "spread": summary, "truth_source": truth["source"],
                "truth_leaf": truth["leaf"], "invariants_checked": holder["inv"].n_checked,
-               "events": res.events, "bursts": truth["bursts"]}
+               "events": res.events, "bursts": truth["bursts"], "series": res.series, **extra}
     replay.dump(metrics, out / "metrics.json")
     (out / "pairs_t.json").write_text(json.dumps(res.pairs_t()))
     (out / "truth.json").write_text(json.dumps(truth, indent=1))
     replay.plot_L(res, out / "L.png", f"{run_dir.name}: {a.onsets} onsets -> ECG (delta={cfg.delta}, theta={cfg.theta_J})")
     summary.update({"cases": dict(res.cases), "precision": pm["precision"], "recall": pm["recall"],
-                    "coverage": pm["coverage"], "uncertain": pm["uncertain"],
-                    "leaves": {n: l["members"] for n, l in res.leaves.items() if l["kind"] == "leaf" and l["members"]}})
+                    "coverage": pm["coverage"], "uncertain": pm["uncertain"], "tp": pm["tp"], "fp": pm["fp"],
+                    "precision_link": pm_link["precision"], "recall_link": pm_link["recall"],
+                    "leaves": {n: l["members"] for n, l in res.leaves.items() if l["kind"] == "leaf" and l["members"]},
+                    **extra})
     return summary
+
+
+CTRL = "sub-ctrl"
+PRIVATE_RECOVERY_S = d.BURST_RECOVERY_S
+
+
+def confirmed_leaves(res: replay.Result) -> list[frozenset]:
+    """Member sets of the confirmed leaves with at least two reported members."""
+    flows = res.final["flows"]
+    out = []
+    for n, leaf in res.leaves.items():
+        if leaf["kind"] != "leaf" or not leaf["confirmed"]:
+            continue
+        members = frozenset(f for f in leaf["members"] if flows.get(f, {}).get("member", False))
+        if len(members) >= 2:
+            out.append(members)
+    return out
+
+
+def membership_events(res: replay.Result) -> dict[str, int]:
+    """Per flow that was reported a member at some close: the number of events
+    it took part in up to and including the one after which it was a member."""
+    out, n = {}, defaultdict(int)
+    for e, snap in zip(res.events, res.snapshots):
+        for f in e["members"]:
+            n[f] += 1
+        for f, st in snap["flows"].items():
+            if f not in out and st.get("member") and st["node"] is not None:
+                out[f] = n[f]
+    return out
+
+
+def private_window_outcomes(res: replay.Result, windows: list[dict]) -> dict:
+    """Private windows (`cell` private, one expected client): solo when every
+    ECG event of that client inside [start, end + recovery] has it as the only
+    member, silent when there is none, grouped otherwise."""
+    out = {"n": 0, "solo": 0, "silent": 0, "grouped": 0}
+    for w in windows:
+        if w.get("cell") != "private" or len(w.get("expected", [])) != 1:
+            continue
+        c = w["expected"][0]
+        evs = [e for e in res.events if w["start"] <= e["t0"] <= w["end"] + PRIVATE_RECOVERY_S and c in e["members"]]
+        out["n"] += 1
+        out["silent" if not evs else "solo" if all(len(e["members"]) == 1 for e in evs) else "grouped"] += 1
+    return out
+
+
+def outcome_metrics(res: replay.Result, truth: dict, run: d.Run, windows: list[dict]) -> dict:
+    """Spec section 6 outputs: tree correctness, control client, membership speed,
+    private windows, sessions (off-membership = a session reported a confirmed
+    member outside its own [join, leave])."""
+    leaves = confirmed_leaves(res)
+    truth_groups = {frozenset(g) for g in truth["leaf"].values() if len(g) >= 2}
+    out = {"tree_correct": set(leaves) == truth_groups, "leaves_truth": sorted(sorted(g) for g in truth_groups),
+           "ctrl_grouped": any(CTRL in g for g in leaves) if CTRL in truth["subs"] else None,
+           "membership_events": membership_events(res)}
+    if any(w.get("cell") == "private" for w in windows):
+        out["private_windows"] = private_window_outcomes(res, windows)
+    sessions = sessions_of(run)
+    if any("@" in f for f in sessions):
+        out["sessions"] = {f: list(v) for f, v in sessions.items()}
+        off = 0
+        nodes_confirmed = {}
+        for snap in res.snapshots:
+            for n, node in snap.get("nodes", {}).items():
+                nodes_confirmed[(snap["t"], str(n))] = node["confirmed"]
+            for f, st in snap["flows"].items():
+                join, leave = sessions.get(f, (0.0, None))
+                outside = snap["t"] < join or (leave is not None and snap["t"] > leave + PRIVATE_RECOVERY_S)
+                if outside and st.get("member") and st["node"] is not None \
+                        and nodes_confirmed.get((snap["t"], str(st["node"])), False):
+                    off += 1
+        out["off_membership"] = off
+        per_flow = defaultdict(int)
+        for e in res.events:
+            for f in e["members"]:
+                per_flow[f] += 1
+        three = [f for f in sessions if per_flow[f] >= 3 and f != CTRL]
+        members = [f for f in three if f in out["membership_events"]]
+        idx = sorted(out["membership_events"][f] for f in members)
+        out["session_stats"] = {"sessions": len([f for f in sessions if f != CTRL]), "sessions_3_events": len(three),
+                                "members": len(members), "event_index_p50": idx[len(idx) // 2] if idx else None}
+    return out
 
 
 def main(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("runs", nargs="+", type=Path)
-    ap.add_argument("--onsets", choices=("shadow", "owd", "truth"), default="shadow", help="Mechanism A source")
+    ap.add_argument("--onsets", choices=("shadow", "owd", "truth", "shadow-owd"), default="shadow",
+                    help="Mechanism A source")
     ap.add_argument("--out", help="subdirectory under each run (default grouping, grouping-owd, grouping-truth)")
     ap.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE", help="engine config overrides")
     ap.add_argument("--backdate-max", type=float, default=1.0, help="max look-back for the backlog onset (s)")

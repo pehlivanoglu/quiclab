@@ -1,21 +1,22 @@
 # Grouping depth test (grouping campaign K6): a three-level tree of
 # bottlenecks. root link rr -> r0 carries every shared client; r0 -> r1 (X)
 # carries leaves A and B, r0 -> r2 (Y) leaves C and D; each leaf link
-# r1 -> switch-a ... r2 -> switch-d carries two clients. sub-ctrl hangs off rr
+# r1 -> switch-a ... r2 -> switch-d carries two clients (2.5 and 5 Mb/s; before
+# 2026-11-10: 1 and 2.5, where the 1 Mb/s client never queued under fq_codel). sub-ctrl hangs off rr
 # (never congested). Capacity drops only (no cross traffic), so no traffic
 # endpoints. Used with grp-burst-tree8.yaml (scripts/grouping_campaign.py).
 publishers:
   pub: { cc_algo: bbr }
 
 subscribers:
-  a1: { connects_to: pub, rate_kbps: 1000 }
-  a2: { connects_to: pub, rate_kbps: 2500, phase_ms: 100 }
-  b1: { connects_to: pub, rate_kbps: 1000, phase_ms: 200 }
-  b2: { connects_to: pub, rate_kbps: 2500, phase_ms: 300 }
-  c1: { connects_to: pub, rate_kbps: 1000, phase_ms: 400 }
-  c2: { connects_to: pub, rate_kbps: 2500, phase_ms: 500 }
-  d1: { connects_to: pub, rate_kbps: 1000, phase_ms: 600 }
-  d2: { connects_to: pub, rate_kbps: 2500, phase_ms: 700 }
+  a1: { connects_to: pub, rate_kbps: 2500 }
+  a2: { connects_to: pub, rate_kbps: 5000, phase_ms: 100 }
+  b1: { connects_to: pub, rate_kbps: 2500, phase_ms: 200 }
+  b2: { connects_to: pub, rate_kbps: 5000, phase_ms: 300 }
+  c1: { connects_to: pub, rate_kbps: 2500, phase_ms: 400 }
+  c2: { connects_to: pub, rate_kbps: 5000, phase_ms: 500 }
+  d1: { connects_to: pub, rate_kbps: 2500, phase_ms: 600 }
+  d2: { connects_to: pub, rate_kbps: 5000, phase_ms: 700 }
   sub-ctrl: { connects_to: pub, rate_kbps: 2500, phase_ms: 800 }
 
 routers:

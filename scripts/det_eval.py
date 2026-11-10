@@ -295,9 +295,16 @@ def utilization(run: Run, demand: dict[str, float], caps, cross, paths, t: float
 
 
 def active(run: Run, sid: str, t: float) -> bool:
-    joins = {e["subscriber"]: e["at_s"] for e in run.scenario.get("events", []) if e["type"] == "join"}
-    leaves = {e["subscriber"]: e["at_s"] for e in run.scenario.get("events", []) if e["type"] == "leave"}
-    return joins.get(sid, 0) <= t < leaves.get(sid, math.inf)
+    """The client is connected at t: on from 0 unless its first event is a join,
+    then off/on at every leave/join (sessions may repeat)."""
+    times = sorted((e["at_s"], e["type"]) for e in run.scenario.get("events", [])
+                   if e["type"] in ("join", "leave") and e["subscriber"] == sid)
+    on = not times or times[0][1] == "leave"
+    for at, kind in times:
+        if at > t:
+            break
+        on = kind == "join"
+    return on
 
 
 def build_truth(run: Run) -> tuple[list[dict], dict[str, list[tuple[float, str]]]]:

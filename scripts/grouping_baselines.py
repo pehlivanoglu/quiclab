@@ -170,7 +170,7 @@ def score_ecg(gdir: Path, truth: dict, pairs: list[str]) -> dict | None:
 
 
 def process(run_dir: Path, a) -> dict:
-    run = d.Run(run_dir)
+    run = ga.load_run(run_dir)
     truth = ga.truth_of(run)
     pairs = sorted(truth["pairs_leaf"])
     t_unit = t_unit_of(run)

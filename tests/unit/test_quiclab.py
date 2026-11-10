@@ -169,7 +169,10 @@ def test_router_metrics_follow_receiver_side_egresses() -> None:
         (lambda d: d["events"].append({"at_s": 5, "type": "bursts", "id": "b", "route": "nope",
                                         "bursts": [{"start_s": 0, "duration_s": 1, "rate_mbps": 2}]}),
          "unknown traffic route"),
-        (lambda d: d["events"].append({"at_s": 5, "type": "leave", "subscriber": "sub-d"}), "leaves before it joins"),
+        (lambda d: d["events"].extend([{"at_s": 5, "type": "leave", "subscriber": "sub-d"},
+                                       {"at_s": 8, "type": "leave", "subscriber": "sub-d"}]), "leaves before it joins"),
+        (lambda d: d["events"].append({"at_s": 20, "type": "join", "subscriber": "sub-d"}), "joins twice"),
+        (lambda d: d["events"].append({"at_s": 10, "type": "leave", "subscriber": "sub-d"}), "two membership events"),
         (lambda d: d["events"].append({"at_s": 5, "type": "join", "subscriber": "ghost"}), "not a topology subscriber"),
     ],
 )
@@ -199,6 +202,20 @@ def test_scenario_initial_conditions_merge_defaults() -> None:
     # Unlisted links get the defaults; listed links lay their fields over them.
     assert scenario.initial_link("switch", "traffic-rx")[0].bandwidth_mbps == 100
     assert scenario.join_at("sub-d") == 10 and scenario.join_at("sub-a") == 0
+
+
+def test_subscriber_sessions_alternate_and_get_session_ids() -> None:
+    raw = _scenario_raw("shared-cross.yaml")
+    raw["events"] += [{"at_s": 30, "type": "leave", "subscriber": "sub-d"},
+                      {"at_s": 50, "type": "join", "subscriber": "sub-d"},
+                      {"at_s": 40, "type": "leave", "subscriber": "sub-a"},
+                      {"at_s": 60, "type": "join", "subscriber": "sub-a"},
+                      {"at_s": 70, "type": "leave", "subscriber": "sub-a"}]
+    scenario = Scenario.model_validate(raw).check_against(_shared())
+    assert scenario.sessions("sub-d") == [(10, 30), (50, None)]
+    assert scenario.sessions("sub-a") == [(0.0, 40), (60, 70)]
+    assert scenario.sessions("sub-b") == [(0.0, None)]
+    assert Scenario.session_id("sub-a", 1) == "sub-a" and Scenario.session_id("sub-a", 2) == "sub-a@2"
 
 
 def test_iperf_client_argv() -> None:

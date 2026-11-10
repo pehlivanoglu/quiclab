@@ -185,7 +185,7 @@ DCW is faster on this run because it groups instantaneously from the OWD
 oracle, at the price of grouping 30 % of pairs in calm windows and of having
 no hierarchy at all.
 
-## Campaigns K1–K6 (`scripts/grouping_campaign.py`)
+## Campaigns K1–K6 as run on 2026-11-06 (`scripts/grouping_campaign.py`; v2 changes below)
 
 Shadow frozen, BBR only, rep = seed (same sequence on every AQM), calm u ≈ 0.65,
 capacity drops unless noted, gaps U(10, 15) s. One command runs them back to
@@ -361,8 +361,58 @@ aligned to the visibility rule (never *reported* SAME; the peak accumulation
 `drift` is reported too) and S6's `no_false_leaf` counting confirmed leaves.
 
 All of the above was fixed while looking at the same 87 runs it was scored on;
-the K1–K6 tables are therefore the development set, not evidence. The unseen
-campaign (TODO) is the test.
+the K1–K6 tables are therefore the development set, not evidence. Campaign v2
+below is the test.
+
+## Campaign v2 (specified 2026-11-10, before any run): development set re-run + held-out N1–N5
+
+Specification, open-point decisions, implementation notes and the frozen pass
+criteria: [`campaign-v2-spec.md`](campaign-v2-spec.md). Nothing in `engine.py`
+or in the truth changes after this point in response to N1–N5 results; a
+failure is reported with the L plot and the rule believed responsible.
+
+```bash
+.venv/bin/python scripts/trace_prepare.py --download /path/raw     # once: Mahimahi + Norway traces -> configs/traces
+.venv/bin/python scripts/grouping_campaign.py --plan               # 145 runs, 20.7 h of emulation
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --ks N2 --only pfifo-r1   # smoke: 17 clients
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --ks N4 --only pfifo-r1   # smoke: tc keeps up?
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --skip-existing           # the rest (tmux)
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --compare .runs/ip8/2026-11-06_1526_grp
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --score-held-out   # after the freeze only
+```
+
+Order of events (review, 2026-11-10): the engine is not frozen yet (episode
+end as an event, in-episode metrics still open), so the runs happen now, the
+development set is scored as it comes, and **N1–N5 are not scored until the
+rules are frozen and tagged**: until then they get `infra.md` only (finished,
+clients / sessions, event errors, link event lag, windows the oracle confirmed,
+clients never hit, control client). Onset sources on every run: shadow (RTT,
+comparison), **shadow-owd (primary; the criteria are evaluated on it)**, owd,
+truth. N5 has no SBD baseline columns (the baselines need one common span of
+long-lived flows).
+
+| campaign | topology | stimulus | AQMs × reps | criterion (shadow-owd source; RTT shadow as comparison) |
+|---|---|---|---|---|
+| K1 hier | split | 7 target kinds (a+b@1 dropped) × 6 cells | pfifo, red, pie, fq_codel, mixab × 3 | report; flag cells worse than 2026-11-06 |
+| K2 part | detector | unchanged | pfifo, fq_codel × 3 | report |
+| K3 rev | detector / rev | unchanged | pfifo, fq_codel × 3 | report |
+| K5 mixed | access | 12 shared + 16 private; sub-d joins at 60 s; nobody leaves | 4 × 3 | report |
+| K6 depth | tree8, leaves 2.5 / 5 Mb/s (11.9 / 23.8 / 47.5 Mb/s) | unchanged kinds | pfifo, fq_codel × 5 | report |
+| N1 indep | split | independent processes on up, a, b (exp gaps, mean 30 s, min 5 s), 600 s | pfifo, pie, fq_codel × 5 | pfifo/pie: 0 confirmed cross-branch pairs, both leaves correct, P, R ≥ 0.95; fq_codel: count reported |
+| N2 uneven | uneven (2 + 5 + 9 clients; `uneven6` = 2 + 5 + 6) | independent processes on A, B, C, 600 s | pfifo, pie, fq_codel × 5 | pfifo/pie: three groups correct, P, R ≥ 0.95, cov ≥ 0.7, sub-ctrl ungrouped; events-to-membership reported |
+| N3 cross | split | UDP constant rate (u × capacity) or 2 / 4 Cubic flows for 4 / 8 s, independent timing, 600 s | pfifo, fq_codel × 5 | pfifo: tree = the two branches; case matrix per stimulus type |
+| N4 trace | access | shared drops U(10, 15) s + every access link replays a scaled cellular trace (200 ms steps), 600 s | pfifo, fq_codel × 5 | shared P, R ≥ 0.9; ≥ 90 % of private windows solo; sub-ctrl ungrouped |
+| N5 churn | large (8 clients) | on exp(90, min 20) / off exp(30, min 5) per client, sessions `<sub>@n`; drops sized to the on-demand, 900 s | pfifo, fq_codel × 5 | sub-ctrl ungrouped; no session a confirmed member while off; share of ≥ 3-event sessions that became members reported |
+| all fq_codel cells | | | | no threshold; leaf and link truths side by side |
+
+New per-run outputs: `windows.json` with `stimulus_type` and `concurrent`,
+`plan.json` (seed, variant, git describe, N4 trace scaling), and in
+`metrics.json` the per-flow L series, `membership_events`, `tree_correct`,
+`ctrl_grouped`, link P / R, `private_windows`, sessions and `off_membership`.
+The report opens with the PASS / FAIL lines of the criteria above. Sessions
+(N5) are the one testbed change: a subscriber may join and leave repeatedly,
+each later session runs as client `<sub>@<n>` with its own files, and the
+adapter treats every session as a flow (`SessionRun`).
 
 ## Two questions from the review, answered on the data
 

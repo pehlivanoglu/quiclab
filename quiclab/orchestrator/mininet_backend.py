@@ -28,6 +28,7 @@ import shutil
 import subprocess
 import threading
 import time
+from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -222,7 +223,9 @@ class MininetBackend:
             processes.extend(_start_iperf_servers(net, topology, scenario, record, info))
             processes.extend(_start_ppbp(net, topology, scenario, record, start_unix_ns // 1000, info))
             initial = [sid for sid in topology.subscribers if scenario.join_at(sid) == 0]
+            launches: Counter = Counter()
             for sid in initial:
+                launches[sid] += 1
                 clients[sid] = _launch_subscriber(net, topology, sid, record, info)
             _await_connected(topology, initial, record)
             time.sleep(max(0.0, record.epoch_mono_s - time.monotonic()))
@@ -239,7 +242,7 @@ class MininetBackend:
                 "ppbp": lambda e: (e.id, f"mean_mbps={e.mean_mbps:g} burst_mbps={e.burst_mbps:g} "
                                          f"mean_burst_s={e.mean_burst_s:g} hurst={e.hurst:g} seed={e.seed}"),
                 "bursts": lambda e: (e.id, f"bursts={len(e.bursts)}"),
-                "join": lambda e: _join(net, topology, e.subscriber, record, clients, info),
+                "join": lambda e: _join(net, topology, e.subscriber, record, clients, launches, info),
                 "leave": lambda e: _leave(e.subscriber, clients),
             })
             runner.start()
@@ -431,14 +434,19 @@ def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_u
     return started
 
 
-def _launch_subscriber(net, topology: TopologyConfig, sid: str, record: RunRecord, info) -> subprocess.Popen:
+def _launch_subscriber(net, topology: TopologyConfig, sid: str, record: RunRecord, info,
+                       client_id: str | None = None) -> subprocess.Popen:
+    """Start the subscriber's client on its node. client_id (default sid) is the
+    id it sends the publisher and the prefix of both ends' files: a re-join
+    after a leave runs as `<sid>@<n>` so the first session's files survive."""
+    client_id = client_id or sid
     subscriber = topology.subscribers[sid]
     publisher = topology.publishers[subscriber.connects_to]
     argv = [
         str(_QVIDEO_CLIENT),
         f"--host={subscriber.connects_to}",
         f"--port={publisher.listen_port}",
-        f"--id={sid}",
+        f"--id={client_id}",
         f"--rate_kbps={subscriber.rate_kbps}",
         f"--phase_ms={subscriber.phase_ms}",
         f"--fps={publisher.fps}",
@@ -447,8 +455,8 @@ def _launch_subscriber(net, topology: TopologyConfig, sid: str, record: RunRecor
         f"--out_dir={record.run_dir / 'clients'}",
         "--logtostderr",
     ]
-    info(f"*** {sid}: {shlex.join(argv)}\n")
-    return _popen(net, sid, argv, record.run_dir / "logs" / f"{sid}.log")
+    info(f"*** {client_id}: {shlex.join(argv)}\n")
+    return _popen(net, sid, argv, record.run_dir / "logs" / f"{client_id}.log")
 
 
 def _await_connected(topology: TopologyConfig, subscribers: list[str], record: RunRecord) -> None:
@@ -473,11 +481,13 @@ def _await_connected(topology: TopologyConfig, subscribers: list[str], record: R
 _spawn_lock = threading.Lock()
 
 
-def _join(net, topology, sid: str, record: RunRecord, clients: dict, info) -> tuple[str, str]:
+def _join(net, topology, sid: str, record: RunRecord, clients: dict, launches: Counter, info) -> tuple[str, str]:
     # Mininet node shells are not thread-safe; popen spawns mnexec directly.
     with _spawn_lock:
-        clients[sid] = _launch_subscriber(net, topology, sid, record, info)
-    return sid, f"pid={clients[sid].pid}"
+        launches[sid] += 1
+        client_id = Scenario.session_id(sid, launches[sid])
+        clients[sid] = _launch_subscriber(net, topology, sid, record, info, client_id)
+    return sid, f"id={client_id} pid={clients[sid].pid}"
 
 
 def _leave(sid: str, clients: dict) -> tuple[str, str]:

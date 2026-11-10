@@ -1,0 +1,43 @@
+# Event benchmark base for detector-uneven6.yaml (reduced branch C): calm bottlenecks at u ~0.65.
+# Video demand (wire x1.03): A 13.4 Mb/s -> 20.6 Mb/s, B 19.6 -> 30.1,
+# C 24.7 -> 38.0; r1 -> r2 200 Mb/s (never a bottleneck). Client RTTs
+# 20-100 ms (distinct access delays). Queues ~57 ms at each egress capacity
+# (A 98, B 143, C 180 packets); r1 1000 packets. scripts/grouping_campaign.py
+# adds the events and sets duration_s.
+duration_s: 300
+
+link_defaults:
+  forward: { bandwidth_mbps: 1000 }
+  reverse: { bandwidth_mbps: 1000 }
+
+links:
+  - { from: pub, to: r1, forward: { bandwidth_mbps: 1000, delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: r1, to: r2, forward: { bandwidth_mbps: 200 } }
+  - { from: r2, to: switch-a, forward: { bandwidth_mbps: 20.6 } }
+  - { from: r2, to: switch-b, forward: { bandwidth_mbps: 30.1 } }
+  - { from: r2, to: switch-c, forward: { bandwidth_mbps: 38.0 } }
+  - { from: switch-a, to: a1, forward: { delay_ms: 5 }, reverse: { delay_ms: 5 } }
+  - { from: switch-a, to: a2, forward: { delay_ms: 25 }, reverse: { delay_ms: 25 } }
+  - { from: switch-b, to: b1, forward: { delay_ms: 10 }, reverse: { delay_ms: 10 } }
+  - { from: switch-b, to: b2, forward: { delay_ms: 20 }, reverse: { delay_ms: 20 } }
+  - { from: switch-b, to: b3, forward: { delay_ms: 30 }, reverse: { delay_ms: 30 } }
+  - { from: switch-b, to: b4, forward: { delay_ms: 40 }, reverse: { delay_ms: 40 } }
+  - { from: switch-b, to: b5, forward: { delay_ms: 45 }, reverse: { delay_ms: 45 } }
+  - { from: switch-c, to: c1, forward: { delay_ms: 7.5 }, reverse: { delay_ms: 7.5 } }
+  - { from: switch-c, to: c2, forward: { delay_ms: 12.5 }, reverse: { delay_ms: 12.5 } }
+  - { from: switch-c, to: c3, forward: { delay_ms: 15 }, reverse: { delay_ms: 15 } }
+  - { from: switch-c, to: c4, forward: { delay_ms: 17.5 }, reverse: { delay_ms: 17.5 } }
+  - { from: switch-c, to: c5, forward: { delay_ms: 22.5 }, reverse: { delay_ms: 22.5 } }
+  - { from: switch-c, to: c6, forward: { delay_ms: 27.5 }, reverse: { delay_ms: 27.5 } }
+  - { from: r1, to: sub-ctrl, forward: { bandwidth_mbps: 50, delay_ms: 20 }, reverse: { delay_ms: 20 } }
+
+routers:
+  r1: { aqm: pfifo, queue_limit_packets: 1000 }
+  r2:
+    aqm: pfifo
+    queue_limit_packets: 143
+    egress:
+      switch-a: { aqm: pfifo, queue_limit_packets: 98 }
+      switch-c: { aqm: pfifo, queue_limit_packets: 180 }
+
+events: []

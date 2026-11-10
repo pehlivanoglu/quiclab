@@ -1,0 +1,142 @@
+{
+ "ATT-LTE-driving": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/ATT-LTE-driving.down",
+  "duration_s": 786.2,
+  "step_s": 0.2,
+  "mean_mbps": 5.173,
+  "zero_fraction": 0.0389
+ },
+ "ATT-LTE-driving-2016": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/ATT-LTE-driving-2016.down",
+  "duration_s": 120.2,
+  "step_s": 0.2,
+  "mean_mbps": 4.553,
+  "zero_fraction": 0.0449
+ },
+ "TMobile-LTE-driving": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/TMobile-LTE-driving.down",
+  "duration_s": 474.8,
+  "step_s": 0.2,
+  "mean_mbps": 12.765,
+  "zero_fraction": 0.0366
+ },
+ "TMobile-LTE-short": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/TMobile-LTE-short.down",
+  "duration_s": 140.0,
+  "step_s": 0.2,
+  "mean_mbps": 16.701,
+  "zero_fraction": 0.0243
+ },
+ "TMobile-UMTS-driving": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/TMobile-UMTS-driving.down",
+  "duration_s": 928.6,
+  "step_s": 0.2,
+  "mean_mbps": 2.019,
+  "zero_fraction": 0.0958
+ },
+ "Verizon-EVDO-driving": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/Verizon-EVDO-driving.down",
+  "duration_s": 1062.2,
+  "step_s": 0.2,
+  "mean_mbps": 0.52,
+  "zero_fraction": 0.1574
+ },
+ "Verizon-LTE-driving": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/Verizon-LTE-driving.down",
+  "duration_s": 1363.2,
+  "step_s": 0.2,
+  "mean_mbps": 9.716,
+  "zero_fraction": 0.0373
+ },
+ "Verizon-LTE-short": {
+  "source": "https://raw.githubusercontent.com/ravinet/mahimahi/master/traces/Verizon-LTE-short.down",
+  "duration_s": 140.2,
+  "step_s": 0.2,
+  "mean_mbps": 5.02,
+  "zero_fraction": 0.0086
+ },
+ "norway-bus.ljansbakken-oslo-2010-09-28_1407CEST": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/bus.ljansbakken-oslo/report.2010-09-28_1407CEST.log",
+  "duration_s": 495.6,
+  "step_s": 0.2,
+  "mean_mbps": 2.581,
+  "zero_fraction": 0.0
+ },
+ "norway-bus.ljansbakken-oslo-2010-09-29_0852CEST": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/bus.ljansbakken-oslo/report.2010-09-29_0852CEST.log",
+  "duration_s": 1365.2,
+  "step_s": 0.2,
+  "mean_mbps": 2.54,
+  "zero_fraction": 0.0
+ },
+ "norway-metro.kalbakken-jernbanetorget-2010-09-13_1003CEST": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/metro.kalbakken-jernbanetorget/report.2010-09-13_1003CEST.log",
+  "duration_s": 195.6,
+  "step_s": 0.2,
+  "mean_mbps": 1.447,
+  "zero_fraction": 0.0
+ },
+ "norway-metro.kalbakken-jernbanetorget-2010-09-13_1046CEST": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/metro.kalbakken-jernbanetorget/report.2010-09-13_1046CEST.log",
+  "duration_s": 816.2,
+  "step_s": 0.2,
+  "mean_mbps": 0.571,
+  "zero_fraction": 0.0
+ },
+ "norway-tram.ljabru-jernbanetorget-2010-11-23_1541CET": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/tram.ljabru-jernbanetorget/report.2010-11-23_1541CET.log",
+  "duration_s": 1428.4,
+  "step_s": 0.2,
+  "mean_mbps": 0.751,
+  "zero_fraction": 0.0
+ },
+ "norway-tram.ljabru-jernbanetorget-2010-12-09_1244CET": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/tram.ljabru-jernbanetorget/report.2010-12-09_1244CET.log",
+  "duration_s": 1388.4,
+  "step_s": 0.2,
+  "mean_mbps": 0.921,
+  "zero_fraction": 0.0
+ },
+ "norway-ferry.nesoddtangen-oslo-2010-09-20_1542CEST": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/ferry.nesoddtangen-oslo/report.2010-09-20_1542CEST.log",
+  "duration_s": 1162.6,
+  "step_s": 0.2,
+  "mean_mbps": 1.421,
+  "zero_fraction": 0.0
+ },
+ "norway-ferry.nesoddtangen-oslo-2010-09-21_1001CEST": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/ferry.nesoddtangen-oslo/report.2010-09-21_1001CEST.log",
+  "duration_s": 1203.4,
+  "step_s": 0.2,
+  "mean_mbps": 1.171,
+  "zero_fraction": 0.0
+ },
+ "norway-car.snaroya-smestad-2011-02-14_2032CET": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/car.snaroya-smestad/report.2011-02-14_2032CET.log",
+  "duration_s": 437.2,
+  "step_s": 0.2,
+  "mean_mbps": 1.647,
+  "zero_fraction": 0.054
+ },
+ "norway-car.snaroya-smestad-2011-02-14_2051CET": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/car.snaroya-smestad/report.2011-02-14_2051CET.log",
+  "duration_s": 424.8,
+  "step_s": 0.2,
+  "mean_mbps": 1.716,
+  "zero_fraction": 0.0
+ },
+ "norway-train.oslo-vestby-2011-02-11_1618CET": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/train.oslo-vestby/report.2011-02-11_1618CET.log",
+  "duration_s": 2200.8,
+  "step_s": 0.2,
+  "mean_mbps": 0.887,
+  "zero_fraction": 0.0
+ },
+ "norway-train.oslo-vestby-2011-02-14_0644CET": {
+  "source": "https://skulddata.cs.umass.edu/traces/mmsys/2013/pathbandwidth/train.oslo-vestby/report.2011-02-14_0644CET.log",
+  "duration_s": 2709.2,
+  "step_s": 0.2,
+  "mean_mbps": 1.29,
+  "zero_fraction": 0.0
+ }
+}
