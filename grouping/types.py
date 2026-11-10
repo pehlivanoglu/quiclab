@@ -78,6 +78,7 @@ class Node:
 class FlowState:
     node: int | None = None
     L: float = 0.0
+    member: bool = False              # reported membership (hysteresis when cfg.member_hysteresis)
     cand: dict[int, float] = field(default_factory=dict)
     lag: dict[int, tuple[float, float, int]] = field(default_factory=dict)  # node -> (mu, sigma, count)
     solo: float = 0.0

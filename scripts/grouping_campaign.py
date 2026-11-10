@@ -199,7 +199,7 @@ def plan_revbursts(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
 def plan_mixed(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
     rng = random.Random(seed)
     clients = sorted(n["clients"])
-    cells = [(u, d, n["default"]) for u in U_CAP for d in D_CAP]
+    cells = [(u, d, n["default"]) for u in U_CAP for d in D_CAP] * 2   # 12 shared windows (6 were too few to judge)
     cells += [(u, d, c) for u in U_CAP for d in (2, 4) for c in clients]
     rng.shuffle(cells)
     # The joining client has no access events before it joins, the leaving one
@@ -362,11 +362,16 @@ def run_campaign(k: str, kdir: Path, reps: int, skip_existing: bool, dry: bool) 
 
 # ---------------------------------------------------------------- reporting
 
-def score_run(run_dir: Path, cfg: Config) -> dict:
+def ecg_dir(src: str, tag: str = "") -> str:
+    """<run>/grouping[-<tag>][-<src>]: the adapter's output dir for one onset source."""
+    return "grouping" + (f"-{tag}" if tag else "") + ("" if src == "shadow" else f"-{src}")
+
+
+def score_run(run_dir: Path, cfg: Config, tag: str = "") -> dict:
     out = {"run": run_dir.name, "ecg": {}}
     for src in ONSET_SOURCES:
-        a = Namespace(out=None, onsets=src, backdate_max=1.0, backdate_qd_ms=10.0, warmup=det_eval.WARMUP_S,
-                      spread_only=False)
+        a = Namespace(out=ecg_dir(src, tag), onsets=src, backdate_max=1.0, backdate_qd_ms=10.0,
+                      warmup=det_eval.WARMUP_S, spread_only=False)
         try:
             out["ecg"][src] = ga.process(run_dir, cfg, a)
         except SystemExit as e:  # shadow onsets without the replay binary: the other sources still count
@@ -376,18 +381,18 @@ def score_run(run_dir: Path, cfg: Config) -> dict:
             traceback.print_exc()
     try:
         out["baselines"] = gb.process(run_dir, Namespace(methods=gb.METHODS, owd="oracle", dcw_th=0.8,
-                                                         ecg=[f"grouping{'' if s == 'shadow' else '-' + s}"
-                                                              for s in ONSET_SOURCES]))
+                                                         ecg=[ecg_dir(s, tag) for s in ONSET_SOURCES],
+                                                         out_name=f"baselines{'-' + tag if tag else ''}.json"))
     except Exception as e:
         out["baselines"] = {"error": repr(e)}
         traceback.print_exc()
     return out
 
 
-def case_matrix(run_dir: Path, src: str) -> Counter:
+def case_matrix(run_dir: Path, src: str, tag: str = "") -> Counter:
     """(cell, case) counts: every ECG event mapped to the stimulus window whose
     start is nearest (within 3 s); events without one count under 'none'."""
-    m_path = run_dir / ("grouping" if src == "shadow" else f"grouping-{src}") / "metrics.json"
+    m_path = run_dir / ecg_dir(src, tag) / "metrics.json"
     w_path = run_dir / "grouping" / "windows.json"
     if not m_path.exists() or not w_path.exists():
         return Counter()
@@ -409,17 +414,20 @@ def med(vals: list) -> float | None:
     return statistics.median(vals) if vals else None
 
 
-def report(k: str, kdir: Path, cfg: Config) -> None:
+def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str = "") -> None:
+    sfx = f"-{tag}" if tag else ""
     runs = sorted(p for p in kdir.glob("grp-*") if run_finished(p))
-    results = [score_run(r, cfg) for r in runs]
-    (kdir / "results.json").write_text(json.dumps(results, indent=1, default=str))
-    lines = [f"# Grouping campaign {k}", "", f"{len(runs)} runs, engine overrides {ENGINE_SET}, "
+    results = [score_run(r, cfg, tag) for r in runs]
+    (kdir / f"results{sfx}.json").write_text(json.dumps(results, indent=1, default=str))
+    lines = [f"# Grouping campaign {k}" + (f" ({tag})" if tag else ""), "",
+             f"{len(runs)} runs, engine overrides {over if over is not None else ENGINE_SET}, "
              f"onset sources {', '.join(ONSET_SOURCES)}, truth = stimulus windows x OWD oracle x plan "
              f"(pairs_leaf). Generated {datetime.datetime.now():%Y-%m-%d %H:%M}.", ""]
     # 1. per type x AQM: medians over reps
-    lines += ["## Final grouping per type x AQM (median over reps; leaf precision / recall, t_correct s)", "",
-              "| type | aqm | n | ECG shadow | ECG owd | ECG truth | DCW | rmcatSBD | dcSBD | spread p50/p90 ms (shadow) |",
-              "|---|---|---|---|---|---|---|---|---|---|"]
+    lines += ["## Final grouping per type x AQM (median over reps; leaf precision / recall, t_correct s; "
+              "cov = share of pairs decided, shadow / owd / truth)", "",
+              "| type | aqm | n | ECG shadow | ECG owd | ECG truth | cov | DCW | rmcatSBD | dcSBD | spread p50/p90 ms (shadow) |",
+              "|---|---|---|---|---|---|---|---|---|---|---|"]
     by_cell = defaultdict(list)
     for r in results:
         parts = r["run"].split("-")
@@ -436,15 +444,17 @@ def report(k: str, kdir: Path, cfg: Config) -> None:
         sp = [r["ecg"].get("shadow", {}).get("spread_onset_ms") for r in rs]
         sp = [s for s in sp if s]
         spread = f"{med([s['p50'] for s in sp]):.0f} / {med([s['p90'] for s in sp]):.0f}" if sp else "-"
-        lines.append(f"| {rtype} | {aqm} | {len(rs)} | " + " | ".join(
-            cell_str(rs, n) for n in ("ecg:grouping", "ecg:grouping-owd", "ecg:grouping-truth", "dcw", "rmcat_sbd",
-                                      "dc_sbd")) + f" | {spread} |")
+        ecg_names = [f"ecg:{ecg_dir(s, tag)}" for s in ONSET_SOURCES]
+        cov = " / ".join(fmt(med([r["ecg"].get(s, {}).get("coverage") for r in rs])) for s in ONSET_SOURCES)
+        lines.append(f"| {rtype} | {aqm} | {len(rs)} | " + " | ".join(cell_str(rs, n) for n in ecg_names)
+                     + f" | {cov} | " + " | ".join(cell_str(rs, n) for n in ("dcw", "rmcat_sbd", "dc_sbd"))
+                     + f" | {spread} |")
     # 2. case matrix per type and source
     for src in ONSET_SOURCES:
         lines += ["", f"## ECG event cases per stimulus cell ({src} onsets, summed over AQMs and reps)", ""]
         per_type = defaultdict(Counter)
         for r in runs:
-            per_type[r.name.split("-")[1]] += case_matrix(r, src)
+            per_type[r.name.split("-")[1]] += case_matrix(r, src, tag)
         cases = sorted({c for cm in per_type.values() for _, c in cm})
         lines += ["| type | cell | " + " | ".join(cases) + " |", "|---|---|" + "---|" * len(cases)]
         for rtype, cm in sorted(per_type.items()):
@@ -463,8 +473,8 @@ def report(k: str, kdir: Path, cfg: Config) -> None:
             lines.append(f"| {r['run']} | {src} | {s.get('cases')} | {fmt(s.get('precision'))} / {fmt(s.get('recall'))} "
                          f"| {fmt(s.get('coverage'))} | {s.get('leaves')} | "
                          f"{f'{sp['p50']:.0f} / {sp['p90']:.0f}' if sp else '-'} |")
-    (kdir / "report.md").write_text("\n".join(lines) + "\n")
-    print(f"report: {kdir / 'report.md'}", flush=True)
+    (kdir / f"report{sfx}.md").write_text("\n".join(lines) + "\n")
+    print(f"report: {kdir / f'report{sfx}.md'}", flush=True)
 
 
 # ---------------------------------------------------------------- main
@@ -479,8 +489,15 @@ def main(argv: list[str]) -> None:
     ap.add_argument("--skip-existing", action="store_true")
     ap.add_argument("--report-only", action="store_true")
     ap.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE", help="engine overrides for the reports")
+    ap.add_argument("--v12", action="store_true", help="(default since 2026-11-10) apply Config.V12 on top of --set")
+    ap.add_argument("--v11", action="store_true", help="apply Config.V11 (brief v1.1 rules) for reproduction")
+    ap.add_argument("--tag", default="", help="suffix for the output dirs and report (grouping-<tag>, report-<tag>.md)")
     a = ap.parse_args(argv)
     over = dict(ENGINE_SET)
+    if a.v12:
+        over.update(Config.V12)
+    if a.v11:
+        over.update(Config.V11)
     for it in a.set:
         key, v = it.split("=", 1)
         over[key] = json.loads(v)
@@ -499,14 +516,14 @@ def main(argv: list[str]) -> None:
     for k in ks:
         kdir = campaign / k
         if a.report_only:
-            report(k, kdir, cfg)
+            report(k, kdir, cfg, over, a.tag)
             continue
         secs = run_campaign(k, kdir, a.reps, a.skip_existing, dry=a.plan)
         budget += secs
         n = len(cells_of(k, a.reps))
         print(f"{k}: {n} runs, {secs / 3600:.1f} h of emulation (+ ~1 min setup each)", flush=True)
         if not a.plan:
-            report(k, kdir, cfg)
+            report(k, kdir, cfg, over, a.tag)
     if a.plan:
         print(f"total: {budget / 3600:.1f} h of emulation")
 

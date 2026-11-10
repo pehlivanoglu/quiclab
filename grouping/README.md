@@ -29,6 +29,11 @@ Grouping-only tooling: these scripts read `<run>/detector`, `<run>/publishers`
 and `<run>/baselines` and write only under `<run>/grouping*/`. The shadow
 detector is frozen (det_eval `TUNED`); nothing here changes it.
 
+**Rule set: v1.2 is the default since 2026-11-10** (`Config` defaults =
+`Config.V12`; `Config.V11` / `--v11` reproduce the brief v1.1 tables). The
+rules are frozen at this state; the next campaign is scored without touching
+them (see "Frozen definitions" below).
+
 ## Running
 
 ```bash
@@ -226,6 +231,174 @@ own tables). The replay's shared-group context is the client's leaf queue
 (det_eval.leaf_queues), on every topology; on one-bottleneck topologies that
 equals the old "first router egress". Without the replay binary the campaign
 continues on the owd and truth sources: score the runs later, then --report-only.
+
+## Campaign results (v1.1, `.runs/ip8/2026-11-06_1526_grp`, 85 runs) and the v1.2 rules
+
+Scored with θ = 0.6 and the corrected leaf truth (`leaf_groups`: intersection of
+the *expected* sets of the shared windows a client was hit in; private windows
+and partial fq_codel hits no longer shrink a client's group to itself). Reports:
+`<campaign>/<K>/report.md` (v1.1) and `report-v12.md` (v1.2 re-score of the
+same runs). Headline rows (median leaf P / R, t_correct s, shadow onsets):
+
+| K | cell | v1.1 | what it showed |
+|---|---|---|---|
+| K1 | pfifo / pie / red (8 runs) | 1.0 / 1.0, 130–143 s | two leaves + GLOBAL on `up` and `a+up`; `a+b` simultaneous → GLOBAL (harmless: root support only); `a+b@0.5…2` separated (δ_max / hold) |
+| K1 | fq_codel, mixa, mixab | 1.0 / 1.0 on few pairs, coverage 0.14–0.29 | 1 Mb/s clients never congest; **r2: confirmed cross-branch pair {a2,b2}** (L 8.7 / 9.1) |
+| K2 | pfifo, all u | 1.0 / 1.0, 39–66 s | FIFO hits every client even at u 1.05 (oracle hit share 1.0) |
+| K2 | fq_codel u ≤ 1.15 | no leaf | onsets spread 0.5–8 s, 1–3 of 4 clients queue: no shared *event* exists (OWD source agrees) |
+| K3 | revasym, revjit10 | 1.0 / 1.0 | reverse asymmetry / 10 ms jitter: spread ×2 / ×5, grouping intact |
+| K3 | revcross (pfifo) | false 4-client leaf in 3/3 (shadow); none with OWD onsets | detector confound (RTT), not grouping |
+| K5 | pfifo / pie / red | 1.0 / 1.0, cov 0.1–0.3 | 203 of 204 private windows → SOLO; only 6 shared windows per run (too few; plan now has 12) |
+| K6 | pfifo | shadow 1.0 / 0.75 (r1: 0.33), truth 1.0 / 1.0, 170–350 s | two-flow leaves break on one miss; A+C simultaneous → case B internal node over A and C |
+
+Three rule defects, confirmed by tracing the evidence logs (not detector effects:
+the OWD and truth sources show them too):
+
+1. **A wrong leaf is never charged.** `{a2,b2}` formed on two co-fires. Every
+   later `a` event `{a2,a3}` had J = 1/3 against it → case D → a new leaf, and
+   b2 received no negative evidence at all (`_case_d` touched no other leaf).
+   Negative evidence was tied to *matching*, not to *membership*.
+2. **Small leaves and shifting sets break the J / cov thresholds.** K5: `{a,b,c}`
+   then `{b,c,d}` → J = 2/4 < 0.6 → case D, so sub-b never reached A before it
+   left at 240 s (not decay: τ = 300 s is correct). K6 pfifo at 472 s: a 4-flow
+   event with two 2-flow leaves present fell to D because one leaf was not
+   "covered"; K6 fq_codel: small leaves dissolved between events and were
+   re-opened from zero.
+3. **No membership hysteresis.** A member at L ≈ A dropped to "uncertain" on a
+   single missed event; in two-flow leaves that cascaded into the false leaves of
+   K6 r1 (`{c1,d1,d2}`, `{a2,c2}`).
+
+**v1.2** (`Config.V12`, flags default off so v1.1 stays reproducible; campaign
+`--v12`, synth `--set …`):
+
+| # | rule | code |
+|---|---|---|
+| 1 | *a member fired without you*: every touched leaf the case did not update applies the minority rule itself (silent observable flows get `w⁻`, or the lone fired member gets 0.5 `w⁻`) | `charge_unmatched`, `Engine._charge_unmatched` |
+| 2 | visibility: pairwise SAME needs both flows reported members **and** a confirmed leaf; provisional leaves are evidence buffers (the S6 `no_false_leaf` criterion counts confirmed leaves only) | `report_confirmed_only`, `replay.Result.pairs` |
+| 3 | membership hysteresis: enter at `L ≥ A`, stay until `L ≤ A/2`, "not a member" at `L ≤ B` | `member_hysteresis`, `FlowState.member` |
+| 4 | case C counts the sub-pattern and credits the fired flows; silent members are not charged | `c_silent_penalty = False` |
+| 5 | reporting: coverage column; P/R over confirmed memberships | campaign report |
+| 6 | dissolve only when a leaf is down to one flow or its support has decayed to ≈ 0 | `dissolve_support = 0.05` |
+| 7 | majority attribution: an event goes to the leaf holding most of its flows (≥ 2); two or more such leaves with disjoint hypotheses → case B / GLOBAL, where every leaf with a fired flow votes; fired flows all inside the leaf and ≤ half of it → case C; no leaf with two of M → case D. `theta_J` / `theta_cov` are unused in v1.2 | `majority_match`, `Engine._match_majority` |
+
+Two deviations from the review, both found by the first v1.2 re-score:
+(a) rule 7 first required the covered leaves to be confirmed; that made every
+cold-start aggregation event case A with the other leaf's flows as candidates
+(overlapping hypotheses, S4 merged in 6/10 seeds), so coverage needs k ≥ 2 only
+and confirmation is the tie-break. (b) "most of M" alone let a leaf swallow
+outsiders: K6 pfifo-r1 went `{a1,a2,b1}` (X, one miss) → `{a1,a2,c1,c2}` (A+C,
+k = 2 → case A, c's become candidates) → `{c1,c2,d2}` (Y) … into one 7-flow leaf
+in which every later event was case C. Outsiders now join only when the whole
+leaf fired with them (v1.1's A-superset condition); two members firing with
+strangers says nothing about the leaf's extent.
+
+**Synthetic table, v1.1 (θ 0.6) → v1.2** (10 seeds, `.runs/ip8/2026-11-10_grouping-synth-v12/`):
+
+| scenario | ideal | realistic | note |
+|---|---|---|---|
+| S1 | 6 → 6 | 6 → 6 | median events-to-leaf 2 in both; the "≤ 3 events for all three flows" criterion fails on seeds with an early miss |
+| S2 | 10 → 10 | 8 → 8 | the two failing seeds are coincidence pairs that reach A once; they no longer confirm but the criterion is "never reaches A" |
+| S3 | 9 → 9 | 9 → 9 | private fraction within ±0.03 |
+| S4 | 7 → **9** | 9 → **10** | aggregation events GLOBAL after both leaves confirm |
+| S5 | 0 → 0 | 0 → 0 | the noisy flow now joins (median 4–6 events) and stays; the f3 migration still fails: after 150 s the engine ends with one 5-flow leaf (f1 and the B flows) — the A leaf loses f2 to noise and f1 follows f3 into B. Open. |
+| S6 | 0 (4) → **7** | 0 → **2** | ideal: G1/G2 are case B, root GLOBAL, 4 leaves + 2 internals. Realistic failures are **merged leaves** such as {f7, f10, f11, f12}: an A4 event fires 3 of its 4 flows, which the majority rule reads as "one miss" (case A, f7 charged `w⁻`) rather than a sub-pattern, and the G2 / R events refill f7 (+2 `w⁺` per cycle vs −1.5). A wrong fourth flow in a three-flow group is indistinguishable from a detector miss at the event level; only the long-run ratio could tell, and v1.2 has no rule for it. |
+
+**Campaign re-score, v1.1 → v1.2** (`report.md` vs `report-v12.md`, same runs; median leaf P / R and t_correct, shadow onsets; cov = share of pairs decided):
+
+| K | cell | v1.1 | v1.2 | cov v1.2 |
+|---|---|---|---|---|
+| K1 (21 runs) | pfifo / pie / red / mixb | 1.0 / 1.0, 130–160 s | same (mixb 160 → 147 s) | 0.71 |
+| K1 | mixa / mixab (fq_codel downstream) | 1.0 / 1.0 on the pairs that decide | same; {a2,a3}, {b2,b3} (+ {a1,a2,a3} on the pfifo branch of mixab) | 0.29 / 0.48 |
+| K1 | fq_codel | r2: confirmed cross pairs {a1,b1}, {a2,b2} | r2 unchanged, r1 now {a2,b2,b3} | 0.29 |
+| K2 | fq_codel | leaf only at u ≥ 1.15 | same (u 1.15: 99 → 77 s) | 0.0–0.1 |
+| K3 | revasym / revjit10 / revcrossmix | 1.0 / 1.0 | same (revjit10 fq_codel 59 → 48 s) | 0.3–0.6 |
+| K3 | revcross pfifo | false leaf (shadow), none (owd) | same: a detector confound, not a rule | – |
+| K5 | pfifo / pie / red | 1.0 / 1.0 | same; pfifo now reaches a sustained correct state (305 s; never in v1.1) | 0.60 |
+| K6 | pfifo | r1 0.33 / 0.33, r2 1.0 / 0.75, r3 1.0 / 1.0 | **3 / 3 runs: four correct two-flow leaves**, 1.0 / 1.0, 187 s (owd) / 331 s (shadow) | 0.78 |
+| K6 | fq_codel | cross-group pairs, cov 0.03–0.08 | still cross-group leaves (`{a1,a2,c2,d1,d2}`), cov 0.03–0.28 | – |
+
+K6 pfifo is the test the rules were written for and it now passes on every
+run and every onset source. K1 fq_codel's cross pairs survive rule 1 for a
+reason worth stating: with the a+b cells (4 of the 8 stimulus cells fire both
+branches at once) and a1 / b1 never queuing under fq_codel, a2 and b2 co-fire in
+~36 of 42 windows and fire apart in 6. Negative evidence (6 × w⁻ ≈ −9) cannot
+beat that much co-occurrence (36 × 2.5), and should not: at the event level these
+two flows *are* a group ("same external cause, different queue"). Only the full
+leaves, present under FIFO-like queues, turn those events into GLOBAL. K6 fq_codel stays wrong for the fq_codel reason
+(the 1 Mb/s flow of each pair rarely queues, so most leaf events are one flow
+and the few two-flow events are cross-group coincidences); with so few decided
+pairs the P/R numbers there are noise either way. Nothing else moved: v1.2
+changes no result where v1.1 was right. K1 is re-scored once its two missing
+runs finish (`--ks K1 --report-only --v12 --tag v12`).
+
+
+
+## Frozen definitions (2026-11-10)
+
+**Rules**: `Config` defaults (v1.2: rules 1–7 above with the two deviations).
+Nothing in `engine.py` changes for the unseen campaign; its result is reported
+as it comes.
+
+**Truth** (`grouping_adapter.truth_of`, `leaf_groups`):
+- a *stimulus window* is a planned congestion interval on one link, with the
+  clients behind that link as `expected`;
+- a client is *hit* in a window when it is in `expected` and the OWD oracle
+  (`det_eval.measured_bands`) shows a standing queue ≥ 10 ms for ≥ 0.5 s, or
+  loss, inside [start, end + 2 s];
+- `pairs[f,g]` (share a link) = both hit in at least one common window;
+- `leaf[f]` (tightest shared group) = intersection of the `expected` sets of
+  the *shared* windows (≥ 2 expected clients) in which f was hit; empty when f
+  was never hit in a shared window; private (single-client) windows do not
+  count;
+- `pairs_leaf[f,g]` = `leaf[f]` non-empty and equal to `leaf[g]`.
+- Without plan windows (det_matrix runs): `bursts.csv` hit sets, else topology.
+
+**Scoring**: pairwise SAME = both flows reported members (hysteresis) of the
+same *confirmed* leaf; P / R over decided pairs, coverage reported next to
+them; `t_correct` = first time the decision equals `pairs_leaf` on every pair
+and stays so for 5 s. Synthetic pass criteria as in `replay.check`, with S2
+aligned to the visibility rule (never *reported* SAME; the peak accumulation
+`drift` is reported too) and S6's `no_false_leaf` counting confirmed leaves.
+
+All of the above was fixed while looking at the same 87 runs it was scored on;
+the K1–K6 tables are therefore the development set, not evidence. The unseen
+campaign (TODO) is the test.
+
+## Two questions from the review, answered on the data
+
+**S2 realistic, seeds 2 and 3.** Each has exactly one coincidence pair of
+events (D then A, 2 s apart in seed 2, 12 s in seed 3): two capped weights
+(0.55 A each) sum to 4.93 > A, so the *internal* `drift` criterion fails. The
+pair was **never reported SAME** (0 of 60 / 52 event closes): in seed 2 only f1
+moved into the leaf, in seed 3 neither did, and the lone onsets that followed
+charged the pair (rule 1 / SOLO) down to −1.8 and dissolved it by 245 s. The
+criterion was written before the visibility rule and now follows it. The
+residual limit stands: two coincidences inside one decay window do make a
+*provisional* pair, by construction of the cap (two clean co-fires must reach A
+for speed). Only visibility and erosion keep it off the output.
+
+**Speed (S1 6/10, "1–2 events" target).** Not the multipliers: in the S1
+evidence logs `c_mag` = 1.0 always, `c_lag` ≥ 0.93 (median 1.0), base
+`log(p_det/p_fa)` = 2.9–3.3 and 52 % of events are capped at 0.55 A = 2.50. Two
+clean events give 5.0 ≥ A, and 6 of 10 seeds reach the leaf in exactly 2
+events. The other four take 4 (3 seeds) or 6 (1 seed): a flow that misses one
+of the first two events (p_miss 0.1, three flows → ≈ 46 % of seeds) takes
+`w⁻` = −1.5 for the miss and needs two more clean events (2.5 − 1.5 + 2.5 = 3.5
+< A). "All three flows after ≤ 3 events" is therefore a criterion on the
+detector's miss rate, not on the rules; median events-to-leaf is 2 as targeted.
+
+**Synthetic table with the frozen defaults** (10 seeds, `.runs/ip8/2026-11-10_grouping-synth-default/table.md`):
+
+| scenario | ideal | realistic |
+|---|---|---|
+| S1 one leaf | 6/10 (median 2 events) | 6/10 |
+| S2 independent | 10/10 | 10/10 (drift peak 2.5; never reported SAME) |
+| S3 shared + private | 9/10 | 9/10 |
+| S4 two leaves, one parent | 9/10 | 10/10 |
+| S5 noise / idle / migrate | 0/10 (migration) | 0/10 |
+| S6 four leaves, two parents | 7/10 | 2/10 (merged four-flow leaves) |
+
+
 
 ## Ambiguities in the brief and how they were resolved
 

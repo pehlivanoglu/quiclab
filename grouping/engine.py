@@ -201,12 +201,23 @@ class Engine:
         st = self.state[f]
         before = st.L
         st.L = min(self.cap, st.L + w)
+        self._update_member(st)
         if w > 0:
             st.together += 1
         elif w < 0:
             st.apart += 1
         self._log({"type": "evidence", "kind": "L", "t": self.now, "event_id": e.id, "case": case, "flow": f,
                    "node": n, "w": w, "components": comps or {}, "L_before": before, "L_after": st.L})
+
+    def _update_member(self, st: FlowState) -> None:
+        """Reported membership. v1.1: L >= A. v1.2 (member_hysteresis): enter at
+        A, stay until L <= A/2, so one missed event does not unreport a member."""
+        if st.node is None:
+            st.member = False
+        elif st.L >= self.A:
+            st.member = True
+        elif st.L <= self.A / 2 or not self.cfg.member_hysteresis:
+            st.member = False
 
     def _add_cand(self, f: str, n: int, w: float, e: Event, case: str, comps: dict | None = None) -> None:
         st, node = self.state[f], self.nodes[n]
@@ -322,11 +333,14 @@ class Engine:
             cov = len(inter) / len(nobs) if nobs else 0.0
             info[n] = (nset, nobs, J, cov)
 
-        case = "SOLO"
+        case, handled = "SOLO", set(touched)
         if len(M) == 1:
             self._solo(e, M[0], touched, info, observable)
         else:
-            case = self._match(e, M, mem, touched, info, observable)
+            case, handled = self._match(e, M, mem, touched, info, observable)
+        if self.cfg.charge_unmatched:
+            self._charge_unmatched(e, mem, [n for n in touched if n not in handled and n in self.nodes], info,
+                                   observable, case)
         spans = {"span_al": max(m.t_al for m in e.members) - min(m.t_al for m in e.members),
                  "span_arrival": max(m.t_arrival for m in e.members) - e.t0}
         self._log({"type": "event", "id": e.id, "t": self.now, "t0": e.t0, "case": case, "members": M,
@@ -341,8 +355,36 @@ class Engine:
         for cb in self.on_event_closed:
             cb(self, e, case)
 
-    def _match(self, e, M, mem, touched, info, observable) -> str:
+    def _charge_unmatched(self, e, mem, leaves, info, observable, case) -> None:
+        """v1.2 rule 1, "a member fired without you": every touched leaf the case
+        did not update applies the minority rule itself. If at least half of its
+        observable flows fired, the silent ones get w_neg (members on L,
+        candidates on cand); otherwise the fired members are the odd ones out
+        (0.5 w_neg, solo). Without this a wrong leaf that never matches an event
+        (case D opens a new one instead) is never charged."""
+        for n in leaves:
+            node = self.nodes[n]
+            nset, nobs, J, cov = info[n]
+            fired = [f for f in nobs if f in mem]
+            if not fired:
+                continue
+            silent = [g for g in nobs if g not in mem]
+            if len(fired) * 2 >= len(nobs):
+                for g in silent:
+                    if g in node.members:
+                        self._add_L(g, self._w_neg(g, e), e, case + ":unmatched", n)
+                    else:
+                        self._add_cand(g, n, self._w_neg(g, e), e, case + ":unmatched")
+            else:
+                for f in fired:
+                    if f in node.members:
+                        self._add_L(f, 0.5 * self._w_neg(f, e), e, case + ":unmatched-minority", n)
+                        self.state[f].solo += 1
+
+    def _match(self, e, M, mem, touched, info, observable) -> tuple[str, set[int]]:
         cfg = self.cfg
+        if cfg.majority_match:
+            return self._match_majority(e, M, mem, touched, info, observable)
         # Leaves that share flows are competing hypotheses for the same flows, not
         # a hierarchy. Among covered leaves keep the better supported one of any
         # overlapping pair (confirmed first, then support); the loser gets nothing.
@@ -362,25 +404,65 @@ class Engine:
         # otherwise match the fully fired leaf as case A (J = 3/5) and turn the
         # other leaf's flows into its candidates.
         if len(covered) >= 2:
-            return self._case_b(e, M, mem, covered, info, observable)
+            return self._case_b(e, M, mem, covered, info, observable), set(covered)
         A_cands = [n for n in touched if info[n][2] >= cfg.theta_J]
         if A_cands:
             n = max(A_cands, key=lambda n: (info[n][2], -n))
             self._apply_leaf(e, n, M, mem, info[n], observable, "A")
-            return "A"
+            return "A", {n}
         if len(touched) == 1:
             n = touched[0]
             nset, nobs, J, cov = info[n]
             if cov == 1.0 and len(nobs) >= 2 and set(M) > set(nobs):
                 self._apply_leaf(e, n, M, mem, info[n], observable, "A-superset")
-                return "A-superset"
+                return "A-superset", {n}
         if len(touched) == 1:
             n = touched[0]
             nset, nobs, J, cov = info[n]
             if set(M) < set(nobs):
-                return self._case_c(e, n, M, mem, info[n], observable)
+                return self._case_c(e, n, M, mem, info[n], observable), {n}
         self._case_d(e, M, mem, observable)
-        return "D"
+        return "D", set()
+
+    def _match_majority(self, e, M, mem, touched, info, observable) -> tuple[str, set[int]]:
+        """v1.2 rule 7. k[n] = fired flows that belong to leaf n (members or
+        candidates). Leaves with k >= 2 (and >= 2 observable flows) and disjoint
+        hypotheses are the covered set: two or more -> case B / GLOBAL (the GLOBAL
+        vote counts every leaf with at least one fired flow, so one miss in a
+        two-flow leaf does not turn a root event into a false internal node). Otherwise the leaf with the
+        largest k (>= 2) takes the event: case C when the fired flows are all
+        inside it and at most half of its observable flows (a sub-pattern), else
+        case A (extras become candidates, silent members take the minority rule).
+        No leaf with two of M -> case D. No J / cov thresholds."""
+        Mset = set(M)
+        k = {n: len(Mset & set(info[n][0])) for n in touched}
+        hyp = {n: self._hypothesis(n) for n in touched}
+        covered: list[int] = []
+        for n in sorted((n for n in touched if k[n] >= 2 and len(info[n][1]) >= 2),
+                        key=lambda n: (not self.nodes[n].confirmed, -k[n], -self.nodes[n].support, n)):
+            if not any(hyp[n] & hyp[c] for c in covered):
+                covered.append(n)
+        covered.sort()
+        if len(covered) >= 2:
+            # Every touched leaf with a fired flow counts as covered for the GLOBAL
+            # vote: one miss in a two-flow leaf must not turn a root event into B.
+            voting = {n for n in touched if k[n] >= 1}
+            return self._case_b(e, M, mem, covered, info, observable, voting), set(covered)
+        cands = [n for n in touched if k[n] >= 2]
+        if not cands:
+            self._case_d(e, M, mem, observable)
+            return "D", set()
+        n = max(cands, key=lambda n: (k[n], self.nodes[n].confirmed, self.nodes[n].support, -n))
+        nset, nobs, J, cov = info[n]
+        fired_obs = [f for f in M if f in nobs]
+        if Mset < set(nobs) and len(fired_obs) * 2 <= len(nobs):
+            return self._case_c(e, n, M, mem, info[n], observable), {n}
+        # Outsiders join as candidates only when the whole leaf fired with them
+        # (v1.1's A-superset condition). Otherwise two members firing with
+        # strangers says nothing about the leaf's extent: at cold start it
+        # snowballed {a1,a2,b1} + {a1,a2,c1,c2} + {c1,c2,d2} ... into one leaf.
+        self._apply_leaf(e, n, M, mem, info[n], observable, "A", add_extras=(cov == 1.0))
+        return "A", {n}
 
     def _apply_leaf(self, e, n, M, mem, inf, observable, case, add_extras: bool = True) -> None:
         """Positive evidence for fired members/candidates, extras become
@@ -424,12 +506,12 @@ class Engine:
             self.outputs.append(out)
             self._log({"type": "output", "kind": "CONFIRMED_SHARED", "t": self.now, "event_id": e.id, **out.__dict__})
 
-    def _case_b(self, e, M, mem, covered, info, observable) -> str:
+    def _case_b(self, e, M, mem, covered, info, observable, voting: set[int] | None = None) -> str:
         # Leaves with fewer than two observable flows cannot vote on GLOBAL.
         all_leaves = [n.id for n in self.leaves() if (n.members or n.candidates)
                       and not (n.id in info and len(info[n.id][1]) < 2)]
         confirmed = [n for n in all_leaves if self.nodes[n].confirmed]
-        cov_set = set(covered)
+        cov_set = set(covered) | (voting or set())
         is_global = (len(confirmed) >= 2 and set(confirmed) <= cov_set) or \
                     (len(all_leaves) >= 2 and set(all_leaves) <= cov_set)
         if is_global:
@@ -487,7 +569,9 @@ class Engine:
             else:
                 self._add_cand(f, n, ws[f][0], e, "C", ws[f][1])
         k, m = len([f for f in M if f in nobs]), len(nobs)
-        if k * 2 >= m:
+        if not self.cfg.c_silent_penalty:
+            pass  # v1.2 rule 4: the silence is the sub-pattern itself, not extra negative evidence
+        elif k * 2 >= m:
             for g in nobs:
                 if g not in mem and g in node.members:
                     self._add_L(g, self._w_neg(g, e), e, "C", n)
@@ -571,7 +655,7 @@ class Engine:
             elif st.node is not None and st.L <= self.B:
                 old = st.node
                 self.nodes[old].members.discard(f)
-                st.node, st.L = None, 0.0
+                st.node, st.L, st.member = None, 0.0, False
                 self._log({"type": "tree", "op": "leave", "t": self.now, "event_id": e.id, "flow": f, "node": old})
 
     def _move(self, e: Event, f: str, n: int, value: float) -> None:
@@ -584,6 +668,7 @@ class Engine:
         st.cand = {}
         st.node, st.L, st.together, st.apart = n, value, 0.0, 0.0
         self.nodes[n].members.add(f)
+        self._update_member(st)
         self._log({"type": "tree", "op": "move", "t": self.now, "event_id": e.id, "flow": f, "from": old,
                    "to": n, "L": value})
 
@@ -595,7 +680,7 @@ class Engine:
                 continue
             if node.support < self.cfg.dissolve_support or len(node.members | node.candidates) < 2:
                 for f in sorted(node.members):
-                    self.state[f].node, self.state[f].L = None, 0.0
+                    self.state[f].node, self.state[f].L, self.state[f].member = None, 0.0, False
                     self.last_dissolved.append(f)
                 for f in sorted(node.candidates):
                     self.state[f].cand.pop(n, None)
@@ -627,6 +712,7 @@ class Engine:
         for f in sorted(self.state):
             st = self.state[f]
             st.L *= k
+            self._update_member(st)
             st.solo *= k
             st.together *= k
             st.apart *= k
@@ -654,14 +740,16 @@ class Engine:
             return {"status": "UNCERTAIN"}
         node = self.nodes[st.node]
         tot = st.solo + st.together
-        return {"status": "MEMBER" if st.L >= self.A else "UNCERTAIN", "leaf": st.node, "L": st.L,
+        return {"status": "MEMBER" if st.member else "UNCERTAIN", "leaf": st.node, "L": st.L,
                 "conf": self.conf(st.L), "private_fraction": st.solo / tot if tot else 0.0,
                 "ancestors": [(a, self.nodes[a].support) for a in self._ancestors(st.node)],
                 "peers": sorted(node.members - {f})}
 
     def query_pair(self, f: str, g: str) -> dict:
         a, b = self.state.get(f), self.state.get(g)
-        if a is None or b is None or a.node is None or b.node is None or a.L < self.A or b.L < self.A:
+        if a is None or b is None or a.node is None or b.node is None or not a.member or not b.member:
+            return {"status": "UNCERTAIN"}
+        if self.cfg.report_confirmed_only and not (self.nodes[a.node].confirmed and self.nodes[b.node].confirmed):
             return {"status": "UNCERTAIN"}
         lca = self._lca([a.node, b.node])
         level = 0 if a.node == b.node else max(self._ancestors(a.node).index(lca),
@@ -672,7 +760,7 @@ class Engine:
     def snapshot(self) -> dict:
         """Per-flow (node, L, cand) and tree summary; for tools and tests."""
         return {"t": self.now,
-                "flows": {f: {"node": st.node, "L": st.L, "cand": dict(sorted(st.cand.items())),
+                "flows": {f: {"node": st.node, "L": st.L, "member": st.member, "cand": dict(sorted(st.cand.items())),
                               "solo": st.solo, "together": st.together, "apart": st.apart}
                           for f, st in sorted(self.state.items())},
                 "nodes": {n: {"kind": x.kind, "parent": x.parent, "members": sorted(x.members),

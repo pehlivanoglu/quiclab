@@ -19,8 +19,8 @@ class Config:
     align_table: dict[str, float] = field(default_factory=dict)
     obs_mode: str = "sent_rate"     # producer-side: sent_rate | cwnd
     obs_fraction: float = 0.5       # producer-side: share of rendition over 200 ms
-    theta_J: float = 0.7
-    theta_cov: float = 0.7
+    theta_J: float = 0.7            # v1.1 matching only (majority_match=False)
+    theta_cov: float = 0.7          # v1.1 matching only
     s_split_weight: float = 8.0
     alpha_err: float = 0.01
     beta_err: float = 0.05
@@ -35,10 +35,16 @@ class Config:
     obs_window: float = 0.020
     L_cap: float | None = None      # ceiling on L and cand; default 2*A (see README: migration)
     w_cap_frac: float = 0.55        # per-event positive cap as a fraction of A (README: why not 1/2)
-    dissolve_support: float = 0.5
+    dissolve_support: float = 0.05  # v1.2: a leaf dissolves only at one flow or support ~ 0 (v1.1: 0.5)
     seed: int = 0
     enable_priming: bool = False    # Phase 2: must be False
     enable_slow_path: bool = False  # Phase 4: must be False
+    # v1.2 rules (README "v1.2"), the defaults since 2026-11-10; Config.V11 restores brief v1.1.
+    charge_unmatched: bool = True    # a leaf whose member fired charges its silent observable flows in every case
+    member_hysteresis: bool = True   # membership: enter at L >= A, stay until L <= A/2 (reported status)
+    c_silent_penalty: bool = False   # case C charges silent members (v1.1 True; v1.2 sub-pattern count only)
+    report_confirmed_only: bool = True   # pairwise SAME needs a confirmed leaf, not only two members at >= A
+    majority_match: bool = True      # attribute an event to the leaf holding most of M (>= 2); no theta_J / theta_cov
 
     def __post_init__(self) -> None:
         if self.delta_max is None:
@@ -49,6 +55,14 @@ class Config:
             raise ValueError("priming / slow path are later phases and must stay disabled")
         if self.align_mode not in ("half_mrtt", "none", "table"):
             raise ValueError(f"align_mode {self.align_mode!r}")
+
+    # v1.2 (README "v1.2"): rules 1-5 from the K1-K6 review plus 6 (dissolve only when a leaf is
+    # down to one flow or its support has decayed to ~0) and 7 (majority attribution). Default.
+    V12 = {"charge_unmatched": True, "member_hysteresis": True, "c_silent_penalty": False,
+           "report_confirmed_only": True, "majority_match": True, "dissolve_support": 0.05}
+    # Brief v1.1 (grouping-implementation-v01.md) for reproduction of the first tables.
+    V11 = {"charge_unmatched": False, "member_hysteresis": False, "c_silent_penalty": True,
+           "report_confirmed_only": False, "majority_match": False, "dissolve_support": 0.5}
 
     @property
     def A(self) -> float:

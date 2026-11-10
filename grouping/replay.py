@@ -32,11 +32,21 @@ class Result:
         SAME / DIFFERENT / UNCERTAIN."""
         snap = self.final if snap is None else snap
         A = self.cfg["A"]
+        nodes = snap.get("nodes", {})
         out = {}
         flows = sorted(snap["flows"])
+
+        def member(x):
+            return x.get("member", x["L"] >= A)
+
+        def confirmed(x):
+            node = nodes.get(x["node"], nodes.get(str(x["node"])))
+            return node is None or node["confirmed"]
         for f, g in combinations(flows, 2):
             a, b = snap["flows"][f], snap["flows"][g]
-            if a["node"] is None or b["node"] is None or a["L"] < A or b["L"] < A:
+            if a["node"] is None or b["node"] is None or not member(a) or not member(b):
+                out[(f, g)] = "UNCERTAIN"
+            elif self.cfg.get("report_confirmed_only") and not (confirmed(a) and confirmed(b)):
                 out[(f, g)] = "UNCERTAIN"
             else:
                 out[(f, g)] = "SAME" if a["node"] == b["node"] else "DIFFERENT"
@@ -180,9 +190,12 @@ def _events_until_leaf(res: Result, flows: list[str], A: float) -> int | None:
 
 
 def _no_false_leaf(snap: dict, groups: list[list[str]]) -> bool:
+    """No confirmed leaf mixes flows of two truth groups. Provisional leaves
+    (support < A) are evidence buffers, not reported structure (v1.2 rule 2),
+    so a coincidence pair that has not confirmed does not count."""
     member_of = {f: i for i, g in enumerate(groups) for f in g}
     for node in snap["nodes"].values():
-        if node["kind"] == "leaf" and len({member_of.get(f, -1) for f in node["members"]}) > 1:
+        if node["kind"] == "leaf" and node["confirmed"] and len({member_of.get(f, -1) for f in node["members"]}) > 1:
             return False
     return True
 
@@ -205,8 +218,12 @@ def check(sc_id: str, res: Result, truth: dict) -> tuple[bool, dict]:
         d["no_false_leaf"] = _no_false_leaf(final, [flows])
         ok = d["events_to_leaf"] is not None and d["events_to_leaf"] <= 3 and d["same_leaf_end"] and d["no_false_leaf"]
     elif sc_id == "S2":
+        # drift = the largest L / cand the pair ever accumulated (two coincidences
+        # at the per-event cap already exceed A). The pass criterion follows the
+        # visibility rule (v1.2 rule 2): the pair must never be *reported* SAME.
         d["drift"] = max(drift(res, "f1", "f2"), drift(res, "f2", "f1"))
-        ok = d["drift"] < A
+        d["reported_same_closes"] = sum(res.pairs(s).get(("f1", "f2")) == "SAME" for s in res.snapshots)
+        ok = d["reported_same_closes"] == 0
     elif sc_id == "S3":
         st = final["flows"]["f1"]
         eps = truth["episodes"]["f1"]

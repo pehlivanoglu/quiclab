@@ -16,9 +16,10 @@ Detector and baselines:
 
 Grouping (ECG, `grouping/`, brief `grouping-implementation-v01.md`; results in `grouping/README.md`):
 
-- [ ] Decide v1.2 defaults from the synthetic sweep: `theta_J = theta_cov = 0.6` (one miss in three tolerated); a solo penalty scaled by the flow's background rate (the noisy S5 flow joins, then is expelled by its own noise); pairs need two co-occurrences before they take part in case B / GLOBAL; case C should not charge the silent members while the event is recorded as a sub-pattern (split-smoke: b flows fell below A during the four C events and re-confirmed only at 245 s).
-- [ ] Run the grouping campaigns K1, K2, K3, K5, K6 (`scripts/grouping_campaign.py --ks K1,K2,K3,K5,K6 --reps 3`, ~10.4 h emulation + setup, in tmux; table in `grouping/README.md` "Campaigns"). Each K writes its `report.md` when it finishes. Not planned: mixed CC, continuous CBR, a separate long-burst campaign, serial double bottleneck as a campaign, migration on real runs (needs a route event), loss, RTT ×4–8.
-- [ ] Then: read the K1/K6 case matrices (a+b / A+C cells must not be GLOBAL), K2 partial-event share → θ, K3 revcross false leaves; decide v1.2 and re-score offline with `--report-only --set ...` (no reruns needed).
+- [x] v1.2 rules implemented behind `Config.V12` (README "Campaign results … v1.2"); K1–K6 ran 2026-11-06 (`.runs/ip8/2026-11-06_1526_grp`); all five re-scored in `report-v12.md` (K6 pfifo 3/3 correct trees; K1 21 runs, FIFO-like cells 1.0/1.0).
+- [ ] Decide whether v1.2 becomes the default (brief v2.0): compare `report.md` vs `report-v12.md` per K and the two synthetic tables; keep θ in config only for the v1.1 reproduction.
+- [ ] K5 rerun with the 12-shared-window plan (6 were too few to judge); K3 `revjit5` / `revjit20` if the jitter limit matters.
+- [ ] fq_codel light load: report as "no shared congestion" (FQ-native truth would label these pairs negative; tight-link truth makes recall look low).
 - [ ] The owd source and the SBD baselines on the newscn-base and large campaigns need those campaigns rerun (high-rate clients lose OWD timestamps mid-run there).
 - [ ] Shadow replay should emit the backdated onset itself (today the adapter recovers it from `queue_delay_ms` ≥ 10 ms; spread p50 ≈ 80 ms, p90 ≈ 300 ms within a burst).
 - [ ] Phase 2 priming (`Onset.primed`, `ObsSample.intervened` are carried but unused), Phase 4 slow path / weak tree.

@@ -64,7 +64,7 @@ def test_mixed_respects_join_and_leave():
         if w["target"] == gc.LEAVE_SUB:
             assert w["start"] < gc.LEAVE_T - 10
     assert duration > gc.LEAVE_T + 30
-    assert sum(w["cell"] == "shared" for w in windows) == 6 and sum(w["cell"] == "private" for w in windows) == 16
+    assert sum(w["cell"] == "shared" for w in windows) == 12 and sum(w["cell"] == "private" for w in windows) == 16
 
 
 def test_revcross_has_no_expected_clients_and_reverse_link_capped(tmp_path):

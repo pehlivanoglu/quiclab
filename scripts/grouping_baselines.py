@@ -187,7 +187,7 @@ def process(run_dir: Path, a) -> dict:
             out["methods"][f"ecg:{g}"] = r
     gdir = run_dir / "grouping"
     gdir.mkdir(exist_ok=True)
-    (gdir / "baselines.json").write_text(json.dumps(out, indent=1))
+    (gdir / getattr(a, "out_name", "baselines.json")).write_text(json.dumps(out, indent=1))
     return out
 
 

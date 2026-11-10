@@ -47,8 +47,10 @@ def events_of(log: list[dict]) -> list[dict]:
 
 
 def engine(**kw) -> tuple[Engine, list[dict]]:
+    """Brief v1.1 engine (Config.V11) unless kw says otherwise; the case tests
+    below describe v1.1 behaviour, the v1.2 tests use _v12()."""
     log: list[dict] = []
-    cfg = Config(**{"delta": 0.03, "hold": 0.1, **kw})
+    cfg = Config(**{"delta": 0.03, "hold": 0.1, **Config.V11, **kw})
     return Engine(cfg, log.append), log
 
 
@@ -302,11 +304,12 @@ def test_s6_four_leaves_invariants(profile, seed) -> None:
     assert res.cases["GLOBAL"] >= 1
 
 
-def test_default_theta_is_reported_not_tuned() -> None:
-    """At the brief's default theta = 0.7 a single missed flow in a 3-flow leaf
-    gives J = cov = 2/3 and the event falls to case D (see README)."""
-    res, truth, ok, d = run_scenario("S4", "ideal", 0)
-    assert res.cases["D"] > 2
+def test_v11_default_theta_is_reported_not_tuned() -> None:
+    """Brief v1.1 at its own default theta 0.7 does not pass S4 (one missed
+    flow in a three-flow leaf falls to case D); kept as the record of why the
+    sweep value 0.6 was reported, not tuned."""
+    res, truth, ok, d = run_scenario("S4", "ideal", 0, **Config.V11)
+    assert not ok and d["cases"].get("D", 0) > 2
 
 
 def test_replay_is_deterministic(tmp_path: Path) -> None:
@@ -321,3 +324,88 @@ def test_replay_is_deterministic(tmp_path: Path) -> None:
     res = replay.run(list(synth.read_log(tmp_path / "log.jsonl")), cfg, log_path=tmp_path / "c.jsonl")
     assert (tmp_path / "a.jsonl").read_bytes() == (tmp_path / "c.jsonl").read_bytes()
     assert sum(res.cases.values()) > 0
+
+
+# ── v1.2 rules (Config.V12; README "v1.2") ───────────────────────────────
+
+def _v12(**kw) -> tuple[Engine, list[dict]]:
+    return engine(**{**Config.V12, **kw})
+
+
+def test_v12_false_pair_is_charged_when_its_member_fires_elsewhere() -> None:
+    """Rule 1. a2 and b2 co-fire twice (a shared upstream), then a2 fires six
+    times with a3 only. v1.1: those events open a new leaf and b2 is never
+    charged, the false pair survives. v1.2: b2 takes w_neg each time and leaves."""
+    ons = [(f, t) for t in (10, 20) for f in ("a2", "b2")] + [(f, t) for t in range(30, 90, 10) for f in ("a2", "a3")]
+    flows = {"a2": 0.0, "a3": 0.0, "b2": 0.0}
+    old, log_old = engine()
+    feed(old, flows, ons, 92)
+    assert not any(r.get("flow") == "b2" and r.get("w", 0) < 0 for r in log_old)   # the v1.1 hole: never charged
+    new, log = _v12()
+    feed(new, flows, ons, 92)
+    assert new.state["b2"].node is None and new.state["b2"].L == 0.0           # left the false pair
+    assert new.query_pair("a2", "a3")["status"] == "SAME"
+    assert new.query_pair("a2", "b2")["status"] == "UNCERTAIN"
+    assert any(r.get("case", "").endswith(":unmatched") and r.get("flow") == "b2" for r in log)
+
+
+def test_v12_membership_hysteresis_survives_one_miss() -> None:
+    ons = [(f, t) for t in (10, 20) for f in "abc"] + [("a", 30), ("b", 30)]
+    old, _ = engine()
+    feed(old, {f: 0.0 for f in "abc"}, ons, 32)
+    assert old.query("c")["status"] == "UNCERTAIN" and old.A / 2 < old.state["c"].L < old.A
+    new, _ = _v12()
+    feed(new, {f: 0.0 for f in "abc"}, ons, 32)
+    assert new.A / 2 < new.state["c"].L < new.A and new.query("c")["status"] == "MEMBER"
+    assert new.query_pair("a", "c")["status"] == "SAME"
+
+
+def test_v12_majority_attribution_follows_a_shifting_set() -> None:
+    """K5 pattern: {a,b,c} then {b,c,d}. J = 2/4 < theta made the second event
+    case D in v1.1; with majority attribution leaf 1 holds two of M and takes it."""
+    ons = [(f, 10) for f in "abc"] + [(f, 20) for f in "bcd"]
+    old, log_old = engine()
+    feed(old, {f: 0.0 for f in "abcd"}, ons, 22)
+    assert [e["case"] for e in events_of(log_old)] == ["D", "D"]
+    new, log = _v12()
+    feed(new, {f: 0.0 for f in "abcd"}, ons, 22)
+    assert [e["case"] for e in events_of(log)] == ["D", "A"]
+    assert len([n for n in new.nodes.values() if n.kind == "leaf"]) == 1
+    # d is an outsider while a stayed silent (cov 2/3): it joins only from an
+    # event in which the whole leaf fires with it (A-superset condition).
+    assert "d" not in new.nodes[1].candidates
+    feed(new, {f: 0.0 for f in "abcd"}, [(f, 30) for f in "abcd"], 32)
+    assert "d" in new.nodes[1].candidates
+
+
+def test_v12_case_c_counts_the_sub_pattern_without_charging_the_silent() -> None:
+    ons = [(f, t) for t in (10, 20, 30) for f in "abcd"] + [(f, t) for t in (40, 50) for f in "ab"]
+    new, log = _v12(s_split_weight=4.0)
+    feed(new, {f: 0.0 for f in "abcd"}, ons, 52)
+    cases = [e["case"] for e in events_of(log)]
+    assert cases[-2:] == ["C", "C"] and any(r.get("op") == "split" for r in log)
+    assert not any(r.get("case") == "C" and r.get("flow") in ("c", "d") and r.get("w", 0) < 0 for r in log)
+    assert new.query_pair("a", "b")["status"] == "SAME" and new.query_pair("c", "d")["status"] == "SAME"
+
+
+def test_v12_global_tolerates_one_miss_in_a_two_flow_leaf() -> None:
+    """Root event over four confirmed two-flow leaves with one flow missing:
+    v1.1 case B (a false internal node), v1.2 GLOBAL (the leaf still voted)."""
+    leaves = [list("ab"), list("cd"), list("ef"), list("gh")]
+    ons = []
+    for t, grp in zip((10, 20, 30, 40, 50, 60, 70, 80), leaves * 2):
+        ons += [(f, t) for f in grp]
+    allf = [f for g in leaves for f in g]
+    ons += [(f, 90) for f in allf if f != "h"]
+    old, log_old = engine()
+    feed(old, {f: 0.0 for f in allf}, ons, 92)
+    new, log = _v12()
+    feed(new, {f: 0.0 for f in allf}, ons, 92)
+    assert events_of(log_old)[-1]["case"] == "B" and events_of(log)[-1]["case"] == "GLOBAL"
+
+
+def test_v12_default_is_deterministic_and_passes_s4() -> None:
+    ra = run_scenario("S4", "realistic", 1)
+    rb = run_scenario("S4", "realistic", 1)
+    assert ra[0].to_json() == rb[0].to_json()
+    assert ra[2], ra[3]
