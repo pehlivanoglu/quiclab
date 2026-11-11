@@ -260,9 +260,47 @@ Review of the implementation (same day), four decisions:
 4. **Traces and tc timing.** `configs/traces/README.md` lists the files used,
    their sources and the citations. The infrastructure check reports the lag of
    every applied link event (`applied_s − at_s`, p50 / p99 / max, overall and
-   for the `trace` label) and flags an N4 run whose trace lag exceeds one
-   200 ms step: then the replayed capacity differs from the trace and the
-   private truth windows shift.
+   for the `trace` label) and flags an N4 run whose trace lag exceeds 50 ms
+   (`TRACE_LAG_MAX_S`; a lag of a whole 200 ms step would be invisible in the
+   replayed shape): then the replayed capacity differs from the trace and the
+   private truth windows shift. The check was exercised on a 44-event run
+   only (max lag 1.9 ms); an N4 run issues 4 000–12 000 commands, so the first
+   N4 `infra.md` is the real test.
+5. **Clock skew and timestamp noise on the OWD** (still open). Both ends share
+   one clock in the emulation. Since the grouping runs on recordings, the
+   experiment needs no new runs: perturb `<sub>-owd.csv` offline (per-client
+   skew in ppm plus timestamp jitter) before `owd_mode.owd_acks`, re-score
+   `shadow-owd` on K1–K6, report the sensitivity. Listed in TODO.md.
+
+Second review (same day), decided by the user:
+6. **Truth independent of the detector's input.** The OWD-mode detector reads
+   the ACK receive timestamps; the measured truth, GT3 (source A) and the
+   grouping truth read the same OWD. The grouping truth therefore moved to
+   **GT1 router standing-queue episodes** on the window's egress (`hop`, now
+   written by the planner; older runs derive it from the expected set):
+   expected clients are hit when the egress has an episode inside
+   [start, end + 2 s]. Under fq_codel the router cannot tell which flows
+   queued, so the router truth counts every expected client; the **GT3
+   per-client truth is the secondary column** ("GT3 P / R", noted as sharing
+   the detector's signal). Checked on K1 pfifo r1 (`.runs/old/ip8/2026-11-06_1526_grp`): 78/78 windows
+   hit, same leaves and P/R as the old oracle truth.
+7. **Per-ACK OWD for the detector.** `owd_mode.owd_acks` worked per ACK row but
+   took the 5 ms send-bin minimum of `<sub>-owd.csv`, which can include packets
+   acked a few ms later (lookahead), and ignored timestamp coverage. The
+   publisher's `AckRecorder` now writes `owd_us` = the largest newly acked
+   packet's own receive-timestamp OWD (empty when the ACK carried no
+   timestamp; ACK loss and the 64-timestamps-per-ACK limit show up as gaps,
+   as they would live); `owd_mode` prefers it and falls back to the bins on
+   older runs. qvideo rebuilt 2026-11-10 (`qvideo-selftest ok`); the shadow
+   replay reads columns by name, unchanged.
+8. **Copa dropped** (user decision). For the record: under Copa mvfst reports
+   `bbr_bw_bps` 0, no phase and `app_limited` false, so the shadow's excess,
+   bbr_bw_drop, phase masks and app_limited_exit are inert and only the
+   delay, loss and send_queue signals remain.
+9. **AQMs.** `cake` added (`AqmKind.cake`, `cake unlimited besteffort` under
+   the HTB class; it sizes its own buffer, `queue_limit_packets` is not
+   applied). Microbenchmarks run on pfifo, red, pie and cake; fq_codel stays in
+   the core set. `delaystep` removed from `run_campaigns.sh`.
 
 Smoke runs first: `--ks N2 --only pfifo-r1` (17 clients on the host) and
 `--ks N4 --only pfifo-r1` (tc keeps up), read `infra.md`, then the full set

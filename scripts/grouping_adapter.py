@@ -10,6 +10,7 @@ and never writes under <run>/detector or <run>/baselines.
     python scripts/grouping_adapter.py RUN... --onsets owd      # oracle delay detector
     python scripts/grouping_adapter.py RUN... --onsets truth    # burst truth as onsets
     python scripts/grouping_adapter.py RUN... --onsets shadow-owd   # the shadow on sender-side OWD (owd_mode)
+    python scripts/grouping_adapter.py RUN... --onsets v2-owd       # Shadow v2 (also v2, v2-nohold, v2-fixed...)
 
 Runs whose clients re-join (grouping campaign N5): every session has its own
 sender files (<sub>@<n>-acks.csv ...) and is a flow of its own (load_run ->
@@ -38,6 +39,11 @@ Mechanism A -> Onset, three sources (--onsets):
   shadow-owd  the same frozen shadow replayed on owd_mode.owd_acks: rtt_us
           replaced by the acked packet's one-way delay + R0 (reverse-path
           delay leaves the input). Everything else as `shadow`.
+  v2[-fixed][-owd][-nohold]  the frozen Shadow v2 (scripts/shadow_v2_frozen.py; ip4 fitted values): per-client
+          CUSUM alarm episodes; t_arrival = alarm time, t_onset = the last tick with an empty CUSUM (G = 0)
+          before the alarm (the detector's own onset, no queue-delay back-dating). "-fixed" = global scale
+          instead of the per-flow one, "-owd" = one-way-delay input, "-nohold" = without the hold rule
+          (a long event then gives several episodes instead of one). Episodes are not merged.
   truth   detector/bursts.csv: every client the truth labels "hit" gets one
           onset per burst at the burst start, t_onset = t_arrival = start +
           mrtt/2 (aligned onset = burst start, spread 0). The idealized upper
@@ -45,9 +51,14 @@ Mechanism A -> Onset, three sources (--onsets):
 Observability: sent.csv -> bytes in the trailing 200 ms >= obs_fraction *
 rendition * 0.2 s (sent_rate mode) or acks.csv -> inflight >= 0.5 cwnd and
 not app-limited (cwnd mode), per 20 ms window; in_episode from the episodes.
-Truth: pairs are "same" when both clients are hit by at least one common
-burst (detector/bursts.csv); without bursts.csv, the topology's leaf queue
-(det_eval.leaf_queues) is used.
+Truth (campaign runs, <run>/grouping/windows.json): a client is hit in a
+stimulus window when the plan expected it and the window's router egress
+shows a GT1 standing-queue episode inside [start, end + 2 s] (router counters
+only, independent of any client signal; under fq_codel the router cannot say
+which flows queued, so every expected client counts). The same windows scored
+with GT3 per-client OWD episodes are the secondary truth (pairwise_gt3; GT3
+reads the signal the OWD-mode detector reads). Older runs: detector/bursts.csv
+hit sets; without those, the topology's leaf queue (det_eval.leaf_queues).
 """
 
 from __future__ import annotations
@@ -69,11 +80,16 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 import det_eval as d  # noqa: E402
+import gt1  # noqa: E402
+import gt3  # noqa: E402
 import owd_mode  # noqa: E402
+import shadow_v2_frozen  # noqa: E402
 from grouping import Config, FlowMeta, ObsSample, Onset, replay  # noqa: E402
 from grouping.engine import Engine  # noqa: E402
 from grouping.invariants import Invariants  # noqa: E402
 
+V2_SOURCES = {f"{det}{'-owd' if mode == 'OWD' else ''}{'' if hold else '-nohold'}": (det, mode, hold)
+              for det in shadow_v2_frozen.LABEL for mode in shadow_v2_frozen.FROZEN for hold in (True, False)}
 SHADOW_VARIANT, ON, OFF = "full", "pre_signal_on", "pre_signal_off"   # det_eval.replay(run, TUNED): variant "full" is the tuned setting
 OBS_WINDOW = 0.020
 TRAIL_S = 0.2
@@ -232,6 +248,7 @@ def build(run_dir: Path, cfg: Config, backdate_max: float, warmup: float, qd_ms:
           source: str = "shadow") -> tuple[list, dict, list[dict]]:
     run = load_run(run_dir)
     truth = truth_of(run)
+    truth["secondary"] = truth_of(run, "gt3") if (run_dir / "grouping" / "windows.json").exists() else None
     t_end = run.duration
     rendition = {s: float(run.topology["subscribers"][s]["rate_kbps"]) * 1000 for s in run.subs}
     mrtt = {}
@@ -258,6 +275,10 @@ def build(run_dir: Path, cfg: Config, backdate_max: float, warmup: float, qd_ms:
             for start, end in eps[s]:
                 t_on = backdate(samples[s], start, backdate_max, qd_ms) if s in samples else start
                 onsets.append({"flow": s, "t_arrival": start, "t_onset": t_on, "end": end})
+    elif source in V2_SOURCES:
+        for s, spans in shadow_v2_frozen.episodes(run, *V2_SOURCES[source]).items():
+            onsets += [{"flow": s, "t_arrival": start, "t_onset": t_on, "end": end}
+                       for start, end, t_on in spans if start >= warmup]
     elif source == "owd":
         eps = {s: owd_episodes(run, s, warmup) for s in run.subs}
         for s in run.subs:
@@ -341,36 +362,97 @@ def congested_bins(run: d.Run, sid: str) -> np.ndarray:
     return np.array([t for t, band in d.measured_bands(pts, d.delay_changes(run, sid)) if band == "congested"])
 
 
-def measured_bursts(run: d.Run, windows: list[dict]) -> list[dict]:
+def window_hop(run: d.Run, w: dict) -> str | None:
+    """The stimulated router egress of a window as "from->to": the window's `hop`
+    when the plan wrote it, else the deepest hop whose clients are exactly the
+    expected set (private window: the client's own access egress). None when
+    nothing is expected (reverse-path stimuli)."""
+    if w.get("hop"):
+        return w["hop"]
+    expected = set(w.get("expected", []))
+    if not expected:
+        return None
+    paths = {s: d.path_hops(run, run.pub, s) for s in run.subs}
+    behind = defaultdict(set)
+    for s, hops in paths.items():
+        for hop in hops:
+            behind[hop].add(s)
+    candidates = [hop for hop, clients in behind.items() if clients == expected]
+    if not candidates:
+        return None
+    first = next(iter(expected))
+    return "->".join(max(candidates, key=lambda hop: paths[first].index(hop)))
+
+
+def overlaps(episodes: list[tuple[float, float]], lo: float, hi: float) -> bool:
+    return any(a <= hi and b >= lo for a, b in episodes)
+
+
+def measured_bursts(run: d.Run, windows: list[dict], hop_episodes: dict[str, list[tuple[float, float]]],
+                    flow_episodes: dict[str, list[tuple[float, float]]] | None = None) -> list[dict]:
     """Burst records (same shape as bursts.csv's) from the campaign's stimulus
-    windows and the OWD oracle: a client is hit when the plan expected it (the
-    clients behind the stimulated link) and it has a congested bin in
-    [start, end + BURST_RECOVERY_S]. The oracle alone cannot tell two links
-    congested at the same time apart."""
-    cong = {s: congested_bins(run, s) for s in run.subs}
+    windows and a congestion truth. Primary (hop_episodes = GT1 standing-queue
+    episodes per router egress): every expected client is hit when the window's
+    egress has an episode inside [start, end + BURST_RECOVERY_S]; the router
+    cannot say which flows queued, so under fq_codel this overstates the hit set.
+    Secondary (flow_episodes = GT3 per-client episodes): an expected client is
+    hit when its own episodes overlap the window; GT3 reads the same OWD the
+    detector's OWD mode reads, so it is the comparison truth, not the primary."""
     out = []
     for i, w in enumerate(windows):
         lo, hi = w["start"], w["end"] + d.BURST_RECOVERY_S
-        hit = sorted(s for s in w.get("expected", []) if ((cong[s] >= lo) & (cong[s] <= hi)).any())
+        expected = w.get("expected", [])
+        if flow_episodes is not None:
+            hit = sorted(s for s in expected if overlaps(flow_episodes.get(s, []), lo, hi))
+        else:
+            hop = window_hop(run, w)
+            hit = sorted(expected) if hop and overlaps(hop_episodes.get(hop, []), lo, hi) else []
         out.append({"burst": i, "start": w["start"], "end": w["end"], "hit": hit, "uncertain": [],
-                    "kind": w.get("kind"), "target": w.get("target"), "expected": w.get("expected", [])})
+                    "kind": w.get("kind"), "target": w.get("target"), "expected": expected,
+                    "hop": window_hop(run, w)})
     return out
 
 
-def truth_of(run: d.Run) -> dict:
+def gt1_hop_episodes(run: d.Run) -> dict[str, list[tuple[float, float]]]:
+    """GT1 standing-queue episodes per router egress "from->to" (router counters only)."""
+    out = defaultdict(list)
+    for e in gt1.run_truth(run, gt1.Params())[0]:
+        out[e["hop"]].append((float(e["start_s"]), float(e["end_s"])))
+    return dict(out)
+
+
+def gt3_flow_episodes(run: d.Run) -> dict[str, list[tuple[float, float]]]:
+    """GT3 per-client episodes (receiver OWD + loss; shares its input with the OWD-mode detector)."""
+    out = defaultdict(list)
+    for e in gt3.run_truth(run, gt3.Params(), path_queues=False)[0]:
+        out[e["flow"]].append((float(e["t_on"]), float(e["t_end"])))
+    return dict(out)
+
+
+TRUTHS = ("gt1", "gt3")   # primary: router queue; secondary: per-client OWD (same signal as the OWD-mode detector)
+
+
+def truth_of(run: d.Run, truth_source: str = "gt1") -> dict:
     paths = {s: d.path_hops(run, run.pub, s) for s in run.subs}
     group_of = {s: g or s for s, g in d.leaf_queues(run.topology, paths).items()}
-    truth = {"run": run.path.name, "subs": run.subs, "topology_group": group_of, "bursts": [], "pairs": {}}
+    truth = {"run": run.path.name, "subs": run.subs, "topology_group": group_of, "bursts": [], "pairs": {},
+             "truth_source": truth_source}
     bursts_csv = run.path / "detector" / "bursts.csv"
     windows_json = run.path / "grouping" / "windows.json"
     same = defaultdict(set)
     if windows_json.exists():
-        # Grouping campaign run: stimulus windows from the plan, hits measured on the OWD oracle.
-        truth["bursts"] = measured_bursts(run, json.loads(windows_json.read_text()))
+        # Grouping campaign run: stimulus windows from the plan, hits from the router's
+        # queue counters (gt1) or, as the comparison, from the clients' own OWD (gt3).
+        windows = json.loads(windows_json.read_text())
+        if truth_source == "gt3":
+            truth["bursts"] = measured_bursts(run, windows, {}, gt3_flow_episodes(run))
+            truth["source"] = "windows.json + GT3 per-client OWD episodes (same signal as the OWD-mode detector)"
+        else:
+            truth["bursts"] = measured_bursts(run, windows, gt1_hop_episodes(run))
+            truth["source"] = "windows.json + GT1 router standing-queue episodes on the stimulated egress"
         for b in truth["bursts"]:
             for x in b["hit"]:
                 same[x] |= set(b["hit"])
-        truth["source"] = "windows.json + OWD oracle (both congested in a common stimulus window)"
     elif bursts_csv.exists():
         b = pd.read_csv(bursts_csv)
         for (burst, start, end), g in b.groupby(["burst", "start", "end"]):
@@ -478,6 +560,8 @@ def process(run_dir: Path, cfg: Config, a) -> dict:
     res = replay.run(records, cfg, log_path=out / "evidence.jsonl", engine_factory=factory)
     pm = pair_metrics(res, truth, "pairs_leaf")
     pm_link = pair_metrics(res, truth, "pairs")
+    secondary = truth.pop("secondary", None)
+    pm_gt3 = pair_metrics(res, secondary, "pairs_leaf") if secondary else None
     run = load_run(run_dir)
     extra = outcome_metrics(res, truth, run, json.loads((run_dir / "grouping" / "windows.json").read_text())
                             if (run_dir / "grouping" / "windows.json").exists() else [])
@@ -485,14 +569,17 @@ def process(run_dir: Path, cfg: Config, a) -> dict:
                "pairwise": pm, "pairwise_link": pm_link, "spans": replay.span_stats(res), "leaves": res.leaves,
                "final": res.final["flows"], "spread": summary, "truth_source": truth["source"],
                "truth_leaf": truth["leaf"], "invariants_checked": holder["inv"].n_checked,
-               "events": res.events, "bursts": truth["bursts"], "series": res.series, **extra}
+               "events": res.events, "bursts": truth["bursts"], "series": res.series,
+               "pairwise_gt3": pm_gt3, "truth_leaf_gt3": secondary["leaf"] if secondary else None, **extra}
     replay.dump(metrics, out / "metrics.json")
     (out / "pairs_t.json").write_text(json.dumps(res.pairs_t()))
-    (out / "truth.json").write_text(json.dumps(truth, indent=1))
+    (out / "truth.json").write_text(json.dumps({**truth, "secondary_gt3": secondary}, indent=1))
     replay.plot_L(res, out / "L.png", f"{run_dir.name}: {a.onsets} onsets -> ECG (delta={cfg.delta}, theta={cfg.theta_J})")
     summary.update({"cases": dict(res.cases), "precision": pm["precision"], "recall": pm["recall"],
                     "coverage": pm["coverage"], "uncertain": pm["uncertain"], "tp": pm["tp"], "fp": pm["fp"],
                     "precision_link": pm_link["precision"], "recall_link": pm_link["recall"],
+                    "precision_gt3": pm_gt3["precision"] if pm_gt3 else None,
+                    "recall_gt3": pm_gt3["recall"] if pm_gt3 else None,
                     "leaves": {n: l["members"] for n, l in res.leaves.items() if l["kind"] == "leaf" and l["members"]},
                     **extra})
     return summary
@@ -584,7 +671,7 @@ def outcome_metrics(res: replay.Result, truth: dict, run: d.Run, windows: list[d
 def main(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("runs", nargs="+", type=Path)
-    ap.add_argument("--onsets", choices=("shadow", "owd", "truth", "shadow-owd"), default="shadow",
+    ap.add_argument("--onsets", choices=("shadow", "owd", "truth", "shadow-owd", *V2_SOURCES), default="shadow",
                     help="Mechanism A source")
     ap.add_argument("--out", help="subdirectory under each run (default grouping, grouping-owd, grouping-truth)")
     ap.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE", help="engine config overrides")

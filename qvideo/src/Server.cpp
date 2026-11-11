@@ -206,17 +206,22 @@ class OwdRecorder : public quic::ManagedObserver {
 // (the router metrics and events.csv share that clock).
 class AckRecorder : public quic::ManagedObserver {
  public:
-  AckRecorder(const std::string& base, std::function<uint64_t()> backlogBytes)
+  // recvBasisUs: the client's receive clock basis (its request); 0 = no OWD column values.
+  AckRecorder(const std::string& base, int64_t recvBasisUs, std::function<uint64_t()> backlogBytes)
       : quic::ManagedObserver(EventSetBuilder()
                                   .enable(Events::packetsWrittenEvents)
                                   .enable(Events::acksProcessedEvents)
                                   .enable(Events::lossEvents)
                                   .build()),
+        recvBasisUs_(recvBasisUs),
         backlogBytes_(std::move(backlogBytes)) {
     acks_.open(base + "-acks.csv");
+    // owd_us: one-way delay of the largest newly acked packet from its own ACK
+    // receive timestamp (empty when the ACK carried none): what an OWD-based
+    // detector knows at this ACK, nothing from later ACKs or send-time bins.
     acks_ << "mono_us,sent_mono_us,rtt_us,min_rtt_us,srtt_us,rate_valid,app_limited,send_bps,ack_bps,"
              "bbr_bw_bps,cwnd_bytes,inflight_bytes,stream_buffer_bytes,bytes_acked_total,"
-             "bytes_sent_at_send,phase,newly_lost,relay_saturated,seq\n";
+             "bytes_sent_at_send,phase,newly_lost,relay_saturated,seq,owd_us\n";
     sent_.open(base + "-sent.csv");
     sent_ << "send_mono_us,bytes,seq\n";
   }
@@ -291,13 +296,17 @@ class AckRecorder : public quic::ManagedObserver {
         }
         cwnd = ack.ccState->congestionWindowBytes;
       }
+      std::string owd;
+      if (recvBasisUs_ > 0 && largest->receiveRelativeTimeStampUsec) {
+        owd = std::to_string(recvBasisUs_ + largest->receiveRelativeTimeStampUsec->count() - monoUs(sent.time));
+      }
       acks_ << monoUs(ack.ackTime) << ',' << monoUs(sent.time) << ','
             << (rtt ? std::to_string(*rtt) : std::string()) << ','
             << (info.maybeMinRtt ? info.maybeMinRtt->count() : 0) << ',' << info.srtt.count() << ','
             << rateValid << ',' << ack.largestNewlyAckedPacketAppLimited << ',' << uint64_t(sendBps) << ','
             << uint64_t(ackBps) << ',' << uint64_t(bwBps) << ',' << cwnd << ',' << info.bytesInFlight << ','
             << backlog << ',' << ack.totalBytesAcked << ',' << sent.totalBytesSent << ',' << phase << ','
-            << lost_ << ",0," << ++gSeq << '\n';
+            << lost_ << ",0," << ++gSeq << ',' << owd << '\n';
       lost_ = 0;
     }
   }
@@ -308,6 +317,7 @@ class AckRecorder : public quic::ManagedObserver {
   }
 
  private:
+  int64_t recvBasisUs_{0};
   std::function<uint64_t()> backlogBytes_;
   std::ofstream acks_;
   std::ofstream sent_;
@@ -398,7 +408,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     queue_.emplace(uint64_t(FLAGS_send_buffer_ms) * 1000);
     if (FLAGS_record_acks) {
       // Sender-side backlog not yet on the wire: frame queue + QUIC unsent.
-      acks_ = std::make_shared<AckRecorder>(base, [this] {
+      acks_ = std::make_shared<AckRecorder>(base, FLAGS_owd ? request_->recvBasisUs : 0, [this] {
         return queue_->bytes() + quicUnsent(sock_->getTransportInfo());
       });
       sock_->addObserver(acks_);

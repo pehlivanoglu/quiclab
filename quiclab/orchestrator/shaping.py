@@ -139,6 +139,9 @@ def _aqm_name(
             else ""
         )
         return f"red {_red_profile(*red_bytes, queue_limit_packets)}{bandwidth} ecn"
+    if aqm == AqmKind.cake:
+        # The HTB class above shapes; cake only queues (flow isolation + COBALT, ECN on by default).
+        return "cake unlimited besteffort"
     return f"{aqm.value}{limit} ecn"
 
 

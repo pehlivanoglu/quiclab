@@ -46,14 +46,23 @@ TRUTHS = ("GT1", "GT2", "GT3 frames (B)", "GT3 ACK timestamps (A, shares input w
 
 
 def owd_acks(run: det_eval.Run, sid: str, out: Path) -> Path:
-    """Write the OWD-mode copy of a client's per-ACK record to out; return its path."""
+    """Write the OWD-mode copy of a client's per-ACK record to out; return its path.
+
+    OWD per ACK: the `owd_us` column when the recording has it (runs since
+    2026-11-10: the largest newly acked packet's own receive timestamp, exactly
+    what the sender knows at that ACK), else the 5 ms send-time bin minimum of
+    <sub>-owd.csv at or before the ACK's send time (older runs; that bin may
+    include packets acked later, a few ms of lookahead)."""
     acks = pd.read_csv(run.sender_file(sid, "acks"), dtype={"phase": str})
-    owd = pd.read_csv(run.sender_file(sid, "owd"))
-    owd = owd[owd["owd_min_us"].notna()]
-    bins = owd["bin_mono_us"].to_numpy()
-    vals = owd["owd_min_us"].to_numpy(dtype=float)
-    idx = np.searchsorted(bins, acks["sent_mono_us"].to_numpy() // 5000 * 5000, side="right") - 1
-    sample = np.where(idx >= 0, vals[np.clip(idx, 0, None)], np.nan)  # the bin at or before the send time
+    if "owd_us" in acks.columns and acks["owd_us"].notna().any():
+        sample = pd.to_numeric(acks["owd_us"], errors="coerce").to_numpy(dtype=float)
+    else:
+        owd = pd.read_csv(run.sender_file(sid, "owd"))
+        owd = owd[owd["owd_min_us"].notna()]
+        bins = owd["bin_mono_us"].to_numpy()
+        vals = owd["owd_min_us"].to_numpy(dtype=float)
+        idx = np.searchsorted(bins, acks["sent_mono_us"].to_numpy() // 5000 * 5000, side="right") - 1
+        sample = np.where(idx >= 0, vals[np.clip(idx, 0, None)], np.nan)  # the bin at or before the send time
     t = acks["mono_us"].to_numpy()
     early = t <= t[0] + BASE_S * 1e6
     rtt = pd.to_numeric(acks["rtt_us"], errors="coerce").to_numpy()

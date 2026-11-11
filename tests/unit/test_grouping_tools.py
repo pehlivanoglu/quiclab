@@ -85,16 +85,38 @@ def test_score_sbd_majority_over_burst_windows():
     assert 50.0 <= m["t_correct"] <= 54.0
 
 
-def test_window_hits_only_count_clients_the_plan_expected(monkeypatch):
-    # Two links congested at once: both groups have congested bins in both windows.
-    subs = ["a1", "b1", "ctrl"]
-    bins = {"a1": np.array([10.5, 20.5]), "b1": np.array([10.5, 20.5]), "ctrl": np.array([])}
-    monkeypatch.setattr(ga, "congested_bins", lambda _run, s: bins[s])
-    run = SimpleNamespace(subs=subs)
-    windows = [{"start": 10, "end": 11, "kind": "cap", "target": "a", "expected": ["a1"]},
-               {"start": 10, "end": 11, "kind": "cap", "target": "b", "expected": ["b1"]},
-               {"start": 20, "end": 21, "kind": "rev", "target": "rev", "expected": []}]
-    assert [b["hit"] for b in ga.measured_bursts(run, windows)] == [["a1"], ["b1"], []]
+def _split_run():
+    links = [("pub", "r1"), ("r1", "r2"), ("r2", "sa"), ("r2", "sb"), ("sa", "a1"), ("sa", "a2"), ("sb", "b1"),
+             ("sb", "b2"), ("r1", "ctrl")]
+    subs = ("a1", "a2", "b1", "b2", "ctrl")
+    return SimpleNamespace(subs=list(subs), pub="pub",
+                           topology={"publishers": {"pub": {}}, "subscribers": {s: {} for s in subs},
+                                     "links": [{"from": a, "to": b} for a, b in links]})
+
+
+def test_window_hop_is_the_deepest_egress_behind_which_exactly_the_expected_sit():
+    run = _split_run()
+    assert ga.window_hop(run, {"expected": ["a1", "a2"]}) == "r2->sa"
+    assert ga.window_hop(run, {"expected": ["a1", "a2", "b1", "b2"]}) == "r1->r2"
+    assert ga.window_hop(run, {"expected": ["a1"]}) == "sa->a1"
+    assert ga.window_hop(run, {"expected": []}) is None
+    assert ga.window_hop(run, {"expected": ["a1"], "hop": "x->y"}) == "x->y"
+
+
+def test_window_hits_follow_the_router_episode_of_the_stimulated_egress():
+    # Two links congested at once: GT1 sees both egresses; the window's own egress decides, not the clients.
+    run = _split_run()
+    hops = {"r2->sa": [(10.2, 11.5)], "r2->sb": [(10.3, 11.4)], "r1->r2": [(20.0, 21.0)]}
+    windows = [{"start": 10, "end": 11, "kind": "cap", "target": "a", "expected": ["a1", "a2"]},
+               {"start": 10, "end": 11, "kind": "cap", "target": "b", "expected": ["b1", "b2"]},
+               {"start": 20, "end": 21, "kind": "rev", "target": "rev", "expected": []},
+               {"start": 30, "end": 31, "kind": "cap", "target": "up", "expected": ["a1", "a2", "b1", "b2"]}]
+    bursts = ga.measured_bursts(run, windows, hops)
+    assert [b["hit"] for b in bursts] == [["a1", "a2"], ["b1", "b2"], [], []]
+    assert [b["hop"] for b in bursts] == ["r2->sa", "r2->sb", None, "r1->r2"]
+    # Secondary truth: per-client episodes decide (fq_codel: only the client that queued).
+    flows = {"a1": [(10.4, 12.0)], "a2": [], "b1": [(10.1, 10.9)], "b2": []}
+    assert [b["hit"] for b in ga.measured_bursts(run, windows, {}, flows)] == [["a1"], ["b1"], [], []]
 
 
 def _result(events, snapshots, leaves):

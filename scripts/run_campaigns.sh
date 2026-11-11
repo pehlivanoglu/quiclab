@@ -31,7 +31,7 @@ step() {  # step <n> <name> <command...>
 step 1 unit-tests $PY -m pytest -q tests/unit || { echo "unit tests failed, nothing started" | tee -a "$LOG"; exit 1; }
 
 step 2 detector-newscn $PY scripts/det_matrix.py --reps 2 --name newscn-v2 \
-    --scenarios calm030,calm065,calm090,calmcbr090,delaystep,randloss,revdelay,burstlong,burstcapshallow,burstcapdeep,onoff
+    --scenarios calm030,calm065,calm090,calmcbr090,randloss,revdelay,burstlong,burstcapshallow,burstcapdeep,onoff
 
 step 3 detector-split $PY scripts/det_matrix.py --topology split --reps 2 --name split-v1 \
     --scenarios splitcap,splitudp

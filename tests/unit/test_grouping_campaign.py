@@ -239,15 +239,15 @@ def test_mixab_differs_between_branches_only(tmp_path):
 
 def test_scoring_survives_a_missing_replay_binary(tmp_path, monkeypatch):
     def process(_run, _cfg, a):
-        if a.onsets == "shadow":
+        if a.onsets == "v2":
             raise SystemExit("replay binary missing")
         return {"onsets": 1}
     monkeypatch.setattr(gc.ga, "process", process)
     monkeypatch.setattr(gc.gb, "process", lambda *_: {"methods": {}})
     out = gc.score_run(tmp_path, None)
-    assert out["ecg"]["shadow"] == {"error": "replay binary missing"}
-    assert out["ecg"]["owd"] == out["ecg"]["truth"] == out["ecg"]["shadow-owd"] == {"onsets": 1}
-    assert gc.ONSET_SOURCES == ("shadow", "shadow-owd", "owd", "truth") and gc.PRIMARY == "shadow-owd"
+    assert out["ecg"]["v2"] == {"error": "replay binary missing"}
+    assert out["ecg"]["owd"] == out["ecg"]["truth"] == out["ecg"]["v2-owd"] == {"onsets": 1}
+    assert gc.ONSET_SOURCES == ("v2-owd", "v2", "v2-owd-nohold", "v2-nohold", "owd", "truth") and gc.PRIMARY == "v2-owd"
     assert "baselines" in out and "baselines" not in gc.score_run(tmp_path, None, with_baselines=False)
     assert gc.CAMPAIGNS["N5"]["baselines"] is False
 
@@ -261,7 +261,7 @@ def test_link_lag_reads_applied_link_events_per_label():
     all_ = gc.link_lag(rows)
     assert all_["n"] == 3 and all_["max"] == pytest.approx(0.25) and all_["p50"] == pytest.approx(0.002)
     assert gc.link_lag(rows, "trace")["n"] == 2 and gc.link_lag(rows, "nope") is None
-    assert "trace lag max" in gc.infra_line({"run": "r", "finished": True, "errors": 0, "sender_files_missing": [],
+    assert f"> {gc.TRACE_LAG_MAX_S}" in gc.infra_line({"run": "r", "finished": True, "errors": 0, "sender_files_missing": [],
                                              "lag_trace": gc.link_lag(rows, "trace"), "lag_all": all_,
                                              "sessions_planned": 0, "sessions_found": 0, "clients_never_hit": [],
                                              "clients": 5, "windows_hit": 1, "windows": 1, "shared_hit2": 1,

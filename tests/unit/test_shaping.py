@@ -71,6 +71,7 @@ def test_rate_plus_aqm_chains_aqm_under_htb():
         ),
         (AqmKind.pie, "pie ecn"),
         (AqmKind.fq_codel, "fq_codel ecn"),
+        (AqmKind.cake, "cake unlimited besteffort"),
     ],
 )
 def test_rate_plus_ecn_aqm_uses_reproducible_command(aqm, expected):

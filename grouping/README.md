@@ -232,7 +232,7 @@ own tables). The replay's shared-group context is the client's leaf queue
 equals the old "first router egress". Without the replay binary the campaign
 continues on the owd and truth sources: score the runs later, then --report-only.
 
-## Campaign results (v1.1, `.runs/ip8/2026-11-06_1526_grp`, 85 runs) and the v1.2 rules
+## Campaign results (v1.1, `.runs/old/ip8/2026-11-06_1526_grp`, 85 runs) and the v1.2 rules
 
 Scored with θ = 0.6 and the corrected leaf truth (`leaf_groups`: intersection of
 the *expected* sets of the shared windows a client was hit in; private windows
@@ -292,7 +292,7 @@ in which every later event was case C. Outsiders now join only when the whole
 leaf fired with them (v1.1's A-superset condition); two members firing with
 strangers says nothing about the leaf's extent.
 
-**Synthetic table, v1.1 (θ 0.6) → v1.2** (10 seeds, `.runs/ip8/2026-11-10_grouping-synth-v12/`):
+**Synthetic table, v1.1 (θ 0.6) → v1.2** (10 seeds, `.runs/old/ip8/2026-11-10_grouping-synth-v12/`):
 
 | scenario | ideal | realistic | note |
 |---|---|---|---|
@@ -339,12 +339,18 @@ runs finish (`--ks K1 --report-only --v12 --tag v12`).
 Nothing in `engine.py` changes for the unseen campaign; its result is reported
 as it comes.
 
-**Truth** (`grouping_adapter.truth_of`, `leaf_groups`):
-- a *stimulus window* is a planned congestion interval on one link, with the
-  clients behind that link as `expected`;
-- a client is *hit* in a window when it is in `expected` and the OWD oracle
-  (`det_eval.measured_bands`) shows a standing queue ≥ 10 ms for ≥ 0.5 s, or
-  loss, inside [start, end + 2 s];
+**Truth** (`grouping_adapter.truth_of`, `leaf_groups`; hit rule changed
+2026-11-10 before any held-out scoring, see campaign v2 below):
+- a *stimulus window* is a planned congestion interval on one router egress
+  (`hop`), with the clients behind that egress as `expected`;
+- the expected clients are *hit* in a window when the egress shows a GT1
+  standing-queue episode (`gt1.run_truth`, router counters only) inside
+  [start, end + 2 s]. This is independent of every client-side signal. Under
+  fq_codel the router cannot say which flows queued, so every expected client
+  counts; the same windows scored with GT3 per-client OWD episodes are the
+  secondary truth (`pairwise_gt3`, "GT3" column), with the note that GT3 reads
+  the signal the OWD-mode detector reads. Until 2026-11-10 the hit rule was the
+  OWD oracle itself (`det_eval.measured_bands`), i.e. the detector's own input;
 - `pairs[f,g]` (share a link) = both hit in at least one common window;
 - `leaf[f]` (tightest shared group) = intersection of the `expected` sets of
   the *shared* windows (≥ 2 expected clients) in which f was hit; empty when f
@@ -377,7 +383,7 @@ failure is reported with the L plot and the rule believed responsible.
 .venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --ks N2 --only pfifo-r1   # smoke: 17 clients
 .venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --ks N4 --only pfifo-r1   # smoke: tc keeps up?
 .venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --skip-existing           # the rest (tmux)
-.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --compare .runs/ip8/2026-11-06_1526_grp
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --compare .runs/old/ip8/2026-11-06_1526_grp
 .venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --score-held-out   # after the freeze only
 ```
 
@@ -385,11 +391,23 @@ Order of events (review, 2026-11-10): the engine is not frozen yet (episode
 end as an event, in-episode metrics still open), so the runs happen now, the
 development set is scored as it comes, and **N1–N5 are not scored until the
 rules are frozen and tagged**: until then they get `infra.md` only (finished,
-clients / sessions, event errors, link event lag, windows the oracle confirmed,
+clients / sessions, event errors, link event lag, windows GT1 confirmed,
 clients never hit, control client). Onset sources on every run: shadow (RTT,
 comparison), **shadow-owd (primary; the criteria are evaluated on it)**, owd,
 truth. N5 has no SBD baseline columns (the baselines need one common span of
 long-lived flows).
+
+Second review the same day, applied before the runs: the detector's OWD input
+and the truth must not be the same signal, so (1) the grouping truth moved to
+GT1 router episodes with GT3 as the secondary column (above), (2) the
+publisher's `acks.csv` gained `owd_us`, the largest newly acked packet's own
+one-way delay at that ACK, which `owd_mode` now prefers over the 5 ms send-bin
+minimum (older runs fall back to the bins, with a few ms of lookahead), (3)
+Copa is dropped, (4) `cake` is available as an AQM (`cake unlimited
+besteffort` under the HTB shaper; ignores `queue_limit_packets`) for the
+microbenchmarks (pfifo, red, pie, cake; fq_codel stays in the core set only).
+The merged core / microbenchmark / negative campaign of that review (one
+planner, both scorers on every run) is the next step.
 
 | campaign | topology | stimulus | AQMs × reps | criterion (shadow-owd source; RTT shadow as comparison) |
 |---|---|---|---|---|
@@ -437,7 +455,7 @@ of the first two events (p_miss 0.1, three flows → ≈ 46 % of seeds) takes
 < A). "All three flows after ≤ 3 events" is therefore a criterion on the
 detector's miss rate, not on the rules; median events-to-leaf is 2 as targeted.
 
-**Synthetic table with the frozen defaults** (10 seeds, `.runs/ip8/2026-11-10_grouping-synth-default/table.md`):
+**Synthetic table with the frozen defaults** (10 seeds, `.runs/old/ip8/2026-11-10_grouping-synth-default/table.md`):
 
 | scenario | ideal | realistic |
 |---|---|---|

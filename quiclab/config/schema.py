@@ -50,6 +50,7 @@ class AqmKind(str, Enum):
     red = "red"
     pie = "pie"
     fq_codel = "fq_codel"
+    cake = "cake"  # COBALT per-flow AQM; sizes its own buffer, queue_limit_packets is not applied
     pfifo = "pfifo"  # plain FIFO leaf with an explicit packet limit
 
 

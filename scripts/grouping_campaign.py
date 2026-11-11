@@ -9,17 +9,18 @@ as soon as its last run finishes.
     python3 scripts/grouping_campaign.py --campaign .runs/<dir> --report-only     # (re)score only
     python3 scripts/grouping_campaign.py --campaign .runs/<dir> --report-only --compare .runs/<old>  # flag worse cells
 
-Grouping-only tooling: the shadow detector stays frozen (det_eval TUNED) and
+Grouping-only tooling: the detector is the frozen Shadow v2 (scripts/shadow_v2_frozen.py) and
 BBR is the only congestion control. It reuses det_matrix's topology numbers
 and AQM table (import only) and the quiclab CLI; it writes
 .runs/<ts>_grp/<K>/{_gen, grp-<type>-<aqm>-r<rep>/, manifest.yaml, report.md}.
 After every run det_eval.score is attempted (the detector's own report, best
 effort) and the run's stimulus windows are copied to <run>/grouping/windows.json:
-grouping truth = a client is hit in a window when the OWD oracle shows a
-standing queue there AND the plan expected that client (two simultaneous
-events on different links cannot be told apart by the oracle alone). Every
-window carries `stimulus_type` (capdrop | udp | tcp | trace) and `concurrent`
-(overlaps, within 1 s, a window on another bottleneck).
+grouping truth = the plan's expected clients are hit in a window when the
+window's router egress (`hop`) shows a GT1 standing-queue episode there
+(router counters, independent of the detector's input; GT3 per-client OWD is
+the secondary truth). Every window carries `hop`, `stimulus_type` (capdrop |
+udp | tcp | trace) and `concurrent` (overlaps, within 1 s, a window on another
+bottleneck).
 
 Specification: grouping/campaign-v2-spec.md (scenarios, outputs, pass criteria;
 the criteria were written before the held-out runs). Rep = seed, same seed on
@@ -37,7 +38,7 @@ Development set (the rules were developed on these):
             per run, u in {1.05, 1.1, 1.15, 1.3}. pfifo, fq_codel. 3 reps.
   K3 rev    revasym, revjit10 (detector topology), revcross, revcrossmix
             (detector-rev topology). pfifo, fq_codel, 3 reps; scored with the
-            RTT and the OWD shadow (source shadow-owd).
+            RTT and the OWD detector (sources v2, v2-owd).
   K5 mixed  detector-access topology: 12 shared cap bursts + 16 private access
             drops shuffled; sub-d joins at 60 s; nobody leaves. 4 AQMs, 3 reps.
   K6 depth  tree8 topology (2.5 / 5 Mb/s per leaf since 2026-11-10): targets
@@ -104,7 +105,7 @@ for _variant in ("uneven", "uneven6"):
         "A": ("r2", "switch-a", None), "B": ("r2", "switch-b", None), "C": ("r2", "switch-c", None)}, "C"))
 
 U_CAP, D_CAP = (1.3, 2.0), (1, 2, 4)
-UNIFORM = list(dm.AQMS)
+UNIFORM = ["pfifo", "red", "pie", "fq_codel"]   # the core set of the spec; cake (det_matrix.AQMS) is for the microbenchmarks
 MIXED = {"mixa": {"r1": "pfifo", "r2": "fq_codel"}, "mixb": {"r1": "fq_codel", "r2": "pfifo"},
          "mixab": {"r1": "pfifo", "r2": "pfifo"}}
 # On top of MIXED: router -> neighbor -> AQM of that one egress.
@@ -124,12 +125,15 @@ TRACES = ROOT / "configs" / "traces"
 TRACE_STEP_S, TRACE_MEAN_X, TRACE_BELOW, TRACE_MIN_MBPS = 0.2, 2.0, (0.05, 0.15), 0.1
 TRACE_EXCLUDE = ("EVDO", "UMTS")          # the spec names Mahimahi's LTE traces; the 3G ones stay in configs/traces unused
 TRACE_MERGE_S = 1.0                       # private dips closer than this are one window (as alarm flaps merge)
+TRACE_LAG_MAX_S = 0.05                    # a trace step applied later than this is flagged (a full step late is invisible)
 # N5 churn: on / off times per client (exponential with a floor), seconds.
 N5_DURATION_S, N5_ON, N5_OFF = 900.0, (90.0, 20.0), (30.0, 5.0)
 ENGINE_SET = {"theta_J": 0.6, "theta_cov": 0.6}   # the sweep value used in every real-run result so far
-SHADOW_OWD = "shadow-owd"                  # the frozen shadow on sender-side OWD instead of RTT
-ONSET_SOURCES = ("shadow", SHADOW_OWD, "owd", "truth")   # scored on every run
-PRIMARY = SHADOW_OWD                       # the main signal (user decision 2026-11-10); RTT shadow = comparison row
+# Detector = the frozen Shadow v2 (scripts/shadow_v2_frozen.py; user decision 2026-11-10). The v1 sources
+# "shadow" / "shadow-owd" stay available in grouping_adapter.py but are no longer scored here.
+PRIMARY = "v2-owd"                         # the main signal: v2 on sender-side OWD, with the hold rule
+COMPARE = ("v2", "v2-owd-nohold", "v2-nohold")   # comparison rows: RTT input, and both without the hold rule
+ONSET_SOURCES = (PRIMARY, *COMPARE, "owd", "truth")   # scored on every run
 
 # K -> topology, AQM ids, run types, reps, extra onset sources.
 CAMPAIGNS = {
@@ -504,6 +508,14 @@ def plan_type(rtype: str, n: dict, seed: int) -> tuple[list[dict], list[dict], f
     else:
         raise ValueError(rtype)
     events, windows, duration = out
+    for w in windows:   # the stimulated router egress, for the GT1 truth (None: reverse-path stimuli)
+        if w["target"] in n["hops"]:
+            link = n["hops"][w["target"]]["link"]
+            w["hop"] = f"{link['from']}->{link['to']}"
+        elif w["target"] in n["uplink"]:
+            w["hop"] = f"{n['uplink'][w['target']]}->{w['target']}"
+        else:
+            w["hop"] = None
     return events, flag_concurrent(windows), duration, meta
 
 
@@ -701,8 +713,8 @@ def infra_line(i: dict) -> str:
         flags.append(f"{i['errors']} event errors")
     if i["sender_files_missing"]:
         flags.append(f"missing files {i['sender_files_missing']}")
-    if i["lag_trace"] and i["lag_trace"]["max"] > TRACE_STEP_S:
-        flags.append(f"trace lag max {i['lag_trace']['max']} s > step")
+    if i["lag_trace"] and i["lag_trace"]["max"] > TRACE_LAG_MAX_S:
+        flags.append(f"trace lag p99/max {i['lag_trace']['p99']}/{i['lag_trace']['max']} s > {TRACE_LAG_MAX_S}")
     if i["sessions_planned"] != i["sessions_found"]:
         flags.append(f"sessions {i['sessions_found']}/{i['sessions_planned']}")
     if i["clients_never_hit"]:
@@ -842,7 +854,7 @@ def compare_cells(results: list[dict], old_dir: Path | None, tol: float = 0.05) 
 
 def criteria(k: str, results: list[dict], src: str = PRIMARY) -> list[str]:
     """Pass criteria of grouping/campaign-v2-spec.md section 7 on one onset source
-    (PRIMARY = shadow-owd; the RTT shadow is printed as the comparison)."""
+    (PRIMARY = v2-owd; the COMPARE sources are printed as comparisons)."""
     def shadow_of(r, key, s=src):   # noqa: F811 - the source is fixed for this block
         return r["ecg"].get(s, {}).get(key)
     by_cell = defaultdict(list)
@@ -925,23 +937,25 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
                                                                           " — development set"), "",
              f"{len(runs)} runs, engine overrides {over if over is not None else ENGINE_SET}, engine tree "
              f"`{scoring['engine_git']}` at scoring time (the runs' plan.json holds the planning tree), "
-             f"onset sources {', '.join(sources)} (primary {PRIMARY}; shadow = RTT comparison), truth = stimulus "
+             f"onset sources {', '.join(sources)} (primary {PRIMARY}; comparison {', '.join(COMPARE)}), truth = stimulus "
              f"windows x OWD oracle x plan (pairs_leaf; link = pairs). Generated {datetime.datetime.now():%Y-%m-%d %H:%M}."
              + ("" if with_baselines else " No SBD baseline columns: the baselines need one common span over "
                                          "long-lived flows and cannot follow sessions."), ""]
     lines += criteria(k, results) + [""]
     if k in HELD_OUT:
-        lines += criteria(k, results, "shadow") + [""]
+        for src in COMPARE:
+            lines += criteria(k, results, src) + [""]
     # 1. per type x AQM: medians over reps
     lines += [f"## Final grouping per type x AQM (median over reps; leaf precision / recall, t_correct s; "
-              f"cov = share of pairs decided per source; link = {PRIMARY} P / R against 'share a link'; "
+              f"cov = share of pairs decided per source; link = {PRIMARY} P / R against 'share a link'; GT3 = {PRIMARY} "
+              f"leaf P / R against the per-client OWD truth (fq_codel: the router truth counts every expected client); "
               f"cross = confirmed cross-group pairs ({PRIMARY} fp, median / max); ctrl = runs with sub-ctrl in a leaf; "
               "tree = runs whose confirmed leaves equal the truth groups; ev->member = median events a flow took "
               "part in before it was reported a member)", "",
               "| type | aqm | n | " + " | ".join(f"ECG {s}" for s in sources)
-              + f" | cov | link P / R | cross | ctrl | tree | ev->member | DCW | rmcatSBD | dcSBD | spread p50/p90 ms ({PRIMARY}) |"
+              + f" | cov | link P / R | GT3 P / R | cross | ctrl | tree | ev->member | DCW | rmcatSBD | dcSBD | spread p50/p90 ms ({PRIMARY}) |"
               + (" compare |" if worse else ""),
-              "|---|---|---|" + "---|" * len(sources) + "---|---|---|---|---|---|---|---|---|---|" + ("---|" if worse else "")]
+              "|---|---|---|" + "---|" * len(sources) + "---|---|---|---|---|---|---|---|---|---|---|" + ("---|" if worse else "")]
     by_cell = defaultdict(list)
     for r in results:
         by_cell[cell_of(r["run"])].append(r)
@@ -959,6 +973,7 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
         spread = f"{med([x['p50'] for x in sp]):.0f} / {med([x['p90'] for x in sp]):.0f}" if sp else "-"
         cov = " / ".join(fmt(med([shadow_of(r, "coverage", src) for r in rs])) for src in sources)
         link = f"{fmt(med([shadow_of(r, 'precision_link') for r in rs]))} / {fmt(med([shadow_of(r, 'recall_link') for r in rs]))}"
+        gt3 = f"{fmt(med([shadow_of(r, 'precision_gt3') for r in rs]))} / {fmt(med([shadow_of(r, 'recall_gt3') for r in rs]))}"
         fps = [shadow_of(r, "fp") for r in rs if shadow_of(r, "fp") is not None]
         cross = f"{med(fps)} / {max(fps)}" if fps else "-"
         ctrl = f"{sum(shadow_of(r, 'ctrl_grouped') is True for r in rs)}/{len(rs)}"
@@ -966,7 +981,7 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
         evm = med([v for r in rs for v in (shadow_of(r, "membership_events") or {}).values()])
         lines.append(f"| {rtype} | {aqm} | {len(rs)} | "
                      + " | ".join(cell_str(rs, f"ecg:{ecg_dir(src, tag)}") for src in sources)
-                     + f" | {cov} | {link} | {cross} | {ctrl} | {tree} | {fmt(evm)} | "
+                     + f" | {cov} | {link} | {gt3} | {cross} | {ctrl} | {tree} | {fmt(evm)} | "
                      + " | ".join(cell_str(rs, n) if with_baselines else "n/a" for n in ("dcw", "rmcat_sbd", "dc_sbd"))
                      + f" | {spread} |" + (f" {worse.get((rtype, aqm), '-')} |" if worse else ""))
     # 2. case matrix per type and source (concurrent windows as their own rows)

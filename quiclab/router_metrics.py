@@ -46,7 +46,7 @@ CSV_FIELDS = (
 # Fast queue-only samples (`--queue-only`): read over rtnetlink, so a 5 ms
 # period does not fork tc 200 times a second next to the relay.
 QUEUE_CSV_FIELDS = ("timestamp_mono_ns", "queue_packets", "queue_backlog_bytes", "drops")
-_QUEUE_KINDS = {"dualpi2", "red", "pie", "fq_codel", "pfifo"}
+_QUEUE_KINDS = {"dualpi2", "red", "pie", "fq_codel", "cake", "pfifo"}
 
 
 @dataclass(frozen=True)
