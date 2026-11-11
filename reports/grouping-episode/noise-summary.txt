@@ -1,0 +1,12 @@
+FIFO pairs: SAME scripted 8771, SAME natural 552, DIFF-conc 558 (groups {'K1': 486, 'K6': 72})
+AUC SAME vs DIFF-conc (0.5 = no separation) and pass rates at thresholds fixed on the clean data
+-- noise iid
+sigma  0 ms AUC corr 0.85 AUC mad_ms 0.88 AUC nmad 0.90 | pass corr>=0.86: SAME 0.80 nat 0.62 DIFF 0.31 | nMAD<=0.096: SAME 0.80 nat 0.89 DIFF 0.17 | both: SAME 0.73 nat 0.61 DIFF 0.13
+sigma  5 ms AUC corr 0.83 AUC mad_ms 0.88 AUC nmad 0.90 | pass corr>=0.86: SAME 0.78 nat 0.43 DIFF 0.31 | nMAD<=0.096: SAME 0.77 nat 0.75 DIFF 0.15 | both: SAME 0.70 nat 0.41 DIFF 0.11
+sigma 10 ms AUC corr 0.81 AUC mad_ms 0.88 AUC nmad 0.89 | pass corr>=0.86: SAME 0.71 nat 0.14 DIFF 0.27 | nMAD<=0.096: SAME 0.66 nat 0.20 DIFF 0.08 | both: SAME 0.60 nat 0.07 DIFF 0.06
+sigma 20 ms AUC corr 0.73 AUC mad_ms 0.85 AUC nmad 0.83 | pass corr>=0.86: SAME 0.47 nat 0.01 DIFF 0.15 | nMAD<=0.096: SAME 0.31 nat 0.00 DIFF 0.04 | both: SAME 0.26 nat 0.00 DIFF 0.03
+-- noise corr200
+sigma  0 ms AUC corr 0.85 AUC mad_ms 0.88 AUC nmad 0.90 | pass corr>=0.86: SAME 0.80 nat 0.62 DIFF 0.31 | nMAD<=0.096: SAME 0.80 nat 0.89 DIFF 0.17 | both: SAME 0.73 nat 0.61 DIFF 0.13
+sigma  5 ms AUC corr 0.82 AUC mad_ms 0.87 AUC nmad 0.88 | pass corr>=0.86: SAME 0.73 nat 0.23 DIFF 0.27 | nMAD<=0.096: SAME 0.67 nat 0.29 DIFF 0.13 | both: SAME 0.60 nat 0.16 DIFF 0.09
+sigma 10 ms AUC corr 0.76 AUC mad_ms 0.85 AUC nmad 0.84 | pass corr>=0.86: SAME 0.58 nat 0.05 DIFF 0.20 | nMAD<=0.096: SAME 0.37 nat 0.01 DIFF 0.04 | both: SAME 0.32 nat 0.01 DIFF 0.03
+sigma 20 ms AUC corr 0.65 AUC mad_ms 0.77 AUC nmad 0.74 | pass corr>=0.86: SAME 0.27 nat 0.01 DIFF 0.08 | nMAD<=0.096: SAME 0.08 nat 0.00 DIFF 0.01 | both: SAME 0.07 nat 0.00 DIFF 0.01

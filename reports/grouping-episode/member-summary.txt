@@ -1,0 +1,39 @@
+== FIFO: 323 (run, flow) memberships
+  positive entries to membership: 2:270 3:45 4:7 6:1  (median 2.0)
+  events taken part in:           2:192 3:73 4:28 5:18 6:3 7:2 8:3 9:1 13:1 14:2  (median 2.0)
+  shared windows expected in:     0:5 1:35 2:194 3:51 4:24 5:2 6:7 7:2 8:1 9:2  (median 2.0)
+  cases of those events: {'D': 301, 'A': 427, 'SOLO': 127, 'GLOBAL': 38, 'B': 6, 'C': 12}
+  positive weight: n=709 capped=1.00 median=2.50 base median=3.28 c_lag<1=0.00 c_mag<1=0.00  (A = 4.55, cap = 2.50)
+  with negative evidence: 0.12; decay loss median 0.16 p90 0.79
+  more than two positive entries, why: {'2 positive entries': 270, 'negative evidence': 33, 'decay (gap > 60 s)': 20}
+  t_member - first shared window: p50 17.2 s, p90 96.1 s
+== fq/cake: 118 (run, flow) memberships
+  positive entries to membership: 2:95 3:16 4:5 5:2  (median 2.0)
+  events taken part in:           2:50 3:22 4:17 5:6 6:6 7:3 8:2 9:1 10:4 12:1 13:1 15:1 17:2 18:1 23:1  (median 3.0)
+  shared windows expected in:     0:2 2:51 3:25 4:17 5:5 6:4 7:2 8:1 9:3 10:2 11:2 18:1 19:1 20:1 22:1  (median 3.0)
+  cases of those events: {'D': 134, 'SOLO': 168, 'A': 166, 'GLOBAL': 20, 'C': 6, 'B': 7}
+  positive weight: n=268 capped=1.00 median=2.50 base median=3.28 c_lag<1=0.00 c_mag<1=0.00  (A = 4.55, cap = 2.50)
+  with negative evidence: 0.23; decay loss median 0.16 p90 0.68
+  more than two positive entries, why: {'decay (gap > 60 s)': 6, 'negative evidence': 17, '2 positive entries': 95}
+  t_member - first shared window: p50 32.7 s, p90 217.9 s
+== mixab: 6 (run, flow) memberships
+  positive entries to membership: 2:6  (median 2.0)
+  events taken part in:           2:4 3:1 4:1  (median 2.0)
+  shared windows expected in:     3:6  (median 3.0)
+  cases of those events: {'D': 3, 'A': 9, 'SOLO': 3}
+  positive weight: n=12 capped=1.00 median=2.50 base median=3.28 c_lag<1=0.00 c_mag<1=0.00  (A = 4.55, cap = 2.50)
+  with negative evidence: 0.00; decay loss median 0.16 p90 0.16
+  more than two positive entries, why: {'2 positive entries': 6}
+  t_member - first shared window: p50 26.9 s, p90 36.1 s
+== FIFO per group: memberships | positive entries median | windows median | events median | cases
+  C1 18 | 3.0 | 2.0 | 3.5 | {'D': 18, 'A': 38, 'SOLO': 8}
+  K1 18 | 2.0 | 4.0 | 5.0 | {'D': 21, 'SOLO': 6, 'GLOBAL': 24, 'A': 30, 'B': 1}
+  K2 16 | 2.0 | 2.0 | 2.0 | {'D': 17, 'A': 19, 'SOLO': 3}
+  K3 12 | 2.0 | 2.0 | 2.0 | {'D': 10, 'A': 14, 'SOLO': 4}
+  K5 12 | 2.0 | 1.0 | 4.0 | {'SOLO': 31, 'D': 11, 'A': 22, 'GLOBAL': 10}
+  K6 8 | 2.5 | 4.0 | 6.0 | {'SOLO': 18, 'D': 10, 'C': 2, 'B': 5, 'A': 6, 'GLOBAL': 4}
+  M1 83 | 2.0 | 2.0 | 2.0 | {'D': 78, 'A': 105, 'SOLO': 18, 'C': 6}
+  M2 60 | 2.0 | 2.0 | 2.0 | {'D': 47, 'A': 82, 'SOLO': 14}
+  M3 36 | 2.0 | 2.0 | 2.0 | {'D': 32, 'A': 41, 'SOLO': 10, 'C': 2}
+  M4 24 | 2.0 | 2.0 | 2.0 | {'D': 24, 'C': 2, 'SOLO': 4, 'A': 24}
+  M5 36 | 2.0 | 2.0 | 2.0 | {'D': 33, 'A': 46, 'SOLO': 11}
