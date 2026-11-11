@@ -88,7 +88,7 @@ def floors_for(pfifo_r1: list[Path]) -> dict[str, float]:
         for df in s3.load_flows(rd).values():
             calm = df.calm.to_numpy(bool)
             for f in ("F1", "F2", "F3", "F4"):
-                v = s2.causal_z(df[f].to_numpy(dtype=float), calm, "ewma", s3.T, 0.0)[3]
+                v = s2.causal_z(df[f].to_numpy(dtype=float), calm, "ewma", s3.tick_of(df), 0.0)[3]
                 if np.isfinite(v) and v > 0:
                     sig[f].append(v)
     return {f: 0.1 * float(np.median(v)) for f, v in sig.items()}

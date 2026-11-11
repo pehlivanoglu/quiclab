@@ -105,6 +105,12 @@ for _base, _fixed in (("fuse d: s1+s2+s3+sL", False), ("fuse d fixed", True)):
         HOLD.add(_name)
         FIXED.add(_name) if _fixed else None
         GATE[_name] = (_kind, _cap, _hl)
+# The adopted gate without the hold rule (2026-11-10: grouping compares hold / no hold offline).
+for _base, _fixed in (("fuse d: s1+s2+s3+sL", False), ("fuse d fixed", True)):
+    _name = f"{_base} gate:level+cap"
+    LOSS[_name] = ("fuse", FUSION["fuse d: s1+s2+s3+sL"])
+    FIXED.add(_name) if _fixed else None
+    GATE[_name] = ("level", True, True)
 T_RB_S = 1.0
 SHRINK = 0.5  # covariance shrinkage toward the diagonal (spec section 8)
 LOSS_FLOOR = 1e-3  # 0.1 % loss: numerical floor of the loss-rate sigma
@@ -127,6 +133,7 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
     """Causal single-feature CUSUM over one flow's tick frame.
     g_ref None = fitting pass: no cap, freeze from the running max (score unknown); returns G."""
     n = len(df)
+    T = tick_of(df)
     t = df.t.to_numpy()
     masked, nodata = df.masked.to_numpy(), df.no_data.to_numpy()
     probe = df.probe_rtt.to_numpy()
@@ -294,7 +301,7 @@ def run_cusum(df: pd.DataFrame, feature: str, g_ref: float | None, reset_probe: 
 
 def loss_rate(df: pd.DataFrame, window_s: float = 0.1) -> np.ndarray:
     lost, sent = df.l.to_numpy(), df.n.to_numpy()
-    n, w = len(df), max(1, int(round(window_s / T)))
+    n, w = len(df), max(1, int(round(window_s / tick_of(df))))
     cl, cs = np.concatenate(([0.0], np.cumsum(lost))), np.concatenate(([0.0], np.cumsum(sent)))
     idx = np.arange(1, n + 1)
     lo = np.maximum(0, idx - w)
@@ -343,13 +350,18 @@ def episodes(res: dict, theta: float) -> tuple[list[float], list[float]]:
 
 # ── workers ──────────────────────────────────────────────────────────────
 
-def f3_of(P: np.ndarray, d_k: np.ndarray) -> np.ndarray:
+def tick_of(df: pd.DataFrame) -> float:
+    """Tick length of one flow's tick frame (one tick per video frame, shadow_v2_step1.tick_s)."""
+    return round(float(df.t.iloc[1] - df.t.iloc[0]), 6)
+
+
+def f3_of(P: np.ndarray, d_k: np.ndarray, T: float) -> np.ndarray:
     return (P - np.concatenate((np.full(F3_W, np.nan), P[:-F3_W]))) * 8 / (d_k * F3_W * T)
 
 
 def d_unfrozen(df: pd.DataFrame) -> np.ndarray:
     """d_k updated on every unmasked tick with data (no score freeze): used outside run_cusum (calm-run statistics)."""
-    v, a, out = float(df.d0.iloc[0]), T / TAU_D, np.empty(len(df))
+    v, a, out = float(df.d0.iloc[0]), tick_of(df) / TAU_D, np.empty(len(df))
     for k, (r, m, nd) in enumerate(zip(df.rate.to_numpy(), df.masked.to_numpy(), df.no_data.to_numpy())):
         if not m and not nd:
             v += a * (r - v)
@@ -357,17 +369,17 @@ def d_unfrozen(df: pd.DataFrame) -> np.ndarray:
     return out
 
 
+def load_flow(f: Path) -> pd.DataFrame:
+    df = pd.read_csv(f)
+    causal = CAUSAL_D and "rate" in df
+    df["F3"] = f3_of(df["P"].to_numpy(), d_unfrozen(df) if causal else df.d.to_numpy(), tick_of(df))
+    return df
+
+
 def load_flows(run_dir: Path) -> dict[str, pd.DataFrame]:
     run = d.Run(run_dir)
-    out = {}
-    for s in run.subs:
-        f = run_dir / "shadow-v2" / TICKS_DIR / f"{s}.csv"
-        if f.exists():
-            df = pd.read_csv(f)
-            causal = CAUSAL_D and "rate" in df
-            df["F3"] = f3_of(df["P"].to_numpy(), d_unfrozen(df) if causal else df.d.to_numpy())
-            out[s] = df
-    return out
+    files = {s: run_dir / "shadow-v2" / TICKS_DIR / f"{s}.csv" for s in run.subs}
+    return {s: load_flow(f) for s, f in files.items() if f.exists()}
 
 
 def fit_worker(run_dir: Path) -> dict:

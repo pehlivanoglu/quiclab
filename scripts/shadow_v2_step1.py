@@ -42,7 +42,7 @@ import gt_score  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "reports" / "detector-v2"
-T = 0.033
+T = 0.033  # tick at the default 30 fps; per run: tick_s(run)
 W_G = 2
 H_HOLD = 2
 TAU_D = 10.0
@@ -158,13 +158,20 @@ def ticks_for(run: d.Run, sid: str, dump: Path, code: np.ndarray, rendition_bps:
     return df
 
 
-def worker(run_dir: Path, T: float = T, dump: Path | None = None, out_name: str | None = None) -> dict:
-    """Tick files for every client; dump / out_name: another per-ACK dump (e.g. the OWD mode) and tick folder."""
+def tick_s(run: d.Run) -> float:
+    """One tick per video frame: T = 1 / fps at ms resolution (33 ms at the default 30 fps)."""
+    return round(1 / run.topology["publishers"][run.pub].get("fps", 30), 3)
+
+
+def worker(run_dir: Path, T: float | None = None, dump: Path | None = None, out_name: str | None = None) -> dict:
+    """Tick files for every client; T None = the run's frame interval; dump / out_name: another per-ACK dump
+    (e.g. the OWD mode) and tick folder."""
     run = d.Run(run_dir)
+    T = T or tick_s(run)
     dump = dump or ensure_dump(run)
     rates = {s: c["rate_kbps"] * 1000 for s, c in run.topology["subscribers"].items()}
     eps, labels = gt3.run_truth(run, gt3.Params(), path_queues=False)
-    out_dir = run.path / "shadow-v2" / (out_name or ("ticks" if abs(T - 0.033) < 1e-9 else f"ticks-{round(T * 1000)}ms"))
+    out_dir = run.path / "shadow-v2" / (out_name or ("ticks" if abs(T - tick_s(run)) < 1e-9 else f"ticks-{round(T * 1000)}ms"))
     out_dir.mkdir(parents=True, exist_ok=True)
     res = {"name": run.path.name, "aqm": run.aqm, "scn": d.scenario_name(run.path), "flows": {}}
     for s in run.subs:
