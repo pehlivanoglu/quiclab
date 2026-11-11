@@ -412,3 +412,44 @@ Deviations from the letter of the spec, stated here rather than hidden:
   with a 2 s grace after the leave for the last in-flight event.
 - The budget assumes the N2 full variant runs; the 17-client capacity of the
   host is checked by the first N2 run, not by this document.
+
+
+## Merged campaign (second review, 2026-11-10): one planner, both scorers
+
+Implemented in `scripts/grouping_campaign.py` (planner, runner, reports) with
+`scripts/det_matrix.scenario_data` (the detector matrix's own event benchmark,
+now shared) and `scripts/e2e_score.py` (end-to-end tables). Every run is
+scored by both pipelines: `det_eval.score` + GT1/GT2/GT3 (`<run>/truth/`) for
+the detector, the adapter for the grouping; the campaign report carries the
+grouping tables, the end-to-end table and det_eval's detector table per cell.
+
+Three layers (`GROUPS`):
+
+| layer | campaigns | topology / AQMs | reps |
+|---|---|---|---|
+| core | K1, K2, K3, K5, K6, **C1** (burstlong on every split bottleneck), N1–N5 | as specified; AQMs pfifo, red, pie, fq_codel (+ mixab in K1) | K 3, K6 and N 5, C1 3 |
+| negatives | **G0**: calm030, calm065, calm090, calmcbr090, randloss on base; calm065 on split, tree8, uneven | pfifo, red, pie, fq_codel, cake | 3 |
+| micro | **M1** burstcap, burstudp, bursttiny, ramp, tcpcubic, tcpbbr, ppbp, burstlong; **M2** RTT ×0.25 / ×2, queue ×0.5 / ×1.5 / ×2 (×0.25 and ×4 stay as det_matrix limit rows, not in the campaign); **M3** reverse jitter 5 / 10 / 20 ms; **M4** 15 / 60 fps (`detector-fps15/60.yaml`); **M5** bitrate mixes all 1, all 8, 1/2.5/5/12 Mb/s (`detector-bw1/bw8/bwmix.yaml`, capacity = demand / 0.65); **M6** gaps U(2, 5) / U(45, 75) on base and independent timing with mean 10 / 60 s on split | base (M6 indep*: split); pfifo, red, pie, cake | 3 |
+
+Removed from the matrix: splitcap, splitudp (K1 / N3 cover them), isolate
+(K5), revdelay (K3 revasym), capacity, cbr, onoff (burstcap / burstudp / K2),
+delaystep. Severity grid everywhere u ∈ {1.1, 1.3, 2.0} (K1 7 × 9 = 63
+stimuli, K6 72, K5 18 shared + 24 private). Grouping expectation on the micro
+and negative layers: one leaf with the four clients and sub-ctrl outside
+(micro, FIFO-like AQMs), no confirmed leaf at all (negatives); printed as
+PASS / FAIL lines like the held-out criteria. ppbp has no scripted windows: its
+one whole-run window is split by the truth into the GT1 episodes of the hop
+(`from_truth`).
+
+End-to-end table (`e2e_score.py`, per run `<grouping dir>/e2e.json`): per
+shared window hit by GT1, how many expected members the detector alarmed, the
+ECG case of the event, whether the members stayed inside the expected set,
+and the time from the window start to the first close that says SAME for every
+expected pair; alarm precision and median latency for every alarm (single) and
+for the alarms an ECG event joined with another member (group-confirmed);
+negatives: false alarms and false groups per minute.
+
+Budget (`--plan`, 2026-11-10): core 29 h (N 11, K 14, C1 4), negatives 4.4 h
+(120 runs), micro 28 h (300 runs); 61.5 h of emulation plus about 1 min setup
+per run (577 runs), i.e. roughly 72 h wall clock. Microbenchmarks on four AQMs
+by decision (pfifo, red, pie, cake); dropping cake there saves 7 h.

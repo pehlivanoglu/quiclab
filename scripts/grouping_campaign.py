@@ -86,6 +86,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 import det_eval  # noqa: E402
 import det_matrix as dm  # noqa: E402
+import gt1  # noqa: E402
+import gt2  # noqa: E402
+import gt3  # noqa: E402
+import e2e_score  # noqa: E402
 import grouping_adapter as ga  # noqa: E402
 import grouping_baselines as gb  # noqa: E402
 from grouping import Config  # noqa: E402
@@ -103,8 +107,20 @@ dm.TOPOLOGIES.setdefault("rev", ("detector-rev.yaml", "grp-burst-rev.yaml", {"ma
 for _variant in ("uneven", "uneven6"):
     dm.TOPOLOGIES.setdefault(_variant, (f"detector-{_variant}.yaml", f"grp-burst-{_variant}.yaml", {
         "A": ("r2", "switch-a", None), "B": ("r2", "switch-b", None), "C": ("r2", "switch-c", None)}, "C"))
+# Microbenchmark variants of the base topology: publisher frame rate, bitrate mixes.
+for _variant in ("fps15", "fps60"):
+    dm.TOPOLOGIES.setdefault(_variant, (f"detector-{_variant}.yaml", "det-burst.yaml",
+                                        {"main": ("router", "switch", "shared")}, "main"))
+for _variant in ("bw1", "bw8", "bwmix"):
+    dm.TOPOLOGIES.setdefault(_variant, (f"detector-{_variant}.yaml", f"det-burst-{_variant}.yaml",
+                                        {"main": ("router", "switch", "shared")}, "main"))
+# Extra det_matrix specs (import time only): queue depth x0.5 / x1.5 / x2 (x0.25 and x4 stay as the
+# known limit rows burstcapshallow / burstcapdeep) and long bursts on every split bottleneck.
+for _name, _scale in (("burstcapq05", 0.5), ("burstcapq15", 1.5), ("burstcapq20", 2.0)):
+    dm.BURST_SCENARIOS.setdefault(_name, {**dm.BURST_SCENARIOS["burstcap"], "queue_scale": _scale})
+dm.BURST_SCENARIOS.setdefault("burstlongsplit", {**dm.BURST_SCENARIOS["burstlong"], "targets": ("up", "a", "b")})
 
-U_CAP, D_CAP = (1.3, 2.0), (1, 2, 4)
+U_CAP, D_CAP = (1.1, 1.3, 2.0), (1, 2, 4)   # one severity grid everywhere (v2 review: grouping saw no u 1.1 before)
 UNIFORM = ["pfifo", "red", "pie", "fq_codel"]   # the core set of the spec; cake (det_matrix.AQMS) is for the microbenchmarks
 MIXED = {"mixa": {"r1": "pfifo", "r2": "fq_codel"}, "mixb": {"r1": "fq_codel", "r2": "pfifo"},
          "mixab": {"r1": "pfifo", "r2": "pfifo"}}
@@ -118,6 +134,10 @@ JOIN_T, JOIN_SUB = 60.0, "sub-d"          # K5: sub-d joins; since v2 nobody lea
 HIER_TARGETS = ["up", "a", "b", "a+b", "a+b@0.5", "a+b@2", "a+up"]   # v2 dropped a+b@1
 # Independent timing (N1-N3): one process per bottleneck, exponential gaps.
 INDEP_GAP_MEAN_S, INDEP_GAP_MIN_S, N_DURATION_S = 30.0, 5.0, 600.0
+# Event-frequency microbenchmarks: gaps between stimuli (grid timing on base, independent timing on split).
+GAPS = {"gapfast": (2.0, 5.0), "gapslow": (45.0, 75.0)}
+INDEP_MEANS = {"indepfast": 10.0, "indepslow": 60.0}
+MICRO = ["pfifo", "red", "pie", "cake"]          # microbenchmark AQMs (user decision 2026-11-10: fq_codel core only)
 CONCURRENT_S = 1.0                        # windows on different bottlenecks closer than this are `concurrent`
 TCP_FLOWS, TCP_D = (2, 4), (4, 8)         # N3 TCP bulk: Cubic flows x duration
 # N4 trace-driven access links.
@@ -151,9 +171,35 @@ CAMPAIGNS = {
     # No SBD baseline columns: DCW / rmcatSBD / dcSBD need one common time span over
     # long-lived flows (sbd_baselines.flow_table) and cannot follow sessions.
     "N5": {"topology": "large", "aqms": ["pfifo", "fq_codel"], "types": ["churn"], "reps": 5, "baselines": False},
+    # Core addition: long bursts on a multi-group topology (a fair grouping comparison with the SBD baselines).
+    "C1": {"topology": "split", "aqms": UNIFORM, "types": ["burstlongsplit"], "reps": 3},
+    # Negatives: no congestion at all (every alarm / group is false); calm on every multi-group topology too.
+    "G0": {"topology": "base", "aqms": UNIFORM + ["cake"],
+           "types": ["calm030", "calm065", "calm090", "calmcbr090", "randloss", "calmsplit", "calmtree8", "calmuneven"],
+           "reps": 3},
+    # Microbenchmarks (base topology, one group, one factor at a time; grouping expects one leaf + sub-ctrl out).
+    "M1": {"topology": "base", "aqms": MICRO, "reps": 3,
+           "types": ["burstcap", "burstudp", "bursttiny", "ramp", "tcpcubic", "tcpbbr", "ppbp", "burstlong"]},
+    "M2": {"topology": "base", "aqms": MICRO, "reps": 3,
+           "types": ["burstcaplowrtt", "burstcaphighrtt", "burstcapq05", "burstcapq15", "burstcapq20"]},
+    "M3": {"topology": "base", "aqms": MICRO, "reps": 3, "types": ["revjit5", "revjit10", "revjit20"]},
+    "M4": {"topology": "base", "aqms": MICRO, "reps": 3, "types": ["fps15", "fps60"]},
+    "M5": {"topology": "base", "aqms": MICRO, "reps": 3, "types": ["bw1", "bw8", "bwmix"]},
+    "M6": {"topology": "base", "aqms": MICRO, "reps": 3, "types": ["gapfast", "gapslow", "indepfast", "indepslow"]},
 }
-TYPE_TOPOLOGY = {"revcross": "rev", "revcrossmix": "rev", "uneven6": "uneven6"}   # types on another topology
+TYPE_TOPOLOGY = {"revcross": "rev", "revcrossmix": "rev", "uneven6": "uneven6",      # types on another topology
+                 "calmsplit": "split", "calmtree8": "tree8", "calmuneven": "uneven",
+                 "fps15": "fps15", "fps60": "fps60", "bw1": "bw1", "bw8": "bw8", "bwmix": "bwmix",
+                 "indepfast": "split", "indepslow": "split"}
+# Types planned by det_matrix's event benchmark (name -> det_matrix scenario), scored by both pipelines.
+DM_TYPES = {t: t for t in ("burstcap", "burstudp", "bursttiny", "ramp", "tcpcubic", "tcpbbr", "ppbp", "burstlong",
+                           "burstcaplowrtt", "burstcaphighrtt", "burstcapq05", "burstcapq15", "burstcapq20",
+                           "burstlongsplit", "calm030", "calm065", "calm090", "calmcbr090", "randloss")}
+DM_TYPES.update({"calmsplit": "calm065", "calmtree8": "calm065", "calmuneven": "calm065",
+                 "fps15": "burstcap", "fps60": "burstcap", "bw1": "burstcap", "bw8": "burstcap", "bwmix": "burstcap"})
 HELD_OUT = ("N1", "N2", "N3", "N4", "N5")   # grouping scores only with --score-held-out (after the rule freeze)
+GROUPS = {"core": ("K1", "K2", "K3", "K5", "K6", "C1", "N1", "N2", "N3", "N4", "N5"),
+          "negatives": ("G0",), "micro": ("M1", "M2", "M3", "M4", "M5", "M6")}
 
 
 # ---------------------------------------------------------------- planning
@@ -186,7 +232,7 @@ def cap_cells(targets: list[str], rng: random.Random, repeats: int = 1) -> list[
 
 
 def cap_sequence(n: dict, cells: list[tuple[float, float, str]], rng: random.Random,
-                 t0: float = dm.WARMUP_S) -> tuple[list[dict], list[dict], float]:
+                 t0: float = dm.WARMUP_S, gap: tuple[float, float] = dm.GAP_S) -> tuple[list[dict], list[dict], float]:
     """Capacity drops for cells (u, d, target); target 'a+b' = both at once,
     'a+b@0.5' = b 0.5 s after a. One window per link, labelled with the cell."""
     events, windows, t = [], [], t0
@@ -199,8 +245,8 @@ def cap_sequence(n: dict, cells: list[tuple[float, float, str]], rng: random.Ran
             events += _cap_event(n, tgt, t + off, u, d, f"burst u={u} d={d} {tgt}")
             windows.append(_window(t + off, t + off + d, "cap", tgt, cell, list(n["hops"][tgt]["clients"])))
             span = max(span, off + d)
-        t += span + rng.uniform(*dm.GAP_S)
-    return events, windows, round(t - dm.GAP_S[0] + dm.TAIL_S)
+        t += span + rng.uniform(*gap)
+    return events, windows, round(t - gap[0] + dm.TAIL_S)
 
 
 def plan_hier(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
@@ -282,7 +328,8 @@ def plan_mixed(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
 
 # ---- held-out set
 
-def indep_sequence(targets: list[str], seed: int, duration: float, make) -> tuple[list[dict], list[dict]]:
+def indep_sequence(targets: list[str], seed: int, duration: float, make,
+                   mean_gap: float = INDEP_GAP_MEAN_S) -> tuple[list[dict], list[dict]]:
     """Independent timing: one stimulus process per target with its own seeded
     stream, random phase, exponential gaps (mean INDEP_GAP_MEAN_S, floor
     INDEP_GAP_MIN_S). make(rng, target, t, k) -> (events, window, d) draws the
@@ -290,7 +337,7 @@ def indep_sequence(targets: list[str], seed: int, duration: float, make) -> tupl
     events, windows = [], []
     for i, tgt in enumerate(targets):
         rng = random.Random(seed * 1000 + i)
-        t, k = dm.WARMUP_S + rng.uniform(0, INDEP_GAP_MEAN_S), 0
+        t, k = dm.WARMUP_S + rng.uniform(0, mean_gap), 0
         while True:
             ev, w, d = make(rng, tgt, t, k)
             if t + d > duration - dm.TAIL_S:
@@ -298,19 +345,25 @@ def indep_sequence(targets: list[str], seed: int, duration: float, make) -> tupl
             events += ev
             windows.append(w)
             k += 1
-            t += d + max(INDEP_GAP_MIN_S, rng.expovariate(1 / INDEP_GAP_MEAN_S))
+            t += d + max(INDEP_GAP_MIN_S, rng.expovariate(1 / mean_gap))
     events.sort(key=lambda e: e["at_s"])
     return events, flag_concurrent(sorted(windows, key=lambda w: w["start"]))
 
 
-def plan_indep(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
-    """N1 / N2: capacity drops with independent timing on every bottleneck."""
+def plan_indep(n: dict, seed: int, mean_gap: float = INDEP_GAP_MEAN_S) -> tuple[list[dict], list[dict], float]:
+    """N1 / N2 (and M6 indepfast / indepslow): capacity drops with independent timing on every bottleneck."""
     def make(rng, tgt, t, k):
         u, d = rng.choice(U_CAP), rng.choice(D_CAP)
         return (_cap_event(n, tgt, t, u, d, f"burst u={u} d={d} {tgt}"),
                 _window(t, t + d, "cap", tgt, tgt, list(n["hops"][tgt]["clients"]), u=u), d)
-    events, windows = indep_sequence(sorted(n["hops"]), seed, N_DURATION_S, make)
+    events, windows = indep_sequence(sorted(n["hops"]), seed, N_DURATION_S, make, mean_gap)
     return events, windows, N_DURATION_S
+
+
+def plan_gaps(n: dict, seed: int, gap: tuple[float, float]) -> tuple[list[dict], list[dict], float]:
+    """M6 gapfast / gapslow: the burstcap grid twice on the base bottleneck with another gap distribution."""
+    rng = random.Random(seed)
+    return cap_sequence(n, cap_cells([n["default"]], rng, repeats=2), rng, gap=gap)
 
 
 def plan_cross(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
@@ -479,10 +532,72 @@ def plan_churn(n: dict, seed: int) -> tuple[list[dict], list[dict], float]:
     return events, windows, N5_DURATION_S
 
 
-def plan_type(rtype: str, n: dict, seed: int) -> tuple[list[dict], list[dict], float, dict]:
+def windows_from_events(events: list[dict], n: dict) -> list[dict]:
+    """Stimulus windows of det_matrix-planned events: "burst u=.. d=.." link
+    events until their "burst-end" (capacity drops, ramps above u = 1), UDP
+    `bursts`, TCP `flow` events; constant flows from t = 0 (calmcbr), loss and
+    delay steps and calm runs give none (negatives)."""
+    hop_of = {(h["link"]["from"], h["link"]["to"]): name for name, h in n["hops"].items()}
+    route_of = {h["route"]: name for name, h in n["hops"].items() if h.get("route")}
+    many = len(n["hops"]) > 1
+    windows = []
+    links = [e for e in events if e["type"] == "link"]
+    for i, e in enumerate(links):
+        label = e.get("label") or ""
+        if not label.startswith("burst u="):
+            continue
+        key = (e["from"], e["to"])
+        if key not in hop_of:
+            continue
+        end = next((x["at_s"] for x in links[i + 1:] if (x["from"], x["to"]) == key and x.get("label") == "burst-end"),
+                   None)
+        if end is None:
+            continue
+        fields = dict(f.split("=") for f in label.split()[1:] if "=" in f)
+        tgt = hop_of[key]
+        windows.append(_window(e["at_s"], end, "cap", tgt, tgt if many else "cap", list(n["hops"][tgt]["clients"]),
+                               u=float(fields.get("u", 0)), d=float(fields.get("d", 0))))
+    for e in events:
+        if e["type"] == "bursts" and e["route"] in route_of:
+            tgt = route_of[e["route"]]
+            for b in e["bursts"]:
+                start = e["at_s"] + b["start_s"]
+                windows.append(_window(start, start + b["duration_s"], "udp", tgt, f"{tgt}:udp" if many else "udp",
+                                       list(n["hops"][tgt]["clients"]), "udp", rate_mbps=b["rate_mbps"]))
+        elif e["type"] == "flow" and e.get("kind") == "tcp" and e["route"] in route_of:
+            tgt = route_of[e["route"]]
+            windows.append(_window(e["at_s"], e["at_s"] + e["duration_s"], "tcp", tgt, f"{tgt}:tcp" if many else "tcp",
+                                   list(n["hops"][tgt]["clients"]), "tcp", u=None, tcp_flows=e.get("parallel", 1)))
+    return sorted(windows, key=lambda w: (w["start"], w["target"]))
+
+
+def plan_dm(name: str, n: dict, seed: int, topology: str) -> tuple[list[dict], list[dict], float]:
+    """A det_matrix scenario as a campaign type: the same events the detector
+    matrix ran, plus the windows the grouping truth needs. Event-benchmark names
+    are generated (seed = rep); hand-written ones (ppbp) come from their YAML and
+    get one whole-run window that the truth splits into the GT1 episodes of the
+    hop (`from_truth`): the stimulus is continuous, congestion comes and goes."""
+    if name in dm.BURST_SCENARIOS:
+        events, duration = dm.burst_events(name, seed, topology)
+        return events, windows_from_events(events, n), duration
+    data = dm.scenario_data(name, topology, seed)
+    events, duration = data["events"], float(data["duration_s"])
+    h = n["hops"][n["default"]]
+    windows = [_window(dm.WARMUP_S, duration - dm.TAIL_S, name, n["default"], name, list(h["clients"]), name,
+                       from_truth=True)]
+    return events, windows, duration
+
+
+def plan_type(rtype: str, n: dict, seed: int, topology: str = "base") -> tuple[list[dict], list[dict], float, dict]:
     """(events, windows, duration_s, run metadata) of one run type."""
     meta: dict = {}
-    if rtype == "hier":
+    if rtype in DM_TYPES:
+        out = plan_dm(DM_TYPES[rtype], n, seed, topology)
+    elif rtype in GAPS:
+        out = plan_gaps(n, seed, GAPS[rtype])
+    elif rtype in INDEP_MEANS:
+        out = plan_indep(n, seed, INDEP_MEANS[rtype])
+    elif rtype == "hier":
         out = plan_hier(n, seed)
     elif rtype == "depth":
         out = plan_depth(n, seed)
@@ -567,8 +682,12 @@ def scenario_for(k: str, rtype: str, aqm: str, rep: int, kdir: Path) -> tuple[Pa
     topology = topology_of(k, rtype)
     topo_file, base_file, *_ = dm.TOPOLOGIES[topology]
     n = dm.topology_numbers(topology)
-    data = yaml.safe_load((ROOT / "configs" / "scenarios" / base_file).read_text())
-    events, windows, duration, meta = plan_type(rtype, n, seed=rep)
+    if rtype in DM_TYPES:
+        # det_matrix's own base: capacities per base_u, RTT scale, queue scale, editable loss.
+        data = dm.scenario_data(DM_TYPES[rtype], topology, seed=rep)
+    else:
+        data = yaml.safe_load((ROOT / "configs" / "scenarios" / base_file).read_text())
+    events, windows, duration, meta = plan_type(rtype, n, seed=rep, topology=topology)
     data["events"], data["duration_s"] = events, duration
     apply_links(data, rtype, n)
     apply_aqm(data, aqm, n)
@@ -641,6 +760,11 @@ def run_campaign(k: str, kdir: Path, reps: int | None, skip_existing: bool, dry:
                 det_eval.score(run_dir)
             except (Exception, SystemExit) as e:  # best effort here; score again later with det_eval.py score
                 print(f"   det_eval.score failed on {rid}: {e!r}", flush=True)
+            for mod in (gt1, gt2, gt3):   # router / demand / per-client truths (<run>/truth/), as det_matrix does
+                try:
+                    mod.score(run_dir, mod.Params())
+                except Exception as e:
+                    print(f"   {mod.__name__}.score failed on {rid}: {e!r}", flush=True)
             try:
                 print("   " + infra_line(infra_check(run_dir)), flush=True)
             except Exception as e:
@@ -913,6 +1037,14 @@ def criteria(k: str, results: list[dict], src: str = PRIMARY) -> list[str]:
             st = shadow_of(r, "session_stats") or {}
             lines.append(f"- {r['run']}: sessions with >= 3 events {st.get('sessions_3_events')}, of them members "
                          f"{st.get('members')}; membership event index p50 {fmt(st.get('event_index_p50'))}")
+    elif k == "G0":
+        check("negatives: no confirmed leaf with >= 2 members (false groups = 0), sub-ctrl ungrouped",
+              runs(tuple(CAMPAIGNS["G0"]["aqms"])),
+              lambda r: not (shadow_of(r, "leaves") or {}) and shadow_of(r, "ctrl_grouped") is not True, pr)
+    elif k in GROUPS["micro"]:
+        check("microbenchmark: one leaf = the four clients, sub-ctrl ungrouped (report only on fq-like AQMs)",
+              runs(("pfifo", "red", "pie")),
+              lambda r: shadow_of(r, "tree_correct") is True and shadow_of(r, "ctrl_grouped") is False, pr)
     elif k in CAMPAIGNS:
         lines.append(f"## {k}: development set, report only (cells worse than the previous campaign are flagged "
                      "in the first table when --compare is given)")
@@ -1010,6 +1142,28 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
                          f"| {fmt(s_.get('precision_link'))} / {fmt(s_.get('recall_link'))} | {fmt(s_.get('coverage'))} "
                          f"| {s_.get('fp')} | {s_.get('ctrl_grouped')} | {s_.get('tree_correct')} | {s_.get('leaves')} "
                          f"| {s_.get('membership_events')} | {f'{sp['p50']:.0f} / {sp['p90']:.0f}' if sp else '-'} |")
+    # 4. end to end: the same windows seen by the detector and the grouping (primary source)
+    e2e = [r for r in (e2e_score.score_run(p, PRIMARY, tag) for p in runs) if r]
+    lines += ["", f"## End to end ({PRIMARY}; shared windows hit by GT1: detector alarms of the members, ECG case, "
+                  "group time; alarm precision single vs group-confirmed; negatives: FA and false groups per minute)", ""]
+    lines += e2e_score.table(e2e, lambda r: " / ".join(cell_of(r["run"])))
+    # 5. detector side (det_eval's own tables, model truth), per type x AQM
+    lines += ["", "## Detector (det_eval score, model truth; the GT1/GT2/GT3 tables are the detector pipeline's)", ""]
+    for (rtype, aqm), rs in sorted(by_cell.items()):
+        dirs = [kdir / r["run"] for r in rs if (kdir / r["run"] / "detector" / "detections.csv").exists()]
+        if not dirs:
+            continue
+        try:
+            rows_ = det_eval.summarize(dirs, ["shadow", "gcc", "bbr"])
+        except Exception as e:   # a scenario the detector tables do not cover
+            lines.append(f"- {rtype} / {aqm}: {e!r}")
+            continue
+        lines += [f"### {rtype} / {aqm} ({len(dirs)} runs, {rows_[0]['onsets']} onsets)", "",
+                  "| detector | " + " | ".join(k for k in rows_[0] if k not in {"detector", "onsets"}) + " |",
+                  "|---" * (len(rows_[0]) - 1) + "|"]
+        lines += ["| " + " | ".join("-" if v is None else str(v) for k, v in row.items() if k != "onsets") + " |"
+                  for row in rows_]
+        lines.append("")
     (kdir / f"report{sfx}.md").write_text("\n".join(lines) + "\n")
     print(f"report: {kdir / f'report{sfx}.md'}", flush=True)
 
@@ -1018,7 +1172,8 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
 
 def main(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--ks", default="N1,N2,K1,K2,K3,K5,K6,N3,N4,N5", help="campaigns in run order")
+    ap.add_argument("--ks", default="N1,N2,K1,K2,K3,K5,K6,C1,N3,N4,N5,G0,M1,M2,M3,M4,M5,M6",
+                    help="campaigns in run order (core, then negatives, then microbenchmarks)")
     ap.add_argument("--reps", type=int, default=None, help="override the campaigns' own rep counts (K 3, K6 and N 5)")
     ap.add_argument("--compare", type=Path, help="older campaign dir: flag cells whose primary-source P/R got worse")
     ap.add_argument("--only", default="", help="run only the cells whose run id contains this text (smoke runs)")

@@ -398,8 +398,17 @@ def measured_bursts(run: d.Run, windows: list[dict], hop_episodes: dict[str, lis
     Secondary (flow_episodes = GT3 per-client episodes): an expected client is
     hit when its own episodes overlap the window; GT3 reads the same OWD the
     detector's OWD mode reads, so it is the comparison truth, not the primary."""
+    expanded = []
+    for w in windows:
+        hop = window_hop(run, w)
+        if w.get("from_truth") and hop:
+            # Continuous stimulus (ppbp): one truth window per GT1 episode of the hop inside the planned span.
+            expanded += [{**w, "start": a, "end": b, "from_truth": True}
+                         for a, b in hop_episodes.get(hop, []) if a <= w["end"] and b >= w["start"]]
+        else:
+            expanded.append(w)
     out = []
-    for i, w in enumerate(windows):
+    for i, w in enumerate(expanded):
         lo, hi = w["start"], w["end"] + d.BURST_RECOVERY_S
         expected = w.get("expected", [])
         if flow_episodes is not None:
@@ -445,7 +454,7 @@ def truth_of(run: d.Run, truth_source: str = "gt1") -> dict:
         # queue counters (gt1) or, as the comparison, from the clients' own OWD (gt3).
         windows = json.loads(windows_json.read_text())
         if truth_source == "gt3":
-            truth["bursts"] = measured_bursts(run, windows, {}, gt3_flow_episodes(run))
+            truth["bursts"] = measured_bursts(run, windows, gt1_hop_episodes(run), gt3_flow_episodes(run))
             truth["source"] = "windows.json + GT3 per-client OWD episodes (same signal as the OWD-mode detector)"
         else:
             truth["bursts"] = measured_bursts(run, windows, gt1_hop_episodes(run))

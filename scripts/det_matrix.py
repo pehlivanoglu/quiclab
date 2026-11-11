@@ -272,7 +272,11 @@ def red_thresholds(n: dict, limit: int | None) -> dict:
     return {"red_min_bytes": min(int(15 * bytes_per_ms), hi // 3), "red_max_bytes": hi}
 
 
-def scenario_for(name: str, aqm: str, rep: int = 1, campaign: Path = RUNS, topology: str = "base") -> Path:
+def scenario_data(name: str, topology: str = "base", seed: int = 1) -> dict:
+    """The scenario of one run before its AQM is set: the topology's base file
+    with the generated events, the spec's link changes (capacities, RTT scale,
+    reverse delays, editable loss) and queue limits scaled by queue_scale.
+    Shared with scripts/grouping_campaign.py (one planner for both pipelines)."""
     if BURST_SCENARIOS.get(name, {}).get("kind") == "access" and topology != "access":
         raise SystemExit(f"scenario {name} congests per-client links: it needs --topology access")
     if name in BURST_SCENARIOS:
@@ -289,7 +293,7 @@ def scenario_for(name: str, aqm: str, rep: int = 1, campaign: Path = RUNS, topol
         if unknown:
             raise SystemExit(f"scenario {name} targets {sorted(unknown)}: not bottlenecks of --topology {topology}")
         # Same seed for every AQM: each repetition plays one burst sequence on all of them.
-        data["events"], data["duration_s"] = burst_events(name, seed=rep, topology=topology)
+        data["events"], data["duration_s"] = burst_events(name, seed=seed, topology=topology)
         scale = spec.get("rtt_scale", 1.0)
         shared = sorted(n["clients"])
         caps = {(h["link"]["from"], h["link"]["to"]): base_mbps(name, topology, t) for t, h in n["hops"].items()}
@@ -305,10 +309,19 @@ def scenario_for(name: str, aqm: str, rep: int = 1, campaign: Path = RUNS, topol
                 link["reverse"]["delay_ms"] = round(link["reverse"]["delay_ms"] + extra, 3)
             if spec["kind"] == "loss" and ends == (n["feed"]["from"], n["feed"]["to"]):
                 link["forward"]["loss_pct"] = 0  # netem loss must exist at t=0 to be editable live
+    if name in BURST_SCENARIOS and "queue_scale" in BURST_SCENARIOS[name]:
+        for router in data["routers"].values():
+            for q in (router, *(router.get("egress") or {}).values()):
+                if q.get("queue_limit_packets"):
+                    q["queue_limit_packets"] = max(4, round(q["queue_limit_packets"] * BURST_SCENARIOS[name]["queue_scale"]))
+    return data
+
+
+def scenario_for(name: str, aqm: str, rep: int = 1, campaign: Path = RUNS, topology: str = "base") -> Path:
+    data = scenario_data(name, topology, seed=rep)
+    n = topology_numbers(topology)
     for router in data["routers"].values():
         limit = router.get("queue_limit_packets")
-        if limit and name in BURST_SCENARIOS and "queue_scale" in BURST_SCENARIOS[name]:
-            limit = max(4, round(limit * BURST_SCENARIOS[name]["queue_scale"]))
         router.clear()
         router.update({"aqm": aqm, "queue_limit_packets": limit, **AQMS[aqm]})
         if aqm == "red":

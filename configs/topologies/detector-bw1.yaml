@@ -1,0 +1,38 @@
+# Microbenchmark bitrate mix bw1 (1/1/1/1 Mb/s; wire demand 4.12 Mb/s, bottleneck 6.3 Mb/s in det-burst-bw1.yaml).
+# Sender-side per-client congestion detection: four clients with different
+# renditions and RTTs behind one shared bottleneck (router -> switch), one
+# control client on its own uncongested path, cross-traffic endpoints across
+# the bottleneck. Used with the det-* scenarios.
+publishers:
+  pub: { cc_algo: bbr }
+
+subscribers:
+  sub-a: { connects_to: pub, rate_kbps: 1000 }
+  sub-b: { connects_to: pub, rate_kbps: 1000, phase_ms: 250 }
+  sub-c: { connects_to: pub, rate_kbps: 1000, phase_ms: 500 }
+  sub-d: { connects_to: pub, rate_kbps: 1000, phase_ms: 750 }
+  sub-ctrl: { connects_to: pub, rate_kbps: 2500 }
+
+routers:
+  router:
+    queue_metrics: { enabled: true, interval_ms: 25 }
+
+switches:
+  switch: {}
+
+traffic:
+  senders: [{ id: traffic-tx }]
+  receivers: [{ id: traffic-rx }]
+  routes:
+    shared: { path: [traffic-tx, router, switch, traffic-rx] }
+
+links:
+  - { from: pub, to: router }
+  - { from: router, to: switch }
+  - { from: switch, to: sub-a }
+  - { from: switch, to: sub-b }
+  - { from: switch, to: sub-c }
+  - { from: switch, to: sub-d }
+  - { from: switch, to: traffic-rx }
+  - { from: traffic-tx, to: router }
+  - { from: router, to: sub-ctrl }

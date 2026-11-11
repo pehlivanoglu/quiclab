@@ -406,8 +406,19 @@ minimum (older runs fall back to the bins, with a few ms of lookahead), (3)
 Copa is dropped, (4) `cake` is available as an AQM (`cake unlimited
 besteffort` under the HTB shaper; ignores `queue_limit_packets`) for the
 microbenchmarks (pfifo, red, pie, cake; fq_codel stays in the core set only).
-The merged core / microbenchmark / negative campaign of that review (one
-planner, both scorers on every run) is the next step.
+The merged core / microbenchmark / negative campaign of that review is in
+place (spec notes, "Merged campaign"): one planner (`grouping_campaign.py`,
+det_matrix's event benchmark shared through `det_matrix.scenario_data`),
+both scorers on every run, three layers (`GROUPS`: core K/C1/N, negatives G0,
+micro M1–M6), the end-to-end table (`scripts/e2e_score.py`) and det_eval's
+detector table in every campaign report. 577 runs, 61.5 h of emulation.
+
+```bash
+.venv/bin/python scripts/grouping_campaign.py --plan                                   # budget, every YAML validated
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --ks N2 --only pfifo-r1
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --ks N4 --only pfifo-r1
+.venv/bin/python scripts/grouping_campaign.py --campaign .runs/<dir> --skip-existing    # all 18 campaigns (tmux)
+```
 
 | campaign | topology | stimulus | AQMs × reps | criterion (shadow-owd source; RTT shadow as comparison) |
 |---|---|---|---|---|

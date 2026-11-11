@@ -25,8 +25,8 @@ def test_every_type_plans_and_validates(tmp_path, k, rtype, aqm):
     data = yaml.safe_load(scenario.read_text())
     assert data["duration_s"] == duration and duration >= 60
     windows = __import__("json").loads((tmp_path / "_gen" / f"{gc.run_id(rtype, aqm, 1)}-windows.json").read_text())
-    assert windows and all(w["end"] > w["start"] for w in windows)
-    assert all(w["end"] <= duration for w in windows)
+    assert (not windows) if k == "G0" else windows        # negatives plan no window (revcross: windows, nobody expected)
+    assert all(w["end"] > w["start"] and w["end"] <= duration and "hop" in w and "stimulus_type" in w for w in windows)
 
 
 def test_plan_is_seeded():
@@ -44,9 +44,9 @@ def test_hier_offsets_and_pairs_of_windows():
     offs = [w for w in windows if w["cell"] == "a+b@2"]
     a = sorted(w["start"] for w in offs if w["target"] == "a")
     b = sorted(w["start"] for w in offs if w["target"] == "b")
-    assert len(a) == len(b) == 6 and all(abs((y - x) - 2.0) < 1e-6 for x, y in zip(a, b))
+    assert len(a) == len(b) == 9 and all(abs((y - x) - 2.0) < 1e-6 for x, y in zip(a, b))
     sim = [w for w in windows if w["cell"] == "a+b"]
-    assert len(sim) == 12 and len({w["start"] for w in sim}) == 6
+    assert len(sim) == 18 and len({w["start"] for w in sim}) == 9
     assert all(set(w["expected"]) == {"a1", "a2", "a3"} for w in windows if w["target"] == "a")
     assert all(set(w["expected"]) == {"a1", "a2", "a3", "b1", "b2", "b3"} for w in windows if w["target"] == "up")
     links = [(e["from"], e["to"]) for e in events if e["type"] == "link"]
@@ -61,7 +61,8 @@ def test_mixed_respects_the_join_and_nobody_leaves():
     for w in windows:
         if w["target"] == gc.JOIN_SUB:
             assert w["start"] > gc.JOIN_T + 10
-    assert sum(w["cell"] == "shared" for w in windows) == 12 and sum(w["cell"] == "private" for w in windows) == 16
+    # u {1.1, 1.3, 2.0} x d {1, 2, 4} x 2 shared, u x d {2, 4} x 4 clients private
+    assert sum(w["cell"] == "shared" for w in windows) == 18 and sum(w["cell"] == "private" for w in windows) == 24
 
 
 def test_hier_v2_has_seven_target_kinds_and_five_aqms():
@@ -117,7 +118,7 @@ def test_cross_mixes_udp_bursts_and_tcp_bulk(tmp_path):
         else:
             e = next(e for e in data["events"] if e["type"] == "flow" and e["at_s"] == w["start"])
             assert e["kind"] == "tcp" and e["cc"] == "cubic" and e["parallel"] == w["tcp_flows"] in gc.TCP_FLOWS
-            assert w["u"] is None and w["end"] - w["start"] in gc.TCP_D
+            assert w["u"] is None and round(w["end"] - w["start"], 3) in gc.TCP_D
     assert all(e["type"] != "link" for e in data["events"])   # no capacity drops in N3
 
 
@@ -289,3 +290,45 @@ def test_part_rate_matches_severity(tmp_path, rtype, u):
     assert (drop["from"], drop["to"]) == ("router", "switch")
     assert drop["bandwidth_mbps"] == pytest.approx(h["demand"] / u, abs=1e-3)
     assert restore["bandwidth_mbps"] == h["base"]
+
+
+def test_dm_types_get_windows_from_their_events():
+    n = dm.topology_numbers("base")
+    for name, stype, expect_windows in (("burstcap", "capdrop", True), ("burstudp", "udp", True),
+                                        ("tcpcubic", "tcp", True), ("ramp", "capdrop", True),
+                                        ("calm065", None, False), ("randloss", None, False), ("calmcbr090", None, False)):
+        events, windows, duration = gc.plan_dm(name, n, 1, "base")
+        assert bool(windows) == expect_windows, name
+        for w in windows:
+            assert w["stimulus_type"] == stype and set(w["expected"]) == set(n["clients"]) and w["target"] == "main"
+            assert w["end"] <= duration
+    _, wp, dur = gc.plan_dm("ppbp", n, 1, "base")
+    assert len(wp) == 1 and wp[0]["from_truth"] and wp[0]["stimulus_type"] == "ppbp" and wp[0]["end"] <= dur
+    ev, win, _ = gc.plan_dm("burstlongsplit", dm.topology_numbers("split"), 1, "split")
+    assert {w["target"] for w in win} == {"up", "a", "b"} and all(w["end"] - w["start"] >= 10 for w in win)
+    assert all(w["cell"] == w["target"] for w in win)
+
+
+def test_micro_variants_change_one_factor(tmp_path):
+    q = {}
+    for t in ("burstcap", "burstcapq05", "burstcapq20"):
+        scenario, _, _ = gc.scenario_for("M1" if t == "burstcap" else "M2", t, "pfifo", 1, tmp_path)
+        q[t] = yaml.safe_load(scenario.read_text())["routers"]["router"]["queue_limit_packets"]
+    assert q["burstcapq05"] == 50 and q["burstcap"] == 100 and q["burstcapq20"] == 200
+    s15, topo15, _ = gc.scenario_for("M4", "fps15", "pfifo", 1, tmp_path)
+    assert load_topology(topo15).publishers["pub"].fps == 15
+    sb, topob, _ = gc.scenario_for("M5", "bw8", "pfifo", 1, tmp_path)
+    data = yaml.safe_load(sb.read_text())
+    assert all(sub.rate_kbps == 8000 for sid, sub in load_topology(topob).subscribers.items() if sid != "sub-ctrl")
+    drop = next(e for e in data["events"] if e["type"] == "link" and e.get("label", "").startswith("burst u=1.3 d=1"))
+    assert drop["bandwidth_mbps"] == pytest.approx(32.96 / 1.3, abs=0.01)
+    sj, _, _ = gc.scenario_for("M3", "revjit20", "pfifo", 1, tmp_path)
+    assert all(l["reverse"].get("jitter_ms") == 20.0 for l in yaml.safe_load(sj.read_text())["links"]
+               if l["from"] == "switch" and l["to"].startswith("sub-"))
+    _, wf, _ = gc.plan_gaps(dm.topology_numbers("base"), 1, gc.GAPS["gapfast"])
+    gaps = [b["start"] - a["end"] for a, b in zip(wf, wf[1:])]
+    assert 2.0 - 1e-6 <= min(gaps) and max(gaps) <= 5.0 + 1e-6 and len(wf) == 18
+    _, wi, _ = gc.plan_indep(dm.topology_numbers("split"), 1, gc.INDEP_MEANS["indepfast"])
+    assert len(wi) > len(gc.plan_indep(dm.topology_numbers("split"), 1)[1])
+    assert gc.CAMPAIGNS["G0"]["types"][-3:] == ["calmsplit", "calmtree8", "calmuneven"]
+    assert gc.topology_of("G0", "calmtree8") == "tree8" and gc.CAMPAIGNS["M1"]["aqms"] == ["pfifo", "red", "pie", "cake"]
