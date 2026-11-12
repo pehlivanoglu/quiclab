@@ -14,14 +14,16 @@ Validated against one topology (`load_scenario`):
   - flows use declared traffic routes; flow ids are unique
   - a subscriber's join / leave events alternate in time (on at t=0 unless its
     first event is a join); every session after the first runs as client
-    <subscriber>@<n>, with its own sender files
+    <subscriber>_<n>, with its own sender files (qvideo client ids allow only
+    alphanumerics, '-' and '_'); no topology subscriber may already carry such an id
   - every event happens within duration_s
 """
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, ClassVar, Literal
 
 import yaml
 from pydantic import ConfigDict, Field, model_validator
@@ -256,7 +258,7 @@ class Scenario(_StrictBase):
 
     def sessions(self, subscriber: str) -> list[tuple[float, float | None]]:
         """(join, leave) per session in time order; leave None = until the end.
-        Session n >= 2 runs as client id `<subscriber>@<n>` (see session_id)."""
+        Session n >= 2 runs as client id `<subscriber>_<n>` (see session_id)."""
         times = sorted((e.at_s, e.type) for e in self.events
                        if e.type in ("join", "leave") and e.subscriber == subscriber)
         out: list[tuple[float, float | None]] = []
@@ -269,9 +271,22 @@ class Scenario(_StrictBase):
                 out[-1] = (out[-1][0], t)
         return out
 
+    SESSION_SEP: ClassVar[str] = "_"
+    SESSION_RE: ClassVar[re.Pattern] = re.compile(r"^(.+)_([2-9]|[1-9][0-9]+)$")
+
     @staticmethod
     def session_id(subscriber: str, n: int) -> str:
-        return subscriber if n == 1 else f"{subscriber}@{n}"
+        return subscriber if n == 1 else f"{subscriber}{Scenario.SESSION_SEP}{n}"
+
+    @staticmethod
+    def session_of(client_id: str, subscribers) -> tuple[str, int]:
+        """(subscriber, session number) of a client id; the id itself and 1 when it
+        is not a later session of one of `subscribers` (check_against keeps such ids
+        out of the topology, so `subscribers` may also hold the session aliases)."""
+        m = Scenario.SESSION_RE.match(client_id)
+        if m and m.group(1) in subscribers:
+            return m.group(1), int(m.group(2))
+        return client_id, 1
 
     def check_against(self, topology: TopologyConfig) -> "Scenario":
         declared = {(link.from_, link.to) for link in topology.links}
@@ -354,6 +369,11 @@ class Scenario(_StrictBase):
                 if t <= last:
                     raise ValueError(f"subscriber {sid!r} has two membership events at {t:g}s")
                 on, last = kind == "join", t
+        for sid in membership:
+            for n in range(2, len(self.sessions(sid)) + 1):
+                if self.session_id(sid, n) in topology.subscribers:
+                    raise ValueError(f"session {n} of {sid!r} would run as {self.session_id(sid, n)!r},"
+                                     " which is already a topology subscriber")
         return self
 
 

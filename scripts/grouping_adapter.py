@@ -13,7 +13,7 @@ and never writes under <run>/detector or <run>/baselines.
     python scripts/grouping_adapter.py RUN... --onsets v2-owd       # Shadow v2 (also v2, v2-nohold, v2-fixed...)
 
 Runs whose clients re-join (grouping campaign N5): every session has its own
-sender files (<sub>@<n>-acks.csv ...) and is a flow of its own (load_run ->
+sender files (<sub>_<n>-acks.csv ...) and is a flow of its own (load_run ->
 SessionRun); window `expected` sets name sessions.
 
 Per run, under <run>/grouping/ (shadow) or <run>/grouping-<onsets>/ (oracles):
@@ -80,6 +80,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 import det_eval as d  # noqa: E402
+from quiclab.config.scenario import Scenario  # noqa: E402
 import gt1  # noqa: E402
 import gt3  # noqa: E402
 import owd_mode  # noqa: E402
@@ -96,35 +97,43 @@ TRAIL_S = 0.2
 
 
 class SessionRun(d.Run):
-    """A run whose clients re-joined: every session <sid>@<n> has its own sender
+    """A run whose clients re-joined: every session <sid>_<n> has its own sender
     files and counts as a flow. The topology gets an alias node per session
     (same links as the client) so the path and leaf-queue helpers work unchanged."""
 
     def __init__(self, path: Path):
         super().__init__(path)
         self.sid_of = {s: s for s in self.subs}
-        for f in sorted((path / "publishers" / self.pub).glob("*@*-acks.csv")):
-            flow = f.name[:-len("-acks.csv")]
-            sid = flow.split("@")[0]
-            if sid not in self.topology["subscribers"]:
-                continue
+        for flow in later_sessions(path, self.pub, self.topology["subscribers"]):
+            sid = Scenario.session_of(flow, self.topology["subscribers"])[0]
             self.sid_of[flow] = sid
             self.topology["subscribers"][flow] = dict(self.topology["subscribers"][sid])
             self.topology["links"] += [{**link, "to": flow} for link in self.topology["links"] if link["to"] == sid]
         self.subs = list(self.sid_of)
 
 
+def later_sessions(run_dir: Path, pub: str, subscribers) -> list[str]:
+    """Client ids of re-joined sessions (<sid>_<n>, n >= 2) that have sender files."""
+    names = (f.name[:-len("-acks.csv")] for f in sorted((run_dir / "publishers" / pub).glob("*-acks.csv")))
+    return [f for f in names if Scenario.session_of(f, subscribers)[1] > 1]
+
+
+def is_later_session(flow: str, subscribers) -> bool:
+    return Scenario.session_of(flow, subscribers)[1] > 1
+
+
 def load_run(run_dir: Path) -> d.Run:
     run = d.Run(run_dir)
-    return SessionRun(run_dir) if any((run_dir / "publishers" / run.pub).glob("*@*-acks.csv")) else run
+    return SessionRun(run_dir) if later_sessions(run_dir, run.pub, run.topology["subscribers"]) else run
 
 
 def sessions_of(run: d.Run) -> dict[str, tuple[float, float | None]]:
     """Flow -> (join, leave) from the scenario's join / leave events; the first
-    session is the client's own id, later ones <sid>@<n>."""
+    session is the client's own id, later ones <sid>_<n>."""
     out = {}
-    for sid in run.topology["subscribers"]:
-        if "@" in sid:
+    subscribers = run.topology["subscribers"]
+    for sid in subscribers:
+        if is_later_session(sid, subscribers):
             continue
         times = sorted((e["at_s"], e["type"]) for e in run.scenario.get("events", [])
                        if e["type"] in ("join", "leave") and e["subscriber"] == sid)
@@ -135,7 +144,7 @@ def sessions_of(run: d.Run) -> dict[str, tuple[float, float | None]]:
             else:
                 sessions[-1][1] = t
         for n, (join, leave) in enumerate(sessions, start=1):
-            out[sid if n == 1 else f"{sid}@{n}"] = (join, leave)
+            out[Scenario.session_id(sid, n)] = (join, leave)
     return out
 
 
@@ -389,7 +398,8 @@ def overlaps(episodes: list[tuple[float, float]], lo: float, hi: float) -> bool:
 
 
 def measured_bursts(run: d.Run, windows: list[dict], hop_episodes: dict[str, list[tuple[float, float]]],
-                    flow_episodes: dict[str, list[tuple[float, float]]] | None = None) -> list[dict]:
+                    flow_episodes: dict[str, list[tuple[float, float]]] | None = None,
+                    hop_flow_episodes: dict[str, dict[str, list[tuple[float, float]]]] | None = None) -> list[dict]:
     """Burst records (same shape as bursts.csv's) from the campaign's stimulus
     windows and a congestion truth. Primary (hop_episodes = GT1 standing-queue
     episodes per router egress): every expected client is hit when the window's
@@ -397,7 +407,11 @@ def measured_bursts(run: d.Run, windows: list[dict], hop_episodes: dict[str, lis
     cannot say which flows queued, so under fq_codel this overstates the hit set.
     Secondary (flow_episodes = GT3 per-client episodes): an expected client is
     hit when its own episodes overlap the window; GT3 reads the same OWD the
-    detector's OWD mode reads, so it is the comparison truth, not the primary."""
+    detector's OWD mode reads, so it is the comparison truth, not the primary.
+    hop_flow_episodes (per-client GT1 on fq_codel / cake egresses with pinned
+    flows, gt1.run_flow_truth): on those hops the primary truth counts only the
+    expected clients whose own queue stood; a re-joined session <sid>_<n> reads
+    its subscriber's queue (same address), inside the window anyway."""
     expanded = []
     for w in windows:
         hop = window_hop(run, w)
@@ -415,7 +429,13 @@ def measured_bursts(run: d.Run, windows: list[dict], hop_episodes: dict[str, lis
             hit = sorted(s for s in expected if overlaps(flow_episodes.get(s, []), lo, hi))
         else:
             hop = window_hop(run, w)
-            hit = sorted(expected) if hop and overlaps(hop_episodes.get(hop, []), lo, hi) else []
+            per_flow = (hop_flow_episodes or {}).get(hop)
+            if per_flow is not None:
+                subs = run.topology["subscribers"]
+                hit = sorted(s for s in expected
+                             if overlaps(per_flow.get(Scenario.session_of(s, subs)[0], []), lo, hi))
+            else:
+                hit = sorted(expected) if hop and overlaps(hop_episodes.get(hop, []), lo, hi) else []
         out.append({"burst": i, "start": w["start"], "end": w["end"], "hit": hit, "uncertain": [],
                     "kind": w.get("kind"), "target": w.get("target"), "expected": expected,
                     "hop": window_hop(run, w)})
@@ -428,6 +448,15 @@ def gt1_hop_episodes(run: d.Run) -> dict[str, list[tuple[float, float]]]:
     for e in gt1.run_truth(run, gt1.Params())[0]:
         out[e["hop"]].append((float(e["start_s"]), float(e["end_s"])))
     return dict(out)
+
+
+def gt1_hop_flow_episodes(run: d.Run) -> dict[str, dict[str, list[tuple[float, float]]]]:
+    """Per-client GT1 episodes per fq_codel / cake egress ("from->to" -> client -> spans);
+    only hops with a per-flow class record (runs from 2026-11-11 on)."""
+    out: dict[str, dict[str, list]] = {}
+    for e in gt1.run_flow_truth(run, gt1.Params()):
+        out.setdefault(e["hop"], {}).setdefault(e["flow"], []).append((float(e["start_s"]), float(e["end_s"])))
+    return out
 
 
 def gt3_flow_episodes(run: d.Run) -> dict[str, list[tuple[float, float]]]:
@@ -457,8 +486,10 @@ def truth_of(run: d.Run, truth_source: str = "gt1") -> dict:
             truth["bursts"] = measured_bursts(run, windows, gt1_hop_episodes(run), gt3_flow_episodes(run))
             truth["source"] = "windows.json + GT3 per-client OWD episodes (same signal as the OWD-mode detector)"
         else:
-            truth["bursts"] = measured_bursts(run, windows, gt1_hop_episodes(run))
-            truth["source"] = "windows.json + GT1 router standing-queue episodes on the stimulated egress"
+            per_flow = gt1_hop_flow_episodes(run)
+            truth["bursts"] = measured_bursts(run, windows, gt1_hop_episodes(run), hop_flow_episodes=per_flow)
+            truth["source"] = "windows.json + GT1 router standing-queue episodes on the stimulated egress" + (
+                f" (per-client queues on {', '.join(sorted(per_flow))})" if per_flow else "")
         for b in truth["bursts"]:
             for x in b["hit"]:
                 same[x] |= set(b["hit"])
@@ -651,7 +682,7 @@ def outcome_metrics(res: replay.Result, truth: dict, run: d.Run, windows: list[d
     if any(w.get("cell") == "private" for w in windows):
         out["private_windows"] = private_window_outcomes(res, windows)
     sessions = sessions_of(run)
-    if any("@" in f for f in sessions):
+    if any(is_later_session(f, run.topology["subscribers"]) for f in sessions):
         out["sessions"] = {f: list(v) for f, v in sessions.items()}
         off = 0
         nodes_confirmed = {}

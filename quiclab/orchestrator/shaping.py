@@ -145,6 +145,50 @@ def _aqm_name(
     return f"{aqm.value}{limit} ecn"
 
 
+# Per-client flow pinning on multi-queue AQMs (docs/per-flow-queue-counters.md):
+# each subscriber gets a fixed fq_codel / cake flow, so router-metrics can read
+# its own queue from the class dump. Ids 0x301.. stay within fq_codel's 1024
+# flows; tc reads class minors as hex, so they are always rendered with :x.
+FLOW_ID_BASE = 0x300
+FLOW_ID_MAX = 0x400
+PIN_PREF_BASE = 100     # clsact egress prefs 100.. run before router-metrics' matchall (49152)
+PINNED_AQMS = (AqmKind.fq_codel, AqmKind.cake)
+
+
+def client_flow_ids(subscribers) -> dict[str, int]:
+    """Subscriber -> pinned flow id (sorted ids, 0x301 upward)."""
+    ids = {sid: FLOW_ID_BASE + 1 + i for i, sid in enumerate(sorted(subscribers))}
+    if ids and max(ids.values()) > FLOW_ID_MAX:
+        raise ValueError(f"{len(ids)} subscribers exceed the {FLOW_ID_MAX - FLOW_ID_BASE} pinned flow ids")
+    return ids
+
+
+def flow_pin_commands(iface: str, aqm: AqmKind | None, client_ips: dict[str, str],
+                      flow_ids: dict[str, int]) -> list[str]:
+    """Pin every client (by destination address) to its flow id on one egress.
+
+    fq_codel: no filter on the qdisc (a filter there drops every packet it does
+    not classify, ARP included); clsact egress sets skb->priority = 20:<id>,
+    which fq_codel takes as the flow, and `continue` lets router-metrics'
+    matchall still count the packet. Unmarked traffic keeps fq_codel's hash.
+    cake: reads skb->priority only for the tin, so a flower filter on the qdisc
+    sets the flow; packets no filter matches fall back to cake's hash.
+    Idempotent (`replace` with fixed pref / handle): safe to repeat after a live
+    AQM change. Other AQMs: nothing."""
+    if aqm not in PINNED_AQMS:
+        return []
+    out = [f"tc qdisc replace dev {iface} clsact"] if aqm == AqmKind.fq_codel else []
+    for i, sid in enumerate(sorted(client_ips)):
+        pref, ip, fid = PIN_PREF_BASE + i, client_ips[sid], flow_ids[sid]
+        if aqm == AqmKind.fq_codel:
+            out.append(f"tc filter replace dev {iface} egress pref {pref} handle 1 protocol ip flower "
+                       f"dst_ip {ip} action skbedit priority 20:{fid:x} continue")
+        else:
+            out.append(f"tc filter replace dev {iface} parent 20: pref {pref} handle 1 protocol ip flower "
+                       f"dst_ip {ip} classid 20:{fid:x}")
+    return out
+
+
 def live_aqm_commands(
     iface: str,
     spec: DirectionSpec,

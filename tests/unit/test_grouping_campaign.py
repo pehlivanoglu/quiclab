@@ -172,8 +172,8 @@ def test_churn_sessions_alternate_and_windows_expect_whole_window_sessions(tmp_p
     for w in windows:
         assert set(w["expected"]) <= ids and w["n_on"] == len(w["expected"])
         for f in w["expected"]:
-            c, _, k = f.partition("@")
-            join, leave = sessions[c][int(k or 1) - 1]
+            c, k = sc.session_of(f, sessions)
+            join, leave = sessions[c][k - 1]
             assert join <= w["start"] and (leave is None or leave >= w["end"])
         drop = next(e for e in sc.events if e.type == "link" and e.at_s == w["start"])
         assert drop.bandwidth_mbps == pytest.approx(w["demand_on_mbps"] / w["u"], abs=1e-3)
@@ -331,4 +331,4 @@ def test_micro_variants_change_one_factor(tmp_path):
     _, wi, _ = gc.plan_indep(dm.topology_numbers("split"), 1, gc.INDEP_MEANS["indepfast"])
     assert len(wi) > len(gc.plan_indep(dm.topology_numbers("split"), 1)[1])
     assert gc.CAMPAIGNS["G0"]["types"][-3:] == ["calmsplit", "calmtree8", "calmuneven"]
-    assert gc.topology_of("G0", "calmtree8") == "tree8" and gc.CAMPAIGNS["M1"]["aqms"] == ["pfifo", "red", "pie", "cake"]
+    assert gc.topology_of("G0", "calmtree8") == "tree8" and gc.CAMPAIGNS["M1"]["aqms"] == ["pfifo", "red", "pie", "cake", "codel"]

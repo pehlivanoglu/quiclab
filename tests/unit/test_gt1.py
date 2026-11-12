@@ -129,3 +129,12 @@ def test_hysteresis_keeps_a_queue_dipping_into_the_band_and_labels_windows():
     assert gt1.gt1_episodes(t, backlog, tx, CAP, plain) == []  # each side alone is 50 ms < 100 ms
     _, lab = gt1.gt1_core(*series([0, 3, 4, 20, 0], [1] * 5), CAP, banded)
     assert list(lab) == ["CLEAR", "AMBIGUOUS", "AMBIGUOUS", "AMBIGUOUS", "CLEAR"]  # 20 ms alone fails persistence
+
+
+def test_per_flow_queue_delay_is_taken_at_the_fair_share():
+    # A flow queue of 4 ms at the full 10 Mb/s (below target, drains within a 25 ms sample) is 32 ms
+    # at an eighth share (8 backlogged flows): above target and it cannot empty between samples.
+    t, backlog, _ = series([4.0] * 10)
+    assert gt1.gt1_episodes(t, backlog, None, CAP, P) == []
+    eps = gt1.gt1_episodes(t, backlog, None, CAP, P, share=np.full(10, 8.0))
+    assert len(eps) == 1 and eps[0]["q_min_ms"] == pytest.approx(32.0) and eps[0]["cap_mbps"] == pytest.approx(10.0)

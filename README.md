@@ -195,10 +195,11 @@ What the network does over one run. See `quiclab/config/scenario.py`.
   `jitter_ms`, `loss_pct`. Listed links lay their fields over the defaults;
   unlisted links get the defaults.
 - `routers`: AQM per router (`aqm`: `dualpi2`, `red`, `pie`, `fq_codel`,
-  `pfifo`; `dualpi2_target_ms`, `red_min_bytes`, `red_max_bytes`), applied to
+  `codel`, `cake`, `pfifo`; `dualpi2_target_ms`, `red_min_bytes`, `red_max_bytes`), applied to
   every router egress. `queue_limit_packets` sets the hard queue limit for any
   AQM (tc `limit`; RED converts it at 1500 B per packet); unset, the kernel
-  default applies (pie 1000, fq_codel 10240, dualpi2 10000 packets).
+  default applies (pie 1000, fq_codel 10240, codel 1000, dualpi2 10000 packets;
+  cake sizes its own buffer and ignores it).
   `egress: { <neighbor>: { aqm: ..., ... } }` replaces the whole queue on the
   egresses it names, e.g. a different AQM per downstream branch.
 - `events` (each with `at_s`, optional `label`):

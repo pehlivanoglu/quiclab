@@ -43,10 +43,43 @@ CSV_FIELDS = (
 )
 
 
+# Per-flow classes of a multi-queue leaf (fq_codel, cake), one row per pinned
+# class the dump lists and per other class with a backlog at the sample, into `<output>-flows.csv` when `--flows` maps
+# pinned flow ids to clients (docs/per-flow-queue-counters.md). Unpinned
+# classes (cross traffic, hashed) are written too, with an empty flow, so the
+# number of backlogged flows (the fair-share divisor) is known per sample.
+FLOW_CSV_FIELDS = ("timestamp_mono_ns", "class", "flow", "qlen_packets", "backlog_bytes", "drops")
+_FLOW_KINDS = {"fq_codel", "cake"}
+
+
+def parse_flows(value: str) -> dict[str, str]:
+    """"301=sub-a,302=sub-b" -> {"301": "sub-a", ...} (hex class minors, as tc prints them)."""
+    out = {}
+    for item in filter(None, value.split(",")):
+        minor, _, flow = item.partition("=")
+        out[minor.strip().lower()] = flow.strip()
+    return out
+
+
+def flow_rows(classes: list[dict[str, Any]], flows: dict[str, str], timestamp_mono_ns: int) -> list[tuple]:
+    """Rows for the pinned classes the dump lists (an active flow, possibly empty:
+    proves the pin works) and for the other classes with a backlog; class = hex
+    minor of the handle."""
+    rows = []
+    for c in classes:
+        stats = c.get("stats", {})
+        backlog, qlen = int(stats.get("backlog", 0)), int(stats.get("qlen", 0))
+        minor = str(c.get("handle", "")).partition(":")[2].lower()
+        if not backlog and not qlen and minor not in flows:
+            continue
+        rows.append((timestamp_mono_ns, minor, flows.get(minor, ""), qlen, backlog, int(stats.get("drops", 0))))
+    return rows
+
+
 # Fast queue-only samples (`--queue-only`): read over rtnetlink, so a 5 ms
 # period does not fork tc 200 times a second next to the relay.
 QUEUE_CSV_FIELDS = ("timestamp_mono_ns", "queue_packets", "queue_backlog_bytes", "drops")
-_QUEUE_KINDS = {"dualpi2", "red", "pie", "fq_codel", "cake", "pfifo"}
+_QUEUE_KINDS = {"dualpi2", "red", "pie", "fq_codel", "codel", "cake", "pfifo"}
 
 
 @dataclass(frozen=True)
@@ -128,6 +161,7 @@ def parse_sample(
         "red": "marked",
         "pie": "ecn_mark",
         "fq_codel": "ecn_mark",
+        "codel": "ecn_mark",
     }
 
     # HTB mirrors descendant backlog, so do not sum it with the leaf. Netem
@@ -216,7 +250,7 @@ def interval_row(previous: Sample, current: Sample) -> dict[str, int | float]:
     }
 
 
-def run(interface: str, interval_ms: int, output: Path) -> None:
+def run(interface: str, interval_ms: int, output: Path, flows: dict[str, str] | None = None) -> None:
     stopped = False
 
     def stop(_signum, _frame) -> None:
@@ -231,6 +265,10 @@ def run(interface: str, interval_ms: int, output: Path) -> None:
     period_ns = interval_ms * 1_000_000
     deadline_ns = previous.timestamp_mono_ns + period_ns
 
+    flow_out = output.with_name(output.stem + "-flows.csv").open("w", newline="", buffering=1) if flows else None
+    flow_writer = csv.writer(flow_out) if flow_out else None
+    if flow_writer:
+        flow_writer.writerow(FLOW_CSV_FIELDS)
     with output.open("w", newline="", buffering=1) as destination:
         writer = csv.DictWriter(destination, fieldnames=CSV_FIELDS)
         writer.writeheader()
@@ -238,12 +276,18 @@ def run(interface: str, interval_ms: int, output: Path) -> None:
             remaining_ns = deadline_ns - time.monotonic_ns()
             if remaining_ns > 0:
                 time.sleep(remaining_ns / 1_000_000_000)
-            current, _ = collect(interface)
+            current, qdiscs = collect(interface)
             writer.writerow(interval_row(previous, current))
+            leaf = select_queue(qdiscs)
+            if flow_writer and leaf.get("kind") in _FLOW_KINDS and leaf.get("handle"):
+                classes = _tc_json("class", "show", "dev", interface, "parent", leaf["handle"])
+                flow_writer.writerows(flow_rows(classes, flows, current.timestamp_mono_ns))
             previous = current
             deadline_ns += period_ns
             if deadline_ns <= current.timestamp_mono_ns:
                 deadline_ns = current.timestamp_mono_ns + period_ns
+    if flow_out:
+        flow_out.close()
 
 
 _RTM_NEWQDISC, _RTM_GETQDISC = 36, 38
@@ -348,6 +392,9 @@ def main() -> None:
     parser.add_argument("--interface", required=True)
     parser.add_argument("--interval-ms", type=int, default=25)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--flows", default="",
+                        help="pinned flow ids of fq_codel / cake leaves, e.g. 301=sub-a,302=sub-b (hex minors): "
+                             "writes <output>-flows.csv with per-class backlog")
     parser.add_argument("--queue-only", action="store_true",
                         help="sample only the queue occupancy over rtnetlink (fast)")
     args = parser.parse_args()
@@ -356,7 +403,7 @@ def main() -> None:
     if args.queue_only:
         run_queue(args.interface, args.interval_ms, args.output)
     else:
-        run(args.interface, args.interval_ms, args.output)
+        run(args.interface, args.interval_ms, args.output, parse_flows(args.flows))
 
 
 if __name__ == "__main__":

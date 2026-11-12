@@ -73,6 +73,7 @@ AQMS = {
     "red": {},  # thresholds ~15 / 45 ms at the bottleneck capacity, set in scenario_for
     "pie": {},
     "fq_codel": {},
+    "codel": {},  # single-queue CoDel: FIFO-like for grouping (one shared queue), CoDel drops
     "cake": {},  # per-flow like fq_codel (COBALT); ignores queue_limit_packets
 }
 SCENARIOS = ["capacity", "cbr", "ppbp"]

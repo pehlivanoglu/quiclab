@@ -49,6 +49,8 @@ from quiclab.orchestrator.routing import (
     routed_path,
 )
 from quiclab.orchestrator.shaping import (
+    client_flow_ids,
+    flow_pin_commands,
     live_aqm_commands,
     live_shaping_commands,
     offload_disable_commands,
@@ -373,9 +375,18 @@ class MininetBackend:
                 raise OrchestratorError(f"{nid}: {cmd!r} failed: {out or f'exit {status}'}")
 
 
+def client_pins(topology: TopologyConfig) -> tuple[dict[str, str], dict[str, int]]:
+    """(subscriber -> loopback address, subscriber -> pinned flow id): packets to a
+    client carry its loopback as destination (routes pin src to it)."""
+    ips = node_loopback_ips(topology)
+    return {sid: ips[sid] for sid in topology.subscribers}, client_flow_ids(topology.subscribers)
+
+
 def initial_shaping_commands(topology: TopologyConfig, scenario: Scenario) -> list[tuple[str, str]]:
-    """(node, tc command) for every link direction's t=0 conditions and AQM."""
+    """(node, tc command) for every link direction's t=0 conditions and AQM,
+    plus the per-client flow pins on fq_codel / cake router egresses."""
     commands = []
+    client_ips, flow_ids = client_pins(topology)
     for edge, link in zip(edge_interfaces(topology), topology.links):
         forward, reverse = scenario.initial_link(link.from_, link.to)
         for nid, peer, iface, spec in ((edge.a, edge.b, edge.a_iface, forward),
@@ -384,6 +395,8 @@ def initial_shaping_commands(topology: TopologyConfig, scenario: Scenario) -> li
             commands += [(nid, cmd) for cmd in shaping_commands(
                 iface, spec, queue.aqm, queue.dualpi2_target_ms, queue.queue_limit_packets,
                 (queue.red_min_bytes, queue.red_max_bytes))]
+            if nid in topology.routers:
+                commands += [(nid, cmd) for cmd in flow_pin_commands(iface, queue.aqm, client_ips, flow_ids)]
     return commands
 
 
@@ -438,7 +451,7 @@ def _launch_subscriber(net, topology: TopologyConfig, sid: str, record: RunRecor
                        client_id: str | None = None) -> subprocess.Popen:
     """Start the subscriber's client on its node. client_id (default sid) is the
     id it sends the publisher and the prefix of both ends' files: a re-join
-    after a leave runs as `<sid>@<n>` so the first session's files survive."""
+    after a leave runs as `<sid>_<n>` so the first session's files survive."""
     client_id = client_id or sid
     subscriber = topology.subscribers[sid]
     publisher = topology.publishers[subscriber.connects_to]
@@ -654,6 +667,10 @@ def _start_router_metrics(net, topology: TopologyConfig, record: RunRecord, info
         node = net.get(router_id)
         out_dir = record.run_dir / "router-metrics" / router_id
         out_dir.mkdir(parents=True, exist_ok=True)
+        _, flow_ids = client_pins(topology)
+        flows_arg = ",".join(f"{fid:x}={sid}" for sid, fid in sorted(flow_ids.items()))
+        (record.run_dir / "router-metrics" / "flow-ids.json").write_text(
+            json.dumps({sid: f"20:{fid:x}" for sid, fid in sorted(flow_ids.items())}, indent=1) + "\n")
         prefixes = []
         for iface in interfaces:
             for command in (
@@ -668,7 +685,7 @@ def _start_router_metrics(net, topology: TopologyConfig, record: RunRecord, info
             started.append((router_id, _popen(net, router_id, [
                 "python3", str(_ROUTER_METRICS), "--interface", iface,
                 "--interval-ms", str(router.queue_metrics.interval_ms),
-                "--output", f"{prefix}.csv",
+                "--output", f"{prefix}.csv", "--flows", flows_arg,
             ], log)))
             if router.queue_metrics.queue_interval_ms is not None:
                 started.append((router_id, _popen(net, router_id, [
@@ -738,7 +755,10 @@ def apply_live_router_aqm(
     specs: dict[tuple[int, str], DirectionSpec],
     run: CommandRunner,
 ) -> None:
-    """Replace the AQM leaf on every egress owned by one running router."""
+    """Replace the AQM leaf on every egress owned by one running router (and
+    re-pin the clients when the new leaf is fq_codel / cake: cake's filters go
+    with the old qdisc)."""
+    client_ips, flow_ids = client_pins(topology)
 
     def apply(value: RouterQueue, current: RouterQueue) -> None:
         for index, edge in enumerate(edge_interfaces(topology)):
@@ -752,7 +772,7 @@ def apply_live_router_aqm(
             for command in live_aqm_commands(
                 iface, spec, new.aqm, current.on(peer).aqm, new.dualpi2_target_ms,
                 new.queue_limit_packets, (new.red_min_bytes, new.red_max_bytes),
-            ):
+            ) + flow_pin_commands(iface, new.aqm, client_ips, flow_ids):
                 status, output = run(router_id, command)
                 if status:
                     raise OrchestratorError(f"{router_id}: {command!r} failed: {output.strip() or f'exit {status}'}")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from quiclab.router_metrics import interval_row, parse_sample
+from quiclab.router_metrics import flow_rows, interval_row, parse_flows, parse_sample
 
 
 def _qdiscs() -> list[dict]:
@@ -207,3 +207,14 @@ def test_netlink_dump_without_aqm_falls_back_to_root():
 
     assert not done
     assert select_queue(qdiscs)["backlog"] == 100
+
+
+def test_flow_rows_keep_pinned_classes_and_backlogged_hashed_ones():
+    flows = parse_flows("301=sub-a, 302=sub-b,")
+    assert flows == {"301": "sub-a", "302": "sub-b"}
+    classes = [{"class": "fq_codel", "handle": "20:301", "stats": {"backlog": 115506, "qlen": 93, "drops": 4}},
+               {"class": "fq_codel", "handle": "20:302", "stats": {"backlog": 0, "qlen": 0, "drops": 0}},
+               {"class": "fq_codel", "handle": "20:1d3", "stats": {"backlog": 1242, "qlen": 1, "drops": 0}},
+               {"class": "fq_codel", "handle": "20:2e4", "stats": {"backlog": 0, "qlen": 0, "drops": 0}}]
+    assert flow_rows(classes, flows, 7) == [(7, "301", "sub-a", 93, 115506, 4), (7, "302", "sub-b", 0, 0, 0),
+                                            (7, "1d3", "", 1, 1242, 0)]

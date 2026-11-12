@@ -4,6 +4,8 @@ import pytest
 
 from quiclab.config.schema import AqmKind, DirectionSpec
 from quiclab.orchestrator.shaping import (
+    client_flow_ids,
+    flow_pin_commands,
     live_aqm_commands,
     live_shaping_commands,
     offload_disable_commands,
@@ -71,6 +73,7 @@ def test_rate_plus_aqm_chains_aqm_under_htb():
         ),
         (AqmKind.pie, "pie ecn"),
         (AqmKind.fq_codel, "fq_codel ecn"),
+        (AqmKind.codel, "codel ecn"),
         (AqmKind.cake, "cake unlimited besteffort"),
     ],
 )
@@ -199,3 +202,30 @@ def test_red_profile_defaults_unchanged_and_scales() -> None:
         "red limit 240000 min 20000 max 60000 avpkt 1200 burst 28 probability 0.02 bandwidth 20mbit ecn")
     scaled = _aqm_name(AqmKind.red, DirectionSpec(bandwidth_mbps=90), None, None, (100_000, 300_000))
     assert "limit 1200000 min 100000 max 300000" in scaled and "burst 139" in scaled
+
+
+def test_client_flow_ids_are_sorted_from_0x301_and_bounded():
+    assert client_flow_ids(["sub-b", "sub-a", "sub-ctrl"]) == {"sub-a": 0x301, "sub-b": 0x302, "sub-ctrl": 0x303}
+    assert max(client_flow_ids([f"s{i:03d}" for i in range(256)]).values()) == 0x400
+    with pytest.raises(ValueError):
+        client_flow_ids([f"s{i:03d}" for i in range(257)])
+
+
+def test_flow_pins_mark_priority_on_fq_codel_and_filter_on_cake():
+    ips, ids = {"sub-b": "10.0.0.3", "sub-a": "10.0.0.2"}, {"sub-a": 0x301, "sub-b": 0x302}
+    fq = flow_pin_commands("r-eth1", AqmKind.fq_codel, ips, ids)
+    assert fq == [
+        "tc qdisc replace dev r-eth1 clsact",
+        "tc filter replace dev r-eth1 egress pref 100 handle 1 protocol ip flower dst_ip 10.0.0.2 "
+        "action skbedit priority 20:301 continue",
+        "tc filter replace dev r-eth1 egress pref 101 handle 1 protocol ip flower dst_ip 10.0.0.3 "
+        "action skbedit priority 20:302 continue",
+    ]
+    assert not any("parent 20:" in c for c in fq)   # a filter on fq_codel drops what it does not classify
+    cake = flow_pin_commands("r-eth1", AqmKind.cake, ips, ids)
+    assert cake == [
+        "tc filter replace dev r-eth1 parent 20: pref 100 handle 1 protocol ip flower dst_ip 10.0.0.2 classid 20:301",
+        "tc filter replace dev r-eth1 parent 20: pref 101 handle 1 protocol ip flower dst_ip 10.0.0.3 classid 20:302",
+    ]
+    for aqm in (AqmKind.pfifo, AqmKind.red, AqmKind.pie, AqmKind.codel, AqmKind.dualpi2, None):
+        assert flow_pin_commands("r-eth1", aqm, ips, ids) == []

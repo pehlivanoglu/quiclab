@@ -105,18 +105,23 @@ def capacity_max(caps: list[tuple[float, float]], t0: float, t1: float) -> float
 
 
 def gt1_episodes(t: np.ndarray, backlog_bytes: np.ndarray, tx_bytes: np.ndarray | None,
-                 caps: list[tuple[float, float]], p: Params, drops: np.ndarray | None = None) -> list[dict]:
+                 caps: list[tuple[float, float]], p: Params, drops: np.ndarray | None = None,
+                 share: np.ndarray | None = None) -> list[dict]:
     """Standing-queue episodes on one egress (see gt1_core)."""
-    return gt1_core(t, backlog_bytes, tx_bytes, caps, p, drops)[0]
+    return gt1_core(t, backlog_bytes, tx_bytes, caps, p, drops, share)[0]
 
 
 def gt1_core(t: np.ndarray, backlog_bytes: np.ndarray, tx_bytes: np.ndarray | None,
-             caps: list[tuple[float, float]], p: Params, drops: np.ndarray | None = None):
+             caps: list[tuple[float, float]], p: Params, drops: np.ndarray | None = None,
+             share: np.ndarray | None = None):
     """(episodes, per-sample labels) on one egress. t: sample times (s, run clock);
     backlog_bytes: backlog at t; tx_bytes: bytes transmitted in (t[i-1], t[i]]
     or None (queue-only CSV: continuity then relies on the drain bound alone).
     caps: [(t, Mb/s)] step series. p must be resolved (numeric interval, gap).
     drops: packets dropped in (t[i-1], t[i]], summed per episode when given.
+    share: per-flow queues of fq_codel / cake (run_flow_truth): the number of
+    backlogged flows at t; the flow's queue drains at capacity / share, so its
+    delay is backlog * share / capacity.
 
     Hysteresis (gt_bands): a run enters at a sample with q_ms >= target and
     backlog >= MTU, and stays while q_ms >= target - q_band, backlog >= MTU
@@ -125,7 +130,8 @@ def gt1_core(t: np.ndarray, backlog_bytes: np.ndarray, tx_bytes: np.ndarray | No
     n = len(t)
     if n < 2:
         return [], np.array([], dtype=str)
-    cap_now = np.array([det_eval.value_at(caps, x) for x in t]) * 1e6
+    div = np.ones(n) if share is None else np.maximum(np.asarray(share, dtype=float), 1.0)
+    cap_now = np.array([det_eval.value_at(caps, x) for x in t]) * 1e6 / div
     q_ms = backlog_bytes * 8 / cap_now * 1000
     q_lo = p.target_ms - p.q_band_ms
     enter = (q_ms >= p.target_ms) & (backlog_bytes >= p.mtu)
@@ -133,7 +139,7 @@ def gt1_core(t: np.ndarray, backlog_bytes: np.ndarray, tx_bytes: np.ndarray | No
     continuous = np.zeros(n, dtype=bool)
     for i in range(1, n):
         dt = t[i] - t[i - 1]
-        drain_ms = backlog_bytes[i - 1] * 8 / capacity_max(caps, t[i - 1], t[i]) * 1000
+        drain_ms = backlog_bytes[i - 1] * 8 * div[i - 1] / capacity_max(caps, t[i - 1], t[i]) * 1000
         if drain_ms >= dt * 1000:
             continuous[i] = True
         elif tx_bytes is not None:
@@ -156,7 +162,7 @@ def gt1_core(t: np.ndarray, backlog_bytes: np.ndarray, tx_bytes: np.ndarray | No
             continue
         ep = {"start_s": float(t[a]), "start_lo_s": float(t[a - 1]) if a else float(t[a]), "end_s": float(t[b]),
               "q_min_ms": float(q_ms[a:b + 1].min()), "q_max_ms": float(q_ms[a:b + 1].max()),
-              "cap_mbps": float(cap_now[a] / 1e6), "drops": int(drops[a:b + 1].sum()) if drops is not None else 0,
+              "cap_mbps": float(cap_now[a] * div[a] / 1e6), "drops": int(drops[a:b + 1].sum()) if drops is not None else 0,
               "fragments": 1, "_a": a, "_b": b}
         if episodes and ep["start_s"] - episodes[-1]["end_s"] < p.merge_gap_s:
             last = episodes[-1]
@@ -245,6 +251,48 @@ def run_truth(run: det_eval.Run, p: Params, fine: bool = False) -> tuple[list[di
             labs += [{"hop": hop_id, "t_start": round(a, 4), "t_end": round(b, 4), "label": x}
                      for a, b, x in gt_bands.spans(t[:-1], t[1:], lab[1:])]
     return sorted(out, key=lambda e: (e["start_s"], e["hop"])), labs
+
+
+def load_flow_samples(run: det_eval.Run, csv: Path, t_mono_ns: np.ndarray) -> tuple[dict[str, np.ndarray], np.ndarray]:
+    """Per pinned client: backlog bytes on the egress sample grid `t_mono_ns`
+    (0 where its class had no backlog), and the number of backlogged classes per
+    sample (pinned and hashed; >= 1)."""
+    flows = csv.with_name(csv.stem + "-flows.csv")
+    index = {int(x): i for i, x in enumerate(t_mono_ns)}
+    out: dict[str, np.ndarray] = {}
+    active = np.zeros(len(t_mono_ns))
+    for r in det_eval.rows(flows):
+        i = index.get(int(r["timestamp_mono_ns"]))
+        if i is None:
+            continue
+        active[i] += int(r["backlog_bytes"]) > 0
+        if r["flow"]:
+            out.setdefault(r["flow"], np.zeros(len(t_mono_ns)))[i] = int(r["backlog_bytes"])
+    return out, np.maximum(active, 1)
+
+
+def run_flow_truth(run: det_eval.Run, p: Params) -> list[dict]:
+    """Per-client GT1 on the egresses that recorded per-flow classes (fq_codel /
+    cake with pinned clients, router-metrics `<iface>-flows.csv`): the GT1 rule on
+    the client's own queue, delay at its fair share. Empty for older runs."""
+    caps = det_eval.capacity_series(run)
+    resolved = p.resolve(max(base_rtts(run).values(), default=0.0))
+    out = []
+    for hop, csv in router_egresses(run):
+        if not csv.with_name(csv.stem + "-flows.csv").exists():
+            continue
+        rows = det_eval.rows(csv)
+        t_ns = np.array([int(r["timestamp_mono_ns"]) for r in rows])
+        t = np.array([run.t_mono_us(x / 1000) for x in t_ns])
+        keep = (t >= 0) & (t <= run.duration - SHUTDOWN_S)
+        backlog, active = load_flow_samples(run, csv, t_ns)
+        for flow, b in sorted(backlog.items()):
+            for ep in gt1_core(t[keep], b[keep], None, caps[hop], resolved, None, active[keep])[0]:
+                if ep["end_s"] >= WARMUP_S:
+                    out.append({"hop": f"{hop[0]}->{hop[1]}", "flow": flow,
+                                **{k: round(v, 4) if isinstance(v, float) else v for k, v in ep.items()},
+                                "interval_s": round(resolved.interval_s, 3), "source": "25ms-flows"})
+    return sorted(out, key=lambda e: (e["start_s"], e["hop"], e["flow"]))
 
 
 def run_episodes(run: det_eval.Run, p: Params, fine: bool = False) -> list[dict]:

@@ -59,7 +59,7 @@ Held-out set (5 reps each, pass criteria in the spec):
             trace below the client's wire rate. Shared link pfifo / fq_codel.
   N5 churn  large topology (8 clients): every client alternates on (exp mean
             90 s, min 20) / off (exp mean 30 s, min 5), sessions after the
-            first run as <client>@<n>; shared cap drops sized to the demand of
+            first run as <client>_<n>; shared cap drops sized to the demand of
             the clients that are on; 900 s. pfifo, fq_codel.
 """
 
@@ -137,7 +137,7 @@ INDEP_GAP_MEAN_S, INDEP_GAP_MIN_S, N_DURATION_S = 30.0, 5.0, 600.0
 # Event-frequency microbenchmarks: gaps between stimuli (grid timing on base, independent timing on split).
 GAPS = {"gapfast": (2.0, 5.0), "gapslow": (45.0, 75.0)}
 INDEP_MEANS = {"indepfast": 10.0, "indepslow": 60.0}
-MICRO = ["pfifo", "red", "pie", "cake"]          # microbenchmark AQMs (user decision 2026-11-10: fq_codel core only)
+MICRO = ["pfifo", "red", "pie", "cake", "codel"]   # microbenchmark AQMs (user decisions: 2026-11-10 fq_codel core only, 2026-11-11 + codel)
 CONCURRENT_S = 1.0                        # windows on different bottlenecks closer than this are `concurrent`
 TCP_FLOWS, TCP_D = (2, 4), (4, 8)         # N3 TCP bulk: Cubic flows x duration
 # N4 trace-driven access links.
@@ -730,6 +730,7 @@ def run_campaign(k: str, kdir: Path, reps: int | None, skip_existing: bool, dry:
         "campaign": k, "held_out": k in HELD_OUT, "started": datetime.datetime.now().isoformat(timespec="seconds"),
         "finished": None, "git": git_commit(), "reps": reps, "aqms": CAMPAIGNS[k]["aqms"],
         "types": CAMPAIGNS[k]["types"], "runs": {}}
+    manifest["aqms"], manifest["types"] = CAMPAIGNS[k]["aqms"], CAMPAIGNS[k]["types"]   # cells added later (e.g. codel)
     total = 0.0
     for rtype, aqm, rep in cells_of(k, reps):
         rid = run_id(rtype, aqm, rep)
@@ -791,6 +792,26 @@ def link_lag(rows: list[dict], label: str | None = None) -> dict | None:
             "max": round(lags[-1], 4)}
 
 
+def pin_check(run: det_eval.Run) -> dict | None:
+    """Per-flow router counters (fq_codel / cake egresses, docs/per-flow-queue-counters.md):
+    every client behind a recorded egress shows up as its pinned class at least
+    once, and the egress transmitted bytes (a misclassification would drop
+    silently). None when the run recorded no per-flow classes."""
+    out = {"egresses": 0, "missing": [], "silent": []}
+    for hop, csv in gt1.router_egresses(run):
+        flows = csv.with_name(csv.stem + "-flows.csv")
+        if not flows.exists():
+            continue
+        out["egresses"] += 1
+        hop_id = f"{hop[0]}->{hop[1]}"
+        behind = {s for s in run.topology["subscribers"] if hop in det_eval.path_hops(run, run.pub, s)}
+        seen = {r["flow"] for r in det_eval.rows(flows) if r["flow"]}
+        out["missing"] += [f"{hop_id}:{s}" for s in sorted(behind - seen)]
+        if not sum(int(r["transmitted_bytes"]) for r in det_eval.rows(csv)):
+            out["silent"].append(hop_id)
+    return out if out["egresses"] else None
+
+
 def infra_check(run_dir: Path) -> dict:
     """Did the run do what the plan says, without looking at any grouping result:
     finished, clients / sessions present with sender files, event errors, link
@@ -809,10 +830,10 @@ def infra_check(run_dir: Path) -> dict:
     hit_any = {c for b in bursts for c in b["hit"]}
     errors = [{k: r.get(k) for k in ("event", "at_s", "target", "error")} for r in rows if r.get("error")]
     missing = [s for s in run.subs for suffix in ("acks", "owd") if not run.sender_file(s, suffix).exists()]
-    planned_sessions = sorted(f for f in ga.sessions_of(run) if "@" in f)
+    planned_sessions = sorted(f for f in ga.sessions_of(run) if ga.is_later_session(f, run.topology["subscribers"]))
     out = {"run": run_dir.name, "finished": run_finished(run_dir), "duration_s": run.duration,
            "clients": len(run.subs), "sessions_planned": len(planned_sessions),
-           "sessions_found": len([f for f in run.subs if "@" in f]),
+           "sessions_found": len([f for f in run.subs if ga.is_later_session(f, run.topology["subscribers"])]),
            "sender_files_missing": sorted(set(missing)),
            "errors": len(errors), "first_errors": errors[:5],
            "link_events": sum(r["event"] == "link" for r in rows),
@@ -822,7 +843,8 @@ def infra_check(run_dir: Path) -> dict:
            "shared_hit_all": sum(set(b["hit"]) == set(b["expected"]) for b in shared),
            "private_windows": len(private), "private_hit": sum(bool(b["hit"]) for b in private),
            "clients_never_hit": sorted(expected_any - hit_any),
-           "ctrl_congested_bins": int(len(ga.congested_bins(run, ga.CTRL))) if ga.CTRL in run.subs else None}
+           "ctrl_congested_bins": int(len(ga.congested_bins(run, ga.CTRL))) if ga.CTRL in run.subs else None,
+           "pins": pin_check(run)}
     (run_dir / "grouping").mkdir(exist_ok=True)
     (run_dir / "grouping" / "infra.json").write_text(json.dumps(out, indent=1))
     return out
@@ -838,15 +860,24 @@ def infra_line(i: dict) -> str:
     if i["sender_files_missing"]:
         flags.append(f"missing files {i['sender_files_missing']}")
     if i["lag_trace"] and i["lag_trace"]["max"] > TRACE_LAG_MAX_S:
-        flags.append(f"trace lag p99/max {i['lag_trace']['p99']}/{i['lag_trace']['max']} s > {TRACE_LAG_MAX_S}")
+        flags.append(f"trace tc apply delay p99/max {i['lag_trace']['p99']}/{i['lag_trace']['max']} s > {TRACE_LAG_MAX_S}")
     if i["sessions_planned"] != i["sessions_found"]:
         flags.append(f"sessions {i['sessions_found']}/{i['sessions_planned']}")
     if i["clients_never_hit"]:
         flags.append(f"never hit {i['clients_never_hit']}")
+    pins = i.get("pins")
+    if pins and pins["missing"]:
+        flags.append(f"pinned flow never seen {pins['missing']}")
+    if pins and pins["silent"]:
+        flags.append(f"fq/cake egress transmitted nothing {pins['silent']}")
     return (f"{i['run']}: clients {i['clients']}, windows hit {i['windows_hit']}/{i['windows']}, shared >=2 hit "
             f"{i['shared_hit2']}/{i['shared_windows']}, private hit {i['private_hit']}/{i['private_windows']}, "
-            f"link events {i['link_events']} lag p99/max {lag.get('p99', '-')}/{lag.get('max', '-')} s, ctrl congested "
+            f"link events {i['link_events']} tc apply delay (applied - planned) p99/max {lag.get('p99', '-')}/{lag.get('max', '-')} s, ctrl congested "
             f"bins {i['ctrl_congested_bins']}" + (" | " + "; ".join(flags) if flags else " | ok"))
+
+
+def pin_cell(pins: dict | None) -> str:
+    return "-" if not pins else f"{pins['egresses']}; {pins['missing'] or 'none'}; {pins['silent'] or 'none'}"
 
 
 def infra_report(k: str, kdir: Path) -> None:
@@ -861,9 +892,10 @@ def infra_report(k: str, kdir: Path) -> None:
     lines = [f"# Infrastructure check {k}", "", f"{len(runs)} runs, generated {datetime.datetime.now():%Y-%m-%d %H:%M}. "
              "No grouping result is read here" + (" (held-out set: scored only with --score-held-out after the rule freeze)."
                                                   if k in HELD_OUT else "."), "",
-             "| run | finished | clients | sessions found/planned | errors | link events | lag p99 / max s (trace if any) | "
-             "windows hit | shared >=2 hit / all hit | private hit | never hit | ctrl congested bins | missing files |",
-             "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+             "| run | finished | clients | sessions found/planned | errors | link events | tc apply delay p99 / max s (applied - planned; trace if any) | "
+             "windows hit | shared >=2 hit / all hit | private hit | never hit | ctrl congested bins | missing files "
+             "| per-flow pins (egresses; missing; silent) |",
+             "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for i in checks:
         if "error" in i:
             lines.append(f"| {i['run']} | check failed: {i['error']} | | | | | | | | | | |")
@@ -873,7 +905,7 @@ def infra_report(k: str, kdir: Path) -> None:
                      f"| {i['errors']} | {i['link_events']} | {lag.get('p99', '-')} / {lag.get('max', '-')} "
                      f"| {i['windows_hit']}/{i['windows']} | {i['shared_hit2']}/{i['shared_hit_all']}/{i['shared_windows']} "
                      f"| {i['private_hit']}/{i['private_windows']} | {i['clients_never_hit']} | {i['ctrl_congested_bins']} "
-                     f"| {i['sender_files_missing']} |")
+                     f"| {i['sender_files_missing']} | {pin_cell(i.get('pins'))} |")
     (kdir / "infra.md").write_text("\n".join(lines) + "\n")
     print(f"infra: {kdir / 'infra.md'}", flush=True)
     for i in checks:
@@ -1038,9 +1070,10 @@ def criteria(k: str, results: list[dict], src: str = PRIMARY) -> list[str]:
             lines.append(f"- {r['run']}: sessions with >= 3 events {st.get('sessions_3_events')}, of them members "
                          f"{st.get('members')}; membership event index p50 {fmt(st.get('event_index_p50'))}")
     elif k == "G0":
-        check("negatives: no confirmed leaf with >= 2 members (false groups = 0), sub-ctrl ungrouped",
-              runs(tuple(CAMPAIGNS["G0"]["aqms"])),
-              lambda r: not (shadow_of(r, "leaves") or {}) and shadow_of(r, "ctrl_grouped") is not True, pr)
+        # No shared bottleneck: every pair is DIFFERENT, so a confirmed wrong pair is any pair reported
+        # SAME (sub-ctrl included). Single-member leaves group nobody (user decision 2026-11-11).
+        check("negatives: no confirmed wrong pair (false SAME pairs = 0, sub-ctrl included)",
+              runs(tuple(CAMPAIGNS["G0"]["aqms"])), lambda r: shadow_of(r, "fp") == 0, pr)
     elif k in GROUPS["micro"]:
         check("microbenchmark: one leaf = the four clients, sub-ctrl ungrouped (report only on fq-like AQMs)",
               runs(("pfifo", "red", "pie")),

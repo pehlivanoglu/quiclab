@@ -218,6 +218,7 @@ function routerAqmEditor(node) {
     new Option("RED", "red"),
     new Option("PIE", "pie"),
     new Option("FQ-CoDel", "fq_codel"),
+    new Option("CoDel", "codel"),
   );
   select.value = node.aqm || "";
   select.disabled = !routersEditable;

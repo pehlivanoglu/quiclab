@@ -436,7 +436,7 @@ Removed from the matrix: splitcap, splitudp (K1 / N3 cover them), isolate
 delaystep. Severity grid everywhere u ∈ {1.1, 1.3, 2.0} (K1 7 × 9 = 63
 stimuli, K6 72, K5 18 shared + 24 private). Grouping expectation on the micro
 and negative layers: one leaf with the four clients and sub-ctrl outside
-(micro, FIFO-like AQMs), no confirmed leaf at all (negatives); printed as
+(micro, FIFO-like AQMs), no confirmed wrong pair (negatives; single-member leaves group nobody, changed 2026-11-11 from "no confirmed leaf at all"); printed as
 PASS / FAIL lines like the held-out criteria. ppbp has no scripted windows: its
 one whole-run window is split by the truth into the GT1 episodes of the hop
 (`from_truth`).

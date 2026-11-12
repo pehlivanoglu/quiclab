@@ -20,6 +20,7 @@ from quiclab.orchestrator.mininet_backend import (
     _queue_text,
     apply_live_router_aqm,
     client_facing_router_interfaces,
+    initial_shaping_commands,
     iperf_client_argv,
     iperf_json_to_csv,
 )
@@ -215,7 +216,23 @@ def test_subscriber_sessions_alternate_and_get_session_ids() -> None:
     assert scenario.sessions("sub-d") == [(10, 30), (50, None)]
     assert scenario.sessions("sub-a") == [(0.0, 40), (60, 70)]
     assert scenario.sessions("sub-b") == [(0.0, None)]
-    assert Scenario.session_id("sub-a", 1) == "sub-a" and Scenario.session_id("sub-a", 2) == "sub-a@2"
+    assert Scenario.session_id("sub-a", 1) == "sub-a" and Scenario.session_id("sub-a", 2) == "sub-a_2"
+    subs = {"sub-a", "sub-b"}
+    assert Scenario.session_of("sub-a_2", subs) == ("sub-a", 2) and Scenario.session_of("sub-a_12", subs) == ("sub-a", 12)
+    assert Scenario.session_of("sub-a", subs) == ("sub-a", 1) and Scenario.session_of("sub-x_2", subs) == ("sub-x_2", 1)
+    assert Scenario.session_of("sub-a_1", subs) == ("sub-a_1", 1)
+
+
+def test_later_session_id_must_not_collide_with_a_subscriber() -> None:
+    import copy
+    topology = _shared()
+    raw_topology = topology.model_dump(by_alias=True)
+    raw_topology["subscribers"]["sub-a_2"] = copy.deepcopy(raw_topology["subscribers"]["sub-a"])
+    raw_topology["links"] += [{**copy.deepcopy(link), "to": "sub-a_2"} for link in raw_topology["links"] if link["to"] == "sub-a"]
+    raw = _scenario_raw("shared-cross.yaml")
+    raw["events"] += [{"at_s": 40, "type": "leave", "subscriber": "sub-a"}, {"at_s": 60, "type": "join", "subscriber": "sub-a"}]
+    with pytest.raises(ValueError, match="already a topology subscriber"):
+        Scenario.model_validate(raw).check_against(type(topology).model_validate(raw_topology))
 
 
 def test_iperf_client_argv() -> None:
@@ -342,7 +359,26 @@ def test_live_network_records_changes(tmp_path: Path) -> None:
     target, detail = network.apply_event(link[1])
     assert detail == "aqm=fq_codel" and network.queues["router"].aqm.value == "fq_codel"
     assert any("fq_codel" in cmd and node == "router" for node, cmd in commands)
+    # A live switch to fq_codel pins every client on the router's egresses (priority mark, no qdisc filter).
+    pins = [cmd for node, cmd in commands if node == "router" and "skbedit priority 20:" in cmd]
+    assert pins and all(cmd.endswith(" continue") for cmd in pins)
     log.close()
+
+
+def test_initial_shaping_pins_clients_only_on_fq_codel_and_cake_routers() -> None:
+    topology = _shared()
+    for aqm, marker in (("fq_codel", "skbedit priority 20:"), ("cake", "classid 20:")):
+        raw = _scenario_raw("shared-cross.yaml")
+        raw["routers"] = {"router": {"aqm": aqm}}
+        commands = initial_shaping_commands(topology, Scenario.model_validate(raw).check_against(topology))
+        pins = [cmd for node, cmd in commands if marker in cmd]
+        assert pins and {node for node, cmd in commands if marker in cmd} == {"router"}
+        ids = {cmd.split(marker)[1].split()[0] for cmd in pins}
+        assert ids == {f"{0x301 + i:x}" for i in range(len(topology.subscribers))}
+    raw = _scenario_raw("shared-cross.yaml")
+    raw["routers"] = {"router": {"aqm": "pie"}}
+    commands = initial_shaping_commands(topology, Scenario.model_validate(raw).check_against(topology))
+    assert not any("skbedit" in cmd or "flower" in cmd for _, cmd in commands)
 
 
 def test_visualizer_snapshot_roles() -> None:

@@ -117,6 +117,10 @@ def test_window_hits_follow_the_router_episode_of_the_stimulated_egress():
     # Secondary truth: per-client episodes decide (fq_codel: only the client that queued).
     flows = {"a1": [(10.4, 12.0)], "a2": [], "b1": [(10.1, 10.9)], "b2": []}
     assert [b["hit"] for b in ga.measured_bursts(run, windows, {}, flows)] == [["a1"], ["b1"], [], []]
+    # Per-client GT1 on a pinned fq_codel / cake egress: only the clients whose own queue stood.
+    per_flow = {"r2->sa": {"a2": [(10.5, 11.2)]}}
+    bursts = ga.measured_bursts(run, windows, hops, hop_flow_episodes=per_flow)
+    assert [b["hit"] for b in bursts] == [["a2"], ["b1", "b2"], [], []]
 
 
 def _result(events, snapshots, leaves):
@@ -151,19 +155,19 @@ def test_confirmed_leaves_report_members_of_confirmed_leaves_only():
     assert set(ga.confirmed_leaves(_result([], [final], leaves))) == {frozenset("ab"), frozenset("fg")}
 
 
-def test_sessions_of_names_later_sessions_with_at():
-    run = SimpleNamespace(topology={"subscribers": {"sub-a": {}, "sub-b": {}, "sub-a@2": {}, "sub-ctrl": {}}},
+def test_sessions_of_names_later_sessions_with_underscore():
+    run = SimpleNamespace(topology={"subscribers": {"sub-a": {}, "sub-b": {}, "sub-a_2": {}, "sub-ctrl": {}}},
                           scenario={"events": [{"type": "leave", "subscriber": "sub-a", "at_s": 100},
                                                {"type": "join", "subscriber": "sub-a", "at_s": 130},
                                                {"type": "join", "subscriber": "sub-b", "at_s": 60},
                                                {"type": "link", "at_s": 5}]})
-    assert ga.sessions_of(run) == {"sub-a": (0.0, 100), "sub-a@2": (130, None), "sub-b": (60, None), "sub-ctrl": (0.0, None)}
+    assert ga.sessions_of(run) == {"sub-a": (0.0, 100), "sub-a_2": (130, None), "sub-b": (60, None), "sub-ctrl": (0.0, None)}
 
 
 def test_session_run_aliases_sessions_into_the_topology(tmp_path):
     import yaml
     (tmp_path / "publishers" / "pub").mkdir(parents=True)
-    for f in ("sub-a", "sub-a@2", "sub-b"):
+    for f in ("sub-a", "sub-a_2", "sub-b"):
         (tmp_path / "publishers" / "pub" / f"{f}-acks.csv").write_text("mono_us\n")
     (tmp_path / "topology.yaml").write_text(yaml.safe_dump({
         "publishers": {"pub": {}}, "subscribers": {"sub-a": {"rate_kbps": 1000}, "sub-b": {"rate_kbps": 2500}},
@@ -174,7 +178,7 @@ def test_session_run_aliases_sessions_into_the_topology(tmp_path):
     (tmp_path / "events.csv").write_text("event,at_s,applied_s,applied_mono_ns,applied_unix_ns,target,detail,label,status\n"
                                          "epoch,0,0,1000000000,2000000000,,,,applied\n")
     run = ga.load_run(tmp_path)
-    assert isinstance(run, ga.SessionRun) and run.subs == ["sub-a", "sub-b", "sub-a@2"]
-    assert run.sid_of["sub-a@2"] == "sub-a" and run.topology["subscribers"]["sub-a@2"]["rate_kbps"] == 1000
-    assert {"from": "switch", "to": "sub-a@2"} in run.topology["links"]
-    assert run.sender_file("sub-a@2", "acks").name == "sub-a@2-acks.csv"
+    assert isinstance(run, ga.SessionRun) and run.subs == ["sub-a", "sub-b", "sub-a_2"]
+    assert run.sid_of["sub-a_2"] == "sub-a" and run.topology["subscribers"]["sub-a_2"]["rate_kbps"] == 1000
+    assert {"from": "switch", "to": "sub-a_2"} in run.topology["links"]
+    assert run.sender_file("sub-a_2", "acks").name == "sub-a_2-acks.csv"
