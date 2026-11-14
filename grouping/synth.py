@@ -33,11 +33,18 @@ class Profile:
     sigma_arr: float
     sigma_onset: float
     config: dict = field(default_factory=dict)   # engine config overrides suited to the profile
+    onset_tail: tuple[float, float] = (0.0, 0.0)  # (probability, sigma s): heavy tail of the onset error
 
 
 PROFILES = {
     "ideal": Profile("ideal", 0.0, 0.0, 0.008, 0.008, {"delta": 0.03, "hold": 0.1}),
-    "realistic": Profile("realistic", 0.1, 0.5, 0.15, 0.06, {}),
+    # Onset error fitted (2026-11-11) to the measured same-group onset spread of the
+    # v2-owd detector on the development set (|pair difference| p50 33 ms, p90 132 ms;
+    # reports/grouping-episode): 84 % N(0, 26 ms), 16 % N(0, 130 ms) -> p50 33, p90 130.
+    "realistic": Profile("realistic", 0.1, 0.5, 0.15, 0.026, {}, (0.16, 0.13)),
+    # The profile used until 2026-11-11 (N(0, 60 ms): p50 57, p90 139 ms); kept to show
+    # the limit of delta = 150 ms (grouping/README.md, "Synthetic profiles").
+    "wide": Profile("wide", 0.1, 0.5, 0.15, 0.06, {}),
     "exact": Profile("exact", 0.0, 0.0, 0.0, 0.0, {"delta": 0.03, "hold": 0.1}),   # tests only
 }
 
@@ -125,7 +132,9 @@ def generate(sc: Scenario, profile: Profile, seed: int, p_miss: float = P_MISS) 
         dur = rng.uniform(*EPISODE_S)
         ep_end[name] = t_true + dur
         episodes[name].append((t_true, t_true + dur, cause))
-        t_onset = t_true + rng.normal(0, profile.sigma_onset)
+        p_tail, s_tail = profile.onset_tail
+        wide = p_tail > 0 and rng.uniform() < p_tail   # no extra draw without a tail: other profiles keep their streams
+        t_onset = t_true + rng.normal(0, s_tail if wide else profile.sigma_onset)
         t_arr = max(t_onset + 0.01, t_true + d_f[name] + rng.normal(0, profile.sigma_arr))
         track = sc.tracks.get(cause, "delay")
         mag = 1 + float(rng.lognormal(0.3, 0.3))

@@ -409,3 +409,21 @@ def test_v12_default_is_deterministic_and_passes_s4() -> None:
     rb = run_scenario("S4", "realistic", 1)
     assert ra[0].to_json() == rb[0].to_json()
     assert ra[2], ra[3]
+
+
+# The "wide" synthetic profile (onset error N(0, 60 ms), the realistic profile until
+# 2026-11-11) shows the limit of delta = 150 ms: 16 of the 18 S1-S6 checks pass, these
+# two do not (grouping/README.md, "Synthetic profiles"). strict=True: if one starts
+# passing, the note is stale and must be revisited.
+@pytest.mark.xfail(strict=True, reason="wide onsets at delta 0.15: events split, f5 never reaches A before it idles")
+def test_wide_profile_s5_seed1_idle_member_limit() -> None:
+    res, truth, ok, d = run_scenario("S5", "wide", 1, theta_J=0.6, theta_cov=0.6)
+    assert d["f5_apart_idle"] <= 0 and d["f5_member_idle"]
+
+
+@pytest.mark.xfail(strict=True, raises=AssertionError,
+                   reason="inv4 (engine unchanged by decision): wide onsets at delta 0.15 build wrong leaves "
+                          "({f4,f5,f11,f12}); at event 47 (case B) f11 and f12 migrate together into the "
+                          "f7-f10 leaf, which inv4 counts as two leaves merged")
+def test_wide_profile_s6_seed2_inv4_limit() -> None:
+    run_scenario("S6", "wide", 2, theta_J=0.6, theta_cov=0.6)

@@ -12,7 +12,7 @@ from pathlib import Path
 
 @dataclass
 class Config:
-    delta: float = 0.300            # onset co-occurrence tolerance on aligned time (s)
+    delta: float = 0.150            # onset co-occurrence tolerance on aligned time (s); 0.300 until 2026-11-11 (user decision)
     delta_max: float | None = None  # max event span; default 2*delta
     hold: float = 1.0               # wall-clock hold after t0 + delta_max for late detectors (s)
     align_mode: str = "half_mrtt"   # half_mrtt | none | table

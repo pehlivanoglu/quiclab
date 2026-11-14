@@ -203,7 +203,7 @@ is done (adapter with the three onset sources, θ = 0.6, then the SBD scorer):
 |---|---|---|---|---|---|
 | K1 hier | split (3+3) | cells u {1.3, 2} × d {1, 2, 4} × {up, a, b, a+b, a+b@0.5, a+b@1, a+b@2, a+up} | 4 uniform + mixa (r1 pfifo / r2 fq_codel) + mixb (r1 fq_codel / r2 pfifo) + mixab (r1 pfifo; r2: branch a pfifo, branch b fq_codel) | 21 × 12.7 min | hierarchy (A / B / GLOBAL), false GLOBAL on simultaneous independent events, δ_max / hold on offsets, serial bottleneck |
 | K2 part | detector | Poisson on/off capacity drops, u ∈ {1.05, 1.1, 1.15, 1.3} per run, on U(1, 4) s (15 % U(10, 20)), off U(5, 20) | pfifo (shared queue), fq_codel (per-flow queues: only clients above their fair share are hit) | 24 × 5 min | share of a leaf that alarms at light load → θ; long episodes |
-| K3 rev | detector / detector-rev | revasym (reverse delays 5/40/80/120), revjit10, revcross (ACK-path bursts only, router egress r1 → r0 at 10 Mb/s), revcrossmix | pfifo, fq_codel (ACKs isolated: control) | 24 × 3–6 min | alignment error, false onsets from jitter, correlated false onsets from reverse congestion |
+| K3 rev | detector / detector-rev | revasym (reverse delays 5/40/80/120), revjit10 (with ACK reordering, see note below), revcross (ACK-path bursts only, router egress r1 → r0 at 10 Mb/s), revcrossmix | pfifo, fq_codel (ACKs isolated: control) | 24 × 3–6 min | alignment error, false onsets from jitter, correlated false onsets from reverse congestion |
 | K5 mixed | detector-access | shared cap bursts + per-client access router drops shuffled; sub-d joins at 60 s, sub-b leaves at 240 s | 4 | 12 × 6 min | private events leave the leaf alone, Case D→A for the joiner, the leaver's decay |
 | K6 depth | tree8 (4 × 2) | {A, B, C, D, X, Y, root, A+C} | pfifo, fq_codel | 6 × 12.7 min | two-flow leaves, two-level LCA, A+C simultaneous |
 
@@ -246,7 +246,7 @@ same runs). Headline rows (median leaf P / R, t_correct s, shadow onsets):
 | K1 | fq_codel, mixa, mixab | 1.0 / 1.0 on few pairs, coverage 0.14–0.29 | 1 Mb/s clients never congest; **r2: confirmed cross-branch pair {a2,b2}** (L 8.7 / 9.1) |
 | K2 | pfifo, all u | 1.0 / 1.0, 39–66 s | FIFO hits every client even at u 1.05 (oracle hit share 1.0) |
 | K2 | fq_codel u ≤ 1.15 | no leaf | onsets spread 0.5–8 s, 1–3 of 4 clients queue: no shared *event* exists (OWD source agrees) |
-| K3 | revasym, revjit10 | 1.0 / 1.0 | reverse asymmetry / 10 ms jitter: spread ×2 / ×5, grouping intact |
+| K3 | revasym, revjit10 (with ACK reordering) | 1.0 / 1.0 | reverse asymmetry / 10 ms jitter: spread ×2 / ×5, grouping intact |
 | K3 | revcross (pfifo) | false 4-client leaf in 3/3 (shadow); none with OWD onsets | detector confound (RTT), not grouping |
 | K5 | pfifo / pie / red | 1.0 / 1.0, cov 0.1–0.3 | 203 of 204 private windows → SOLO; only 6 shared windows per run (too few; plan now has 12) |
 | K6 | pfifo | shadow 1.0 / 0.75 (r1: 0.33), truth 1.0 / 1.0, 170–350 s | two-flow leaves break on one miss; A+C simultaneous → case B internal node over A and C |
@@ -311,7 +311,7 @@ strangers says nothing about the leaf's extent.
 | K1 | mixa / mixab (fq_codel downstream) | 1.0 / 1.0 on the pairs that decide | same; {a2,a3}, {b2,b3} (+ {a1,a2,a3} on the pfifo branch of mixab) | 0.29 / 0.48 |
 | K1 | fq_codel | r2: confirmed cross pairs {a1,b1}, {a2,b2} | r2 unchanged, r1 now {a2,b2,b3} | 0.29 |
 | K2 | fq_codel | leaf only at u ≥ 1.15 | same (u 1.15: 99 → 77 s) | 0.0–0.1 |
-| K3 | revasym / revjit10 / revcrossmix | 1.0 / 1.0 | same (revjit10 fq_codel 59 → 48 s) | 0.3–0.6 |
+| K3 | revasym / revjit10 (with ACK reordering) / revcrossmix | 1.0 / 1.0 | same (revjit10 fq_codel 59 → 48 s) | 0.3–0.6 |
 | K3 | revcross pfifo | false leaf (shadow), none (owd) | same: a detector confound, not a rule | – |
 | K5 | pfifo / pie / red | 1.0 / 1.0 | same; pfifo now reaches a sustained correct state (305 s; never in v1.1) | 0.60 |
 | K6 | pfifo | r1 0.33 / 0.33, r2 1.0 / 0.75, r3 1.0 / 1.0 | **3 / 3 runs: four correct two-flow leaves**, 1.0 / 1.0, 187 s (owd) / 331 s (shadow) | 0.78 |
@@ -333,7 +333,34 @@ runs finish (`--ks K1 --report-only --v12 --tag v12`).
 
 
 
+## Reverse jitter runs: with ACK reordering (2026-11-11)
+
+Every `revjit*` result so far (K3 `revjit10` in all campaigns, M3 `revjit5/10/20`)
+was run with plain netem jitter on the reverse (ACK) path, which reorders packets
+(35–63 % at 5–20 ms, `scripts/netem_order_probe.sh`); read them as "with ACK
+reordering". Future runs of these scenarios use the order-keeping method
+(`DirectionSpec.jitter_keep_order`: netem `rate 10gbit`; realised spread 4.0 / 7.1 /
+12.6 ms sd for a nominal 5 / 10 / 20 ms; a pfifo child does not keep order on this
+kernel). The switch is made after the running `rerun_perflow.sh` finishes, so that
+the cake / codel M3 cells it is re-running stay comparable with pfifo / red / pie.
+
+## Synthetic profiles (2026-11-11)
+
+With `delta` at 0.150 s the synthetic `realistic` profile was refitted to the
+measured same-group onset spread of the v2-owd detector (|pair difference| p50
+33 ms, p90 132 ms, `reports/grouping-episode/`): onset error 84 % N(0, 26 ms),
+16 % N(0, 130 ms) (`Profile.onset_tail`), which gives p50 33 / p90 130 ms. All
+S1–S6 tests pass with it. The old profile (N(0, 60 ms): p50 57 / p90 139 ms) is
+kept as `wide` and shows the limit of delta = 150 ms: 16 of the 18 S1–S6 checks
+pass; S5 seed 1 (the idle flow never becomes a member: events split before it
+reaches A) and S6 seed 2 (invariant inv4: wrong leaves {f4,f5,f11,f12} form, then
+f11 and f12 migrate together in one case-B event, which inv4 reads as a merge)
+fail. Both are strict xfail tests in `tests/unit/test_grouping.py`; the engine is
+unchanged by decision.
+
 ## Frozen definitions (2026-11-10)
+
+> **2026-11-11 (user decision, start of the move to a new grouping algorithm):** default `delta` 0.300 → **0.150 s** (`grouping/config.py`); the derived defaults follow: `delta_max` 0.6 → 0.3 s, `sigma_min` 0.15 → 0.075 s, events close 1.3 s after t0 instead of 1.6 s. Basis: same-group onset starts 33 / 132 ms apart (p50 / p90, `reports/grouping-episode/`). Runs scored before this date used 0.300.
 
 **Rules**: `Config` defaults (v1.2: rules 1–7 above with the two deviations).
 Nothing in `engine.py` changes for the unseen campaign; its result is reported
