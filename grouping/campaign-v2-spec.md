@@ -66,7 +66,7 @@ Unchanged. Topology `detector.yaml`, single bottleneck 17.5 Mb/s, 4 clients (1 /
 
 ### K3 rev (24 runs)
 
-Unchanged scenarios: `revasym`, `revjit10`, `revcross`, `revcrossmix`; pfifo and fq_codel; 3 reps.
+Unchanged scenarios: `revasym`, `revjit10`, `revcross`, `revcrossmix`; pfifo and fq_codel; 3 reps. (Note 2026-11-11: `revjit10` runs so far reorder ACKs; see grouping/README.md, "Reverse jitter runs".)
 
 Change in scoring only: once the detector has an OWD input mode, score every K3 run with both the RTT-based and the OWD-based shadow. `revcross` is reported in the detector section, not in the grouping table.
 

@@ -332,3 +332,27 @@ def test_micro_variants_change_one_factor(tmp_path):
     assert len(wi) > len(gc.plan_indep(dm.topology_numbers("split"), 1)[1])
     assert gc.CAMPAIGNS["G0"]["types"][-3:] == ["calmsplit", "calmtree8", "calmuneven"]
     assert gc.topology_of("G0", "calmtree8") == "tree8" and gc.CAMPAIGNS["M1"]["aqms"] == ["pfifo", "red", "pie", "cake", "codel"]
+
+
+def test_j1_jitter_and_phase_variants(tmp_path):
+    import yaml
+    scen, topo, _ = gc.scenario_for("J1", "hierjit10", "pfifo", 1, tmp_path)
+    links = yaml.safe_load(scen.read_text())["links"]
+    fwd = [l["forward"] for l in links if l["to"] in ("a1", "a2", "a3", "b1", "b2", "b3")]
+    assert fwd and all(f["jitter_ms"] == 10 and f["jitter_distribution"] == "normal" and f["jitter_keep_order"] for f in fwd)
+    assert not any("jitter_ms" in (l.get("forward") or {}) for l in links if l["to"] == "sub-ctrl")
+    _, topo, _ = gc.scenario_for("J1", "hiersamephase", "pfifo", 1, tmp_path)
+    subs = yaml.safe_load(topo.read_text())["subscribers"]
+    assert [subs[f"b{i}"].get("phase_ms", 0) for i in (1, 2, 3)] == [subs[f"a{i}"].get("phase_ms", 0) for i in (1, 2, 3)]
+    _, t1, _ = gc.scenario_for("J1", "hierrandphase", "pfifo", 1, tmp_path)
+    _, t2, _ = gc.scenario_for("J1", "hierrandphase", "pfifo", 2, tmp_path)
+    p1, p2 = (yaml.safe_load(t.read_text())["subscribers"] for t in (t1, t2))
+    assert {k: v["phase_ms"] for k, v in p1.items()} != {k: v["phase_ms"] for k, v in p2.items()}
+    assert all(0 <= v["phase_ms"] < 1000 for v in p1.values())
+
+
+def test_revjit_keeps_ack_order(tmp_path):
+    import yaml
+    scen, _, _ = gc.scenario_for("M3", "revjit10", "pfifo", 1, tmp_path)
+    revs = [l["reverse"] for l in yaml.safe_load(scen.read_text())["links"] if (l.get("reverse") or {}).get("jitter_ms")]
+    assert revs and all(r["jitter_ms"] == 10 and r["jitter_keep_order"] for r in revs)

@@ -66,6 +66,7 @@ Held-out set (5 reps each, pass criteria in the spec):
 from __future__ import annotations
 
 import argparse
+import atexit
 import datetime
 import json
 import random
@@ -73,6 +74,7 @@ import shutil
 import statistics
 import subprocess
 import sys
+import tempfile
 import traceback
 from argparse import Namespace
 from collections import Counter, defaultdict
@@ -173,6 +175,12 @@ CAMPAIGNS = {
     "N5": {"topology": "large", "aqms": ["pfifo", "fq_codel"], "types": ["churn"], "reps": 5, "baselines": False},
     # Core addition: long bursts on a multi-group topology (a fair grouping comparison with the SBD baselines).
     "C1": {"topology": "split", "aqms": UNIFORM, "types": ["burstlongsplit"], "reps": 3},
+    # Development study (2026-11-11, template grouping step F): the K1 plan on the split
+    # topology with real per-client forward jitter on the access links (after the shared
+    # bottleneck; netem normal law, packet order kept) and with keyframe phases that do
+    # not separate the branches (b on a's phases; phases drawn per run).
+    "J1": {"topology": "split", "aqms": ["pfifo"],
+           "types": ["hierjit5", "hierjit10", "hierjit20", "hiersamephase", "hierrandphase"], "reps": 2},
     # Negatives: no congestion at all (every alarm / group is false); calm on every multi-group topology too.
     "G0": {"topology": "base", "aqms": UNIFORM + ["cake"],
            "types": ["calm030", "calm065", "calm090", "calmcbr090", "randloss", "calmsplit", "calmtree8", "calmuneven"],
@@ -199,7 +207,8 @@ DM_TYPES.update({"calmsplit": "calm065", "calmtree8": "calm065", "calmuneven": "
                  "fps15": "burstcap", "fps60": "burstcap", "bw1": "burstcap", "bw8": "burstcap", "bwmix": "burstcap"})
 HELD_OUT = ("N1", "N2", "N3", "N4", "N5")   # grouping scores only with --score-held-out (after the rule freeze)
 GROUPS = {"core": ("K1", "K2", "K3", "K5", "K6", "C1", "N1", "N2", "N3", "N4", "N5"),
-          "negatives": ("G0",), "micro": ("M1", "M2", "M3", "M4", "M5", "M6")}
+          "negatives": ("G0",), "micro": ("M1", "M2", "M3", "M4", "M5", "M6"), "study": ("J1",)}
+HIER_VARIANTS = ("hierjit5", "hierjit10", "hierjit20", "hiersamephase", "hierrandphase")   # J1: the K1 plan
 
 
 # ---------------------------------------------------------------- planning
@@ -597,7 +606,7 @@ def plan_type(rtype: str, n: dict, seed: int, topology: str = "base") -> tuple[l
         out = plan_gaps(n, seed, GAPS[rtype])
     elif rtype in INDEP_MEANS:
         out = plan_indep(n, seed, INDEP_MEANS[rtype])
-    elif rtype == "hier":
+    elif rtype == "hier" or rtype in HIER_VARIANTS:
         out = plan_hier(n, seed)
     elif rtype == "depth":
         out = plan_depth(n, seed)
@@ -642,8 +651,11 @@ def apply_links(data: dict, rtype: str, n: dict) -> None:
             rev = link.setdefault("reverse", {})
             if rtype == "revasym":
                 rev["delay_ms"] = REV_ASYM_MS[shared.index(link["to"]) % len(REV_ASYM_MS)]
-            elif rtype.startswith("revjit"):
-                rev["jitter_ms"] = float(rtype[6:])
+            elif rtype.startswith("revjit"):   # order kept since 2026-11-12 (earlier runs: ACK reordering)
+                rev.update(jitter_ms=float(rtype[6:]), jitter_keep_order=True)
+            if rtype.startswith("hierjit"):   # J1: forward jitter on the access link, after the shared bottleneck
+                fwd = link.setdefault("forward", {})
+                fwd.update(jitter_ms=float(rtype[7:]), jitter_distribution="normal", jitter_keep_order=True)
     if rtype in ("revcross", "revcrossmix"):
         data["links"].append({"from": REV_LINK[0], "to": REV_LINK[1], "reverse": {"bandwidth_mbps": REV_LINK_MBPS}})
 
@@ -697,10 +709,35 @@ def scenario_for(k: str, rtype: str, aqm: str, rep: int, kdir: Path) -> tuple[Pa
     out = gen / f"{rid}.yaml"
     out.write_text(yaml.safe_dump(data, sort_keys=False))
     (gen / f"{rid}-windows.json").write_text(json.dumps(windows, indent=1))
+    topo_path = ROOT / "configs" / "topologies" / topo_file
+    if rtype in ("hiersamephase", "hierrandphase"):
+        topo_path, meta = phase_topology(topo_path, rtype, rep, gen / f"{rid}-topology.yaml"), {**meta}
+        meta["phases_ms"] = {sid: s_.get("phase_ms", 0) for sid, s_ in yaml.safe_load(topo_path.read_text())["subscribers"].items()}
     (gen / f"{rid}-plan.json").write_text(json.dumps({
         "campaign": k, "type": rtype, "topology": topology, "aqm": aqm, "rep": rep, "seed": rep,
         "duration_s": duration, "git": git_commit(), **meta}, indent=1))
-    return out, ROOT / "configs" / "topologies" / topo_file, duration
+    return out, topo_path, duration
+
+
+def phase_topology(base: Path, rtype: str, rep: int, out: Path) -> Path:
+    """J1 keyframe-phase variants of the split topology, written next to the scenario:
+    hiersamephase  each b client takes the phase of the a client with the same index
+                   (b1 = a1, ...), so both branches send their keyframes together;
+    hierrandphase  every client draws its phase uniformly in [0, gop_ms) (seed = rep)."""
+    topo = yaml.safe_load(base.read_text())
+    subs = topo["subscribers"]
+    if rtype == "hiersamephase":
+        for sid in subs:
+            twin = "a" + sid[1:] if sid.startswith("b") else None
+            if twin in subs:
+                subs[sid]["phase_ms"] = subs[twin].get("phase_ms", 0)
+    else:
+        gop = int(next(iter(topo["publishers"].values())).get("gop_ms", 1000))
+        rng = random.Random(f"hierrandphase-{rep}")
+        for sid in sorted(subs):
+            subs[sid]["phase_ms"] = rng.randrange(gop)
+    out.write_text(yaml.safe_dump(topo, sort_keys=False))
+    return out
 
 
 def run_id(rtype: str, aqm: str, rep: int) -> str:
@@ -800,15 +837,18 @@ def pin_check(run: det_eval.Run) -> dict | None:
     out = {"egresses": 0, "missing": [], "silent": []}
     for hop, csv in gt1.router_egresses(run):
         flows = csv.with_name(csv.stem + "-flows.csv")
-        if not flows.exists():
+        rows = det_eval.rows(flows) if flows.exists() else []
+        if not rows:   # the file is written for every client-facing egress; rows only under fq_codel / cake
             continue
         out["egresses"] += 1
         hop_id = f"{hop[0]}->{hop[1]}"
-        behind = {s for s in run.topology["subscribers"] if hop in det_eval.path_hops(run, run.pub, s)}
-        seen = {r["flow"] for r in det_eval.rows(flows) if r["flow"]}
+        subs = run.topology["subscribers"]
+        # pins are per subscriber address: a re-joined session <sid>_<n> shows up as its subscriber
+        behind = {Scenario.session_of(s, subs)[0] for s in subs if hop in det_eval.path_hops(run, run.pub, s)}
+        seen = {r["flow"] for r in rows if r["flow"]}
         out["missing"] += [f"{hop_id}:{s}" for s in sorted(behind - seen)]
-        if not sum(int(r["transmitted_bytes"]) for r in det_eval.rows(csv)):
-            out["silent"].append(hop_id)
+        if behind and not sum(int(r["transmitted_bytes"]) for r in det_eval.rows(csv)):   # a cross-traffic-only
+            out["silent"].append(hop_id)                                                   # egress may idle
     return out if out["egresses"] else None
 
 
@@ -923,7 +963,12 @@ def ecg_dir(src: str, tag: str = "") -> str:
 def score_run(run_dir: Path, cfg: Config, tag: str = "", sources: tuple[str, ...] = ONSET_SOURCES,
               with_baselines: bool = True) -> dict:
     out = {"run": run_dir.name, "ecg": {}}
+    windows_json = run_dir / "grouping" / "windows.json"
+    negative = windows_json.exists() and not json.loads(windows_json.read_text())
     for src in sources:
+        if src == "truth" and negative:   # truth onsets come from the stimulus windows; a negative run has none
+            out["ecg"][src] = {"skipped": "negative run: no stimulus window, no truth onsets"}
+            continue
         a = Namespace(out=ecg_dir(src, tag), onsets=src, backdate_max=1.0, backdate_qd_ms=10.0,
                       warmup=det_eval.WARMUP_S, spread_only=False)
         try:
@@ -1086,6 +1131,13 @@ def criteria(k: str, results: list[dict], src: str = PRIMARY) -> list[str]:
     return lines
 
 
+def acks_reordered(run_dir: Path) -> bool:
+    """A run whose reverse (ACK) path had netem jitter without order keeping."""
+    sc = yaml.safe_load((run_dir / "scenario.yaml").read_text()) if (run_dir / "scenario.yaml").exists() else {}
+    return any((l.get("reverse") or {}).get("jitter_ms") and not (l.get("reverse") or {}).get("jitter_keep_order")
+               for l in sc.get("links", []))
+
+
 def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str = "",
            compare: Path | None = None) -> None:
     sfx = f"-{tag}" if tag else ""
@@ -1106,6 +1158,11 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
              f"windows x OWD oracle x plan (pairs_leaf; link = pairs). Generated {datetime.datetime.now():%Y-%m-%d %H:%M}."
              + ("" if with_baselines else " No SBD baseline columns: the baselines need one common span over "
                                          "long-lived flows and cannot follow sessions."), ""]
+    reordered = sorted(r.name for r in runs if acks_reordered(r))
+    if reordered:
+        lines += [f"Note: {len(reordered)} reverse-jitter run(s) with ACK reordering (plain netem on the ACK path, "
+                  "before the order-keeping method; grouping/README.md, \"Reverse jitter runs\"): "
+                  + ", ".join(reordered), ""]
     lines += criteria(k, results) + [""]
     if k in HELD_OUT:
         for src in COMPARE:
@@ -1167,8 +1224,9 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
     for r in results:
         for src in sources:
             s_ = r["ecg"].get(src, {})
-            if "error" in s_:
-                lines.append(f"| {r['run']} | {src} | error: {s_['error']} | | | | | | | | | |")
+            if "error" in s_ or "skipped" in s_:
+                lines.append(f"| {r['run']} | {src} | {'error: ' + s_['error'] if 'error' in s_ else s_['skipped']} "
+                             "| | | | | | | | | |")
                 continue
             sp = s_.get("spread_onset_ms")
             lines.append(f"| {r['run']} | {src} | {s_.get('cases')} | {fmt(s_.get('precision'))} / {fmt(s_.get('recall'))} "
@@ -1238,7 +1296,11 @@ def main(argv: list[str]) -> None:
     if not a.plan and not a.report_only and not det_eval.REPLAY.exists():
         print(f"WARNING: {det_eval.REPLAY} missing: no shadow onsets. The owd and truth sources still work; "
               "afterwards run det_eval.py score on the runs, then --report-only.", flush=True)
-    campaign = a.campaign or RUNS / f"{datetime.datetime.now():%Y-%m-%d_%H%M}_{a.name}"
+    if a.plan and not a.campaign:   # a budget check leaves no campaign dir behind (it only writes _gen files)
+        campaign = Path(tempfile.mkdtemp(prefix="grp-plan-"))
+        atexit.register(shutil.rmtree, campaign, True)
+    else:
+        campaign = a.campaign or RUNS / f"{datetime.datetime.now():%Y-%m-%d_%H%M}_{a.name}"
     campaign.mkdir(parents=True, exist_ok=True)
     print(f"campaign: {campaign}", flush=True)
     budget = 0.0
