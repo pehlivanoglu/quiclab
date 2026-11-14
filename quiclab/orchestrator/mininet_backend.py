@@ -844,7 +844,9 @@ class LiveNetwork:
 
 
 def _spec_text(spec: DirectionSpec) -> str:
-    return " ".join(f"{k}={v:g}" for k, v in spec.model_dump().items() if v is not None)
+    """Set fields as k=v (numbers with :g; unset fields and false flags left out)."""
+    return " ".join(f"{k}={v}" if isinstance(v, (str, bool)) else f"{k}={v:g}"
+                    for k, v in spec.model_dump().items() if v is not None and v is not False)
 
 
 def _queue_text(queue: RouterQueue) -> str:

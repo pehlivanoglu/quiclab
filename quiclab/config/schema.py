@@ -196,6 +196,15 @@ class DirectionSpec(_StrictBase):
     bandwidth_mbps: float | None = Field(default=None, gt=0)
     delay_ms: float | None = Field(default=None, ge=0)
     jitter_ms: float | None = Field(default=None, ge=0)
+    # netem's jitter law; unset = netem's default (uniform in +/- jitter_ms).
+    jitter_distribution: Literal["uniform", "normal", "pareto", "paretonormal"] | None = None
+    # Keep packet order under jitter: netem otherwise releases packets by their own
+    # send time and reorders them (35-63 % of a 2.5 Mbit/s flow at 5-20 ms jitter,
+    # scripts/netem_order_probe.sh, 2026-11-11). A pfifo child does not prevent it on
+    # this kernel; a netem `rate` far above the link does (no packet leaves before its
+    # predecessor), at the price of a FIFO-like delay law: higher mean, lower and
+    # time-correlated spread.
+    jitter_keep_order: bool = False
     loss_pct: float | None = Field(default=None, ge=0, le=100)
 
     @model_validator(mode="after")
@@ -204,6 +213,8 @@ class DirectionSpec(_StrictBase):
             raise ValueError(
                 "jitter_ms requires delay_ms (netem syntax: delay <ms> <jitter>)"
             )
+        if (self.jitter_distribution is not None or self.jitter_keep_order) and self.jitter_ms is None:
+            raise ValueError("jitter_distribution / jitter_keep_order require jitter_ms")
         return self
 
     def is_noop(self) -> bool:

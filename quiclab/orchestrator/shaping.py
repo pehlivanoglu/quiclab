@@ -42,6 +42,10 @@ _NETEM_LIMIT_PKTS = 50000
 # the same reason).
 _HTB_QUANTUM_BYTES = 1500
 
+# netem `rate` that only keeps packet order under jitter (DirectionSpec.jitter_keep_order):
+# far above any emulated link, so its serialisation time is negligible.
+_ORDER_RATE = "10gbit"
+
 _RED_MIN_BYTES, _RED_MAX_BYTES = 20_000, 60_000
 _RED_AVPKT = 1200
 # RED's hard limit is in bytes; a packet limit is converted at full-size packets.
@@ -63,7 +67,11 @@ def _netem_args(spec: DirectionSpec) -> str:
         delay = f"delay {spec.delay_ms:g}ms"
         if spec.jitter_ms is not None:
             delay += f" {spec.jitter_ms:g}ms"
+            if spec.jitter_distribution is not None:
+                delay += f" distribution {spec.jitter_distribution}"
         parts.append(delay)
+        if spec.jitter_ms is not None and spec.jitter_keep_order:
+            parts.append(f"rate {_ORDER_RATE}")
     if spec.loss_pct is not None:
         parts.append(f"loss {spec.loss_pct:g}%")
     parts.append(f"limit {_NETEM_LIMIT_PKTS}")
@@ -256,11 +264,15 @@ def live_shaping_commands(
     previous_netem = (
         previous.delay_ms,
         previous.jitter_ms,
+        previous.jitter_distribution,
+        previous.jitter_keep_order,
         previous.loss_pct,
     )
     updated_netem = (
         updated.delay_ms,
         updated.jitter_ms,
+        updated.jitter_distribution,
+        updated.jitter_keep_order,
         updated.loss_pct,
     )
     if previous_netem != updated_netem:

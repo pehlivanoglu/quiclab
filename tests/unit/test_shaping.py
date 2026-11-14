@@ -229,3 +229,13 @@ def test_flow_pins_mark_priority_on_fq_codel_and_filter_on_cake():
     ]
     for aqm in (AqmKind.pfifo, AqmKind.red, AqmKind.pie, AqmKind.codel, AqmKind.dualpi2, None):
         assert flow_pin_commands("r-eth1", aqm, ips, ids) == []
+
+
+def test_jitter_distribution_and_order_keeping_reach_netem():
+    spec = DirectionSpec(delay_ms=20, jitter_ms=10, jitter_distribution="normal", jitter_keep_order=True)
+    cmds = shaping_commands("s-eth1", spec)
+    assert cmds[-1].endswith("netem delay 20ms 10ms distribution normal rate 10gbit limit 50000")
+    plain = shaping_commands("s-eth1", DirectionSpec(delay_ms=20, jitter_ms=10))[-1]
+    assert "distribution" not in plain and "rate" not in plain
+    with pytest.raises(ValueError):
+        DirectionSpec(delay_ms=20, jitter_keep_order=True)
