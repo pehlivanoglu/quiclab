@@ -271,6 +271,35 @@ def load_flow_samples(run: det_eval.Run, csv: Path, t_mono_ns: np.ndarray) -> tu
     return out, np.maximum(active, 1)
 
 
+def run_flow_labels(run: det_eval.Run, p: Params) -> dict[str, tuple[list[dict], list[dict]]]:
+    """Per-client GT1 on the pinned fq_codel / cake egresses, as (episodes, label spans)
+    per "hop|client" key, the label spans in run_truth's shape (hop = "hop|client").
+    Empty for runs without per-flow records."""
+    caps = det_eval.capacity_series(run)
+    resolved = p.resolve(max(base_rtts(run).values(), default=0.0))
+    out = {}
+    for hop, csv in router_egresses(run):
+        if not csv.with_name(csv.stem + "-flows.csv").exists():
+            continue
+        rows = det_eval.rows(csv)
+        t_ns = np.array([int(r["timestamp_mono_ns"]) for r in rows])
+        t = np.array([run.t_mono_us(x / 1000) for x in t_ns])
+        keep = (t >= 0) & (t <= run.duration - SHUTDOWN_S)
+        backlog, active = load_flow_samples(run, csv, t_ns)
+        if not backlog:
+            continue
+        hop_id = f"{hop[0]}->{hop[1]}"
+        tk = t[keep]
+        for flow in run.topology["subscribers"]:
+            b = backlog.get(flow, np.zeros(len(t)))[keep]
+            eps, lab = gt1_core(tk, b, None, caps[hop], resolved, None, active[keep])
+            key = f"{hop_id}|{flow}"
+            out[key] = ([e for e in eps if e["end_s"] >= WARMUP_S],
+                        [{"hop": key, "t_start": round(a, 4), "t_end": round(b_, 4), "label": x}
+                         for a, b_, x in gt_bands.spans(tk[:-1], tk[1:], lab[1:])] if len(tk) > 1 else [])
+    return out
+
+
 def run_flow_truth(run: det_eval.Run, p: Params) -> list[dict]:
     """Per-client GT1 on the egresses that recorded per-flow classes (fq_codel /
     cake with pinned clients, router-metrics `<iface>-flows.csv`): the GT1 rule on
