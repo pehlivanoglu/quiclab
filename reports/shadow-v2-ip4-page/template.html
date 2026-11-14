@@ -1,0 +1,218 @@
+<title>Shadow v2 ip4 Sonuçları</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: one reading column for prose, full-width scrollable tables for the data; a sticky control strip above the results grid. */
+:root {
+  --bg: #f6f7f6; --panel: #ffffff; --fg: #1c2321; --muted: #5d6865; --rule: #d9dedc;
+  --accent: #1f6f78; --accent-soft: #e2f0f1;
+  --good: #2f7a3e; --good-bg: #e3f2e6; --warn: #9a6a00; --warn-bg: #fbf0d6; --bad: #b0372b; --bad-bg: #f9e1dd; --na: #8a9491;
+  --display: "Fraunces", Georgia, serif; --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121615; --panel: #1a201f; --fg: #e3e8e6; --muted: #9aa6a2; --rule: #2d3634;
+  --accent: #6cc3cc; --accent-soft: #1d3436;
+  --good: #7fd18d; --good-bg: #1c3322; --warn: #e8c05a; --warn-bg: #3a3018; --bad: #f08b7e; --bad-bg: #3d221e; --na: #6d7875; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121615; --panel: #1a201f; --fg: #e3e8e6; --muted: #9aa6a2; --rule: #2d3634;
+  --accent: #6cc3cc; --accent-soft: #1d3436;
+  --good: #7fd18d; --good-bg: #1c3322; --warn: #e8c05a; --warn-bg: #3a3018; --bad: #f08b7e; --bad-bg: #3d221e; --na: #6d7875; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--display); font-size: clamp(28px, 4vw, 40px); line-height: 1.15; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 24px; margin: 0; text-wrap: balance; }
+h3 { font-size: 16px; margin: 0; font-weight: 600; }
+p, li { max-width: 72ch; }
+p { margin: 0; }
+section { display: grid; gap: 16px; min-width: 0; }
+.lead { color: var(--muted); font-size: 16px; }
+.prose { display: grid; gap: 10px; }
+.prose ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.gt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.gt { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: grid; gap: 8px; align-content: start; }
+.gt .tag { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.gt p { font-size: 14px; }
+.tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { font-weight: 600; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; position: sticky; top: 0; background: var(--panel); white-space: nowrap; }
+td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+tr.grp td { background: var(--accent-soft); font-weight: 600; }
+.desc { color: var(--muted); font-size: 13px; min-width: 260px; }
+.cell { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; display: grid; gap: 1px; }
+.cell b { font-weight: 500; }
+.pill { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 12px; font-family: var(--mono); }
+.g { background: var(--good-bg); color: var(--good); } .w { background: var(--warn-bg); color: var(--warn); } .b { background: var(--bad-bg); color: var(--bad); } .n { color: var(--na); }
+.controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.controls label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+select { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 4px; background: var(--panel); color: var(--fg); }
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.legend { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.note { font-size: 13px; color: var(--muted); }
+code { font-family: var(--mono); font-size: 13px; }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">quiclab · detector matrix · I/P oranı 4 · 192 koşu</div>
+  <h1>Shadow v2 tıkanıklık dedektörü: bütün senaryolar, bütün truth'lar</h1>
+  <!--INTRO-->
+</header>
+
+<section id="gt">
+  <h2>Ground truth'lar</h2>
+  <!--GT-->
+</section>
+
+<section id="overall">
+  <h2>Genel sonuç</h2>
+  <p class="lead">Bütün koşular birleştirilmiş. Recall: kaç olayın yakalandığı. Precision: alarmların ne kadarının gerçek olduğu. Gecikme: olay başlangıcından alarma kadar geçen süre (p50 ve p90).</p>
+  <div class="tbl"><table id="t-overall"></table></div>
+  <!--OVERALL_NOTE-->
+</section>
+
+<section id="scen">
+  <h2>Senaryolar ve yaşanan olaylar</h2>
+  <p class="lead">Her senaryo 4 AQM ile ve 2 tekrar koşuldu. Olay sayıları koşu başına ortalama, süreler iki tekrarın bütün olaylarından. GT1 ve GT2 router çıkışı başına, GT3 client başına sayılır.</p>
+  <div class="controls"><label for="ev-aqm">AQM<select id="ev-aqm"></select></label></div>
+  <div class="tbl"><table id="t-events"></table></div>
+</section>
+
+<section id="results">
+  <h2>Senaryo × AQM sonuçları</h2>
+  <p class="lead">İki tekrar birleştirilmiş. Tıkanıklık senaryolarında hücre: recall, precision, gecikme p50. Negatif senaryolarda (tıkanıklık enjekte edilmeyen) asıl ölçü dakikada yanlış alarm.</p>
+  <div class="controls">
+    <label for="r-truth">Truth<select id="r-truth"><option value="GT3">GT3 (client etkisi + yolda kuyruk)</option><option value="GT1">GT1 (kalıcı router kuyruğu)</option><option value="GT2">GT2 (talep ≥ kapasite)</option></select></label>
+    <label for="r-aqm">AQM<select id="r-aqm"></select></label>
+  </div>
+  <div class="legend"><span>Recall:</span><span class="pill g">≥ 0.85</span><span class="pill w">0.6–0.85</span><span class="pill b">&lt; 0.6</span><span>FA/dk:</span><span class="pill g">≤ 0.3</span><span class="pill w">0.3–1</span><span class="pill b">&gt; 1</span></div>
+  <div class="tbl"><table id="t-results"></table></div>
+</section>
+
+<section id="owd">
+  <h2>RTT yerine tek yön gecikme (OWD)</h2>
+  <!--OWD_TEXT-->
+  <div class="controls"><label for="o-scope">Gösterilen<select id="o-scope"><option value="weak">RTT'nin zayıf olduğu hücreler</option><option value="all">Bütün hücreler</option></select></label></div>
+  <div class="tbl"><table id="t-owd"></table></div>
+</section>
+
+<section id="why">
+  <h2>Nerede kötü ve neden</h2>
+  <!--WHY-->
+</section>
+
+<section id="fit">
+  <h2>Ayarlar ve yeniden fit edilen değerler</h2>
+  <!--FIT-->
+</section>
+</div>
+
+<script>
+const D = /*DATA*/null;
+const DETS = ["v2", "v2-fixed", "bbr", "gcc"];
+const AQMS = ["pfifo", "fq_codel", "pie", "red"];
+const NEG = new Set(D.scenarios.filter(s => s.negative).map(s => s.name));
+const ORDER = D.scenarios.map(s => s.name);
+const f = (x, k = 2) => x == null ? "–" : Number(x).toFixed(k);
+const recCls = r => r == null ? "n" : r >= 0.85 ? "g" : r >= 0.6 ? "w" : "b";
+const faCls = x => x == null ? "n" : x <= 0.3 ? "g" : x <= 1 ? "w" : "b";
+const el = (t, a = {}, h = "") => { const e = document.createElement(t); Object.assign(e, a); if (h) e.innerHTML = h; return e; };
+
+function fillAqm(id, withAll) {
+  const s = document.getElementById(id);
+  if (withAll) s.append(el("option", { value: "all", textContent: "Hepsi" }));
+  AQMS.forEach(a => s.append(el("option", { value: a, textContent: a })));
+}
+
+function overall() {
+  const t = document.getElementById("t-overall");
+  t.innerHTML = "<thead><tr><th>Truth</th><th>Detector</th><th class=num>Olay</th><th class=num>Precision</th><th class=num>Recall</th><th class=num>FA/dk</th><th class=num>Gecikme p50</th><th class=num>p90</th></tr></thead>";
+  const tb = el("tbody");
+  let last = "";
+  D.overall.forEach(r => {
+    if (r[0] !== last) { tb.append(el("tr", { className: "grp" }, `<td colspan=8>${r[0]}</td>`)); last = r[0]; }
+    tb.append(el("tr", {}, `<td></td><td>${r[1]}</td><td class=num>${r[2]}</td><td class=num>${r[3]}</td><td class=num><span class="pill ${recCls(+r[4])}">${r[4]}</span></td><td class=num><span class="pill ${faCls(+r[5])}">${r[5]}</span></td><td class=num>${r[6]} ms</td><td class=num>${r[7]} ms</td>`));
+  });
+  t.append(tb);
+}
+
+function events() {
+  const aqm = document.getElementById("ev-aqm").value;
+  const t = document.getElementById("t-events");
+  t.innerHTML = "<thead><tr><th>Senaryo</th><th>Ne oluyor</th><th>AQM</th><th class=num>GT1 olay / koşu</th><th class=num>GT1 süre p50 / p90 (s)</th><th class=num>GT2 olay / koşu</th><th class=num>GT2 süre p50 / p90 (s)</th><th class=num>GT3 olay / koşu</th><th class=num>GT3 süre p50 / p90 (s)</th></tr></thead>";
+  const tb = el("tbody");
+  D.scenarios.forEach(sc => {
+    const rows = D.events.filter(e => e.scenario === sc.name && (aqm === "all" || e.aqm === aqm));
+    rows.sort((a, b) => AQMS.indexOf(a.aqm) - AQMS.indexOf(b.aqm));
+    rows.forEach((e, i) => {
+      const tr = el("tr");
+      if (i === 0) {
+        tr.append(el("td", { rowSpan: rows.length }, `<b>${sc.name}</b>${sc.negative ? '<br><span class="note">negatif</span>' : ""}<br><span class="note">${e.topology}</span>`));
+        tr.append(el("td", { rowSpan: rows.length, className: "desc", textContent: sc.desc }));
+      }
+      const g = t2 => `<td class=num>${f(e[t2 + "_per_run"], 1)}</td><td class=num>${f(e[t2 + "_dur_p50_s"], 2)} / ${f(e[t2 + "_dur_p90_s"], 1)}</td>`;
+      tr.insertAdjacentHTML("beforeend", `<td>${e.aqm}</td>` + g("GT1") + g("GT2") + g("GT3"));
+      tb.append(tr);
+    });
+  });
+  t.append(tb);
+}
+
+function cellHtml(c, neg) {
+  if (!c) return "<td class=n>–</td>";
+  if (neg || !c.episodes) {
+    return `<td><div class=cell><span class="pill ${faCls(c.fa_per_min)}">${f(c.fa_per_min)} FA/dk</span>${c.episodes ? `<span class=n>R ${f(c.recall)} · ${c.episodes} olay</span>` : ""}</div></td>`;
+  }
+  return `<td><div class=cell><span><span class="pill ${recCls(c.recall)}">R ${f(c.recall)}</span> P ${f(c.precision)}</span><span>${f(c.latency_p50_ms, 0)} ms · FA ${f(c.fa_per_min)}</span></div></td>`;
+}
+
+function results() {
+  const truth = document.getElementById("r-truth").value, aqm = document.getElementById("r-aqm").value;
+  const t = document.getElementById("t-results");
+  t.innerHTML = `<thead><tr><th>Senaryo</th><th>AQM</th><th class=num>Olay</th>${DETS.map(d => `<th>${d}</th>`).join("")}</tr></thead>`;
+  const tb = el("tbody");
+  ORDER.forEach(scn => {
+    const aqms = aqm === "all" ? AQMS : [aqm];
+    aqms.forEach((a, i) => {
+      const rows = D.cells.filter(c => c.scenario === scn && c.aqm === a && c.truth === truth);
+      if (!rows.length) return;
+      const by = Object.fromEntries(rows.map(r => [r.detector, r]));
+      const tr = el("tr");
+      tr.innerHTML = `<td>${i === 0 || aqm !== "all" ? `<b>${scn}</b>${NEG.has(scn) ? ' <span class="note">negatif</span>' : ""}` : ""}</td><td>${a}</td><td class=num>${rows[0].episodes}</td>` + DETS.map(d => cellHtml(by[d], NEG.has(scn))).join("");
+      tb.append(tr);
+    });
+  });
+  t.append(tb);
+}
+
+function owd() {
+  const scope = document.getElementById("o-scope").value;
+  const t = document.getElementById("t-owd");
+  const pairs = [["v2", "v2 RTT", "v2 OWD"], ["v2-fixed", "v2-fixed RTT", "v2-fixed OWD"], ["gcc", "gcc RTT", "gcc OWD"]];
+  t.innerHTML = `<thead><tr><th>Senaryo</th><th>AQM</th><th class=num>Olay</th>${pairs.map(p => `<th>${p[0]} RTT</th><th>${p[0]} OWD</th>`).join("")}</tr></thead>`;
+  const tb = el("tbody");
+  const weak = new Set(D.owdWeak || []);
+  ORDER.forEach(scn => AQMS.forEach(a => {
+    const key = scn + "|" + a;
+    if (scope === "weak" && !weak.has(key)) return;
+    const rows = D.cells.filter(c => c.scenario === scn && c.aqm === a && c.truth === "GT3 (B) owd-cmp");
+    if (!rows.length) return;
+    const by = Object.fromEntries(rows.map(r => [r.detector, r]));
+    const tr = el("tr");
+    tr.innerHTML = `<td><b>${scn}</b>${NEG.has(scn) ? ' <span class="note">negatif</span>' : ""}</td><td>${a}</td><td class=num>${rows[0].episodes}</td>` + pairs.map(p => cellHtml(by[p[1]], NEG.has(scn)) + cellHtml(by[p[2]], NEG.has(scn))).join("");
+    tb.append(tr);
+  }));
+  t.append(tb);
+}
+
+fillAqm("ev-aqm", true); fillAqm("r-aqm", true);
+overall(); events(); results(); owd();
+document.getElementById("ev-aqm").addEventListener("change", events);
+document.getElementById("r-truth").addEventListener("change", results);
+document.getElementById("r-aqm").addEventListener("change", results);
+document.getElementById("o-scope").addEventListener("change", owd);
+</script>
