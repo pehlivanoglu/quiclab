@@ -91,9 +91,12 @@ def check_load_share(rd: Path, plan: dict) -> dict:
             ok = False
             continue
         share = m["video_share"] / SHARE_HEADER if m["video_share"] else None
-        good = abs(m["load"] - plan["U"]) <= LOAD_TOL and share is not None and abs(share - s_target) <= SHARE_TOL
-        out[name] = {"hop": e["hop"], "load": m["load"], "U": plan["U"], "share": round(share, 3) if share else None,
-                     "s": s_target, "ok": good}
+        # suite v4: an egress may carry its own target point (T-TEACUP up); else the run's
+        u_e = e.get("U", plan["U"])
+        s_e = e["s"] if e.get("s") is not None else s_target
+        good = abs(m["load"] - u_e) <= LOAD_TOL and share is not None and abs(share - s_e) <= SHARE_TOL
+        out[name] = {"hop": e["hop"], "load": m["load"], "U": u_e, "share": round(share, 3) if share else None,
+                     "s": s_e, "ok": good}
         ok &= good
     return {"ok": ok, "egress": out}
 
@@ -164,7 +167,16 @@ def _service_from_trace(rd: Path, iface: str, hop: str) -> dict:
     sv = rt.service_stats(rt.read_packets(rd / "router-trace" / f"{iface}-packets.csv"), d.Run(rd).epoch_mono_ns,
                           rt.capacity_timeline(sc, h), rt.delay_timeline(sc, h))
     return {"gap_within_tol": sv["gap_within_tol"], "jitter_us_p1": round(sv["jitter_us_p1"], 2),
-            "jitter_us_p99": round(sv["jitter_us_p99"], 2), "recomputed": True}
+            "jitter_us_p99": round(sv["jitter_us_p99"], 2), "win20_n": sv["win20_n"],
+            "win20_within5": sv["win20_within5"], "win_ms": sv.get("win_ms"), "recomputed": True}
+
+
+def _cap_of(plan: dict | None, hop: str) -> float:
+    """The plan's capacity of a bottleneck egress (Mb/s); inf when the plan does not list it."""
+    for e in ((plan or {}).get("egress") or {}).values():
+        if e.get("hop") == hop and e.get("C_e_mbps"):
+            return float(e["C_e_mbps"])
+    return float("inf")
 
 
 def check_health(rd: Path, h: dict, plan: dict | None = None, wins: list[dict] | None = None) -> dict:
@@ -201,8 +213,10 @@ def check_health(rd: Path, h: dict, plan: dict | None = None, wins: list[dict] |
                "win20_n": int(g("win20_n", 0)), "win20_within5": g("win20_within5")}
         acct = (row["rows_match"] == 1 and all(0 <= row[f"unmatched_{k}"] <= allowed for k in ("deq", "enq"))
                 and all(0 <= row[f"unmatched_{k}_max_200ms"] <= rt.UNMATCHED_MAX_200MS for k in ("deq", "enq")))
-        if np.isnan(row["gap_within_tol"]) and row["role"] == "target" and row["gaps"] >= MIN_GAPS:
-            row.update(_service_from_trace(rd, i, row["hop"]))   # health file from before the tolerance rule
+        stale = np.isnan(row["gap_within_tol"]) or (   # health file from before the tolerance / window rule
+            f"{i}.win_ms" not in h and rt.window_ns(_cap_of(plan, row["hop"]) * 1e6) > rt.WIN20_NS)
+        if stale and row["role"] == "target" and row["gaps"] >= MIN_GAPS:
+            row.update(_service_from_trace(rd, i, row["hop"]))
         if row["gaps"] < MIN_GAPS:
             svc = None
         else:

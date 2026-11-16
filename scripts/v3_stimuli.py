@@ -138,7 +138,8 @@ def run_stimuli(rd: Path) -> list[dict]:
         dur = w["end"] - w["start"]
         nv, vv = by[m & ~vid].sum() / (C * dur), by[m & vid].sum() / (C * dur)
         u = w.get("u")
-        planned = round(U * (1 - s) + (u - U), 4) if (u is not None and s is not None
+        s_e, U_e = e.get("s", s), e.get("U", U)   # suite v4: per-egress target point where the plan has one
+        planned = round(U_e * (1 - s_e) + (u - U_e), 4) if (u is not None and s_e is not None
                                                       and w.get("stimulus_type") in ("surge", "ramp")) else None
         a_, b_ = hop.split("->")
         cap_now = d.value_at(caps.get((a_, b_), [(0.0, e["C_e_mbps"])]), w["start"] + 0.01)

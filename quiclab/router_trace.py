@@ -84,6 +84,14 @@ ORPHAN_KIND = 5   # an enqueue record overwritten before its dequeue / drop was 
 UNMATCHED_FILE = "{iface}-unmatched-enq.csv"   # enqueues never matched; never part of <iface>-packets.csv
 UNMATCHED_WINDOW_NS = 200_000_000              # gate: unmatched packets per 200 ms window
 WIN20_NS = 20_000_000                           # service check: bytes per 20 ms backlogged window
+WIN_MIN_PKTS, WIN_PKT_BITS = 25, 12000           # (T, 2026-11-16) a window holds >= 25 full packets: below
+                                                 # 15 Mb/s it is longer than 20 ms (one packet must stay
+                                                 # well under the +-5 % tolerance; 9.8 Mb/s -> 30.6 ms)
+
+
+def window_ns(cap_bps: float) -> int:
+    """Length of a service-check window at capacity cap_bps: 20 ms, or the time of WIN_MIN_PKTS packets."""
+    return max(WIN20_NS, int(round(WIN_MIN_PKTS * WIN_PKT_BITS / cap_bps * 1e9)))
 # Per-gap tolerance (user, 2026-11-14): within max(10 % of ideal, GAP_TOL_FLOOR_NS). Dequeue timing
 # has a rate-independent jitter of about +-4.5 us (p1 / p99, smoke 2, reports/v3-suite/smoke2/
 # gap-jitter.md); 15 us is ~3x that and far below one packet time on the fastest link (101 us).
@@ -610,8 +618,9 @@ def service_stats(table, epoch_mono_ns: int, caps: list[tuple[float, float]],
     gap_within_tol: share within max(10 % of ideal, GAP_TOL_FLOOR_NS) (the gated share);
     jitter_us_p1 / jitter_us_p99: gap - ideal in microseconds;
     win20_n / win20_within5: busy periods (chains of backlogged gaps) cut into consecutive
-    20 ms windows from their start; share of windows whose dequeued bytes are within +-5 %
-    of C x 20 ms (windows with a capacity change inside are skipped)."""
+    windows from their start (20 ms, longer below 15 Mb/s: window_ns); share of windows whose
+    dequeued bytes are within +-5 % of C x window (windows with a capacity change inside are
+    skipped); win_ms: the longest window used."""
     import numpy as np
     nan = float("nan")
     out = {"gaps": 0, "gap_p50": nan, "gap_p99": nan, "gap_within10": nan, "gap_within_tol": nan,
@@ -642,18 +651,20 @@ def service_stats(table, epoch_mono_ns: int, caps: list[tuple[float, float]],
     first = idx[np.r_[True, np.diff(idx) > 1]]
     last = idx[np.r_[np.diff(idx) > 1, True]] + 1          # a busy period covers packets first .. last
     cum = np.r_[0, np.cumsum(length)]
-    ok = []
+    ok, win_max = [], 0
     for a, b in zip(first, last):
         k, ta = 0, t_deq[a]
-        while ta + (k + 1) * WIN20_NS <= t_deq[b]:
-            w0, w1 = ta + k * WIN20_NS, ta + (k + 1) * WIN20_NS
+        win = window_ns(float(cap_at(np.array([ta]))[0]))
+        win_max = max(win_max, win)
+        while ta + (k + 1) * win <= t_deq[b]:
+            w0, w1 = ta + k * win, ta + (k + 1) * win
             c0, c1 = cap_at(np.array([w0, w1]))
             if c0 == c1:
                 i0, i1 = np.searchsorted(t_deq, [w0, w1], side="right")
-                ok.append(abs((cum[i1] - cum[i0]) * 8 / (c0 * WIN20_NS / 1e9) - 1) <= 0.05)
+                ok.append(abs((cum[i1] - cum[i0]) * 8 / (c0 * win / 1e9) - 1) <= 0.05)
             k += 1
     if ok:
-        out.update(win20_n=len(ok), win20_within5=float(np.mean(ok)))
+        out.update(win20_n=len(ok), win20_within5=float(np.mean(ok)), win_ms=round(win_max / 1e6, 2))
     return out
 
 
@@ -741,6 +752,7 @@ def health(run_dir: Path, *, on: bool, scenario=None, epoch_mono_ns: int = 0,
                     values[f"{iface}.interdeq_gaps"] = sv["gaps"]
                     values[f"{iface}.win20_n"] = sv["win20_n"]
                     values[f"{iface}.win20_within5"] = round(sv["win20_within5"], 5)
+                    values[f"{iface}.win_ms"] = sv.get("win_ms", "")
                     for sid, (pub, src, dst) in (flows or {}).items():
                         rate = sender_match_rate(run_dir, pub, sid, table, src, dst)
                         if rate is not None:

@@ -193,7 +193,9 @@ def test_service_stats_ideal_link_is_one():
     t = pd.DataFrame({"kind": ["dequeue"] * n, "t_enq_ns": [10**9] * n, "t_deq_ns": deq, "len": [1500] * n})
     sv = rt.service_stats(t, 0, [(0.0, 10.0)])
     assert sv["gap_p50"] == pytest.approx(1.0) and sv["gap_p99"] == pytest.approx(1.0)
-    assert sv["gap_within10"] == 1.0 and sv["win20_n"] == 5 and sv["win20_within5"] == 1.0
+    # 10 Mb/s: 25 packets = 30 ms windows (rule of 2026-11-16), so 118.8 ms of backlog holds 3 windows
+    assert sv["gap_within10"] == 1.0 and sv["win20_n"] == 3 and sv["win20_within5"] == 1.0 and sv["win_ms"] == 30.0
+    assert rt.window_ns(100e6) == rt.WIN20_NS and rt.window_ns(9.81e6) == 30_581_040
 
 
 def test_service_stats_tolerance_floor_15us():
