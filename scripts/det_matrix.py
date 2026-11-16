@@ -49,6 +49,8 @@ import det_eval  # noqa: E402
 import gt1  # noqa: E402
 import gt2  # noqa: E402
 import gt3  # noqa: E402
+import gtq  # noqa: E402
+import gtq_score  # noqa: E402
 import truth_plot  # noqa: E402
 from quiclab.runtime import remove_partial_run, run_finished  # noqa: E402
 
@@ -429,6 +431,17 @@ def main() -> None:
                         print(f"   {truth_plot.plot(run_dir)}", flush=True)
                     except (Exception, SystemExit) as e:  # the plots replay the shadow too
                         print(f"   GT1 / GT2 / GT3 not scored / plotted: {e!r}", flush=True)
+                    # GT-Q / GT-H: separate outputs, only for runs with the GT-Q logging on;
+                    # a failure here never touches GT1 / GT2 / GT3 (redo: gtq.py score <run>).
+                    if (run_dir / "router-trace").exists():
+                        try:
+                            print(f"   {gtq.score(run_dir)}", flush=True)
+                        except (Exception, SystemExit) as e:
+                            print(f"   GT-Q / GT-H not scored: {e!r}", flush=True)
+                    try:
+                        gtq.summary(campaign)
+                    except Exception as e:
+                        print(f"   GT-Q health summary failed: {e!r}", flush=True)
                     manifest["runs"][run_id] = f"done {datetime.datetime.now():%Y-%m-%dT%H:%M:%S}"
                     write_manifest(campaign, manifest)
                 done.append(run_dir)
@@ -452,6 +465,11 @@ def main() -> None:
             module.report(campaign, params)
         except Exception as e:
             print(f"!! {name} report failed: {e!r} (redo: {name.lower()}.py report {campaign})", flush=True)
+    if any((r / "truth" / "gtq.csv").exists() for r in campaign.iterdir() if r.is_dir()):
+        try:  # new files only: <campaign>/gtq-detector-table.{csv,md}
+            gtq_score.report([campaign])
+        except Exception as e:
+            print(f"!! GT-Q detector table failed: {e!r} (redo: gtq_score.py {campaign})", flush=True)
     manifest["finished"] = datetime.datetime.now().isoformat(timespec="seconds")
     write_manifest(campaign, manifest)
 

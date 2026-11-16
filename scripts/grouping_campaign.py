@@ -94,6 +94,7 @@ import gt3  # noqa: E402
 import e2e_score  # noqa: E402
 import grouping_adapter as ga  # noqa: E402
 import grouping_baselines as gb  # noqa: E402
+import keyframe_spread  # noqa: E402
 from grouping import Config  # noqa: E402
 from quiclab.config.scenario import Scenario, load_scenario  # noqa: E402
 from quiclab.config.schema import load_topology  # noqa: E402
@@ -175,6 +176,10 @@ CAMPAIGNS = {
     "N5": {"topology": "large", "aqms": ["pfifo", "fq_codel"], "types": ["churn"], "reps": 5, "baselines": False},
     # Core addition: long bursts on a multi-group topology (a fair grouping comparison with the SBD baselines).
     "C1": {"topology": "split", "aqms": UNIFORM, "types": ["burstlongsplit"], "reps": 3},
+    # Study (2026-11-14, synchronized keyframes): K6 with the root egress rr -> r0 at twice its
+    # capacity (ROOT_SCALE; root load ~0.33 instead of ~0.65), leaves and X / Y unchanged: does the
+    # shared keyframe queue at the root scale with load? Same depth plan and seeds as K6.
+    "K6R": {"topology": "tree8", "aqms": ["pfifo"], "types": ["depthroot2"], "reps": 2},
     # Development study (2026-11-11, template grouping step F): the K1 plan on the split
     # topology with real per-client forward jitter on the access links (after the shared
     # bottleneck; netem normal law, packet order kept) and with keyframe phases that do
@@ -205,10 +210,18 @@ DM_TYPES = {t: t for t in ("burstcap", "burstudp", "bursttiny", "ramp", "tcpcubi
                            "burstlongsplit", "calm030", "calm065", "calm090", "calmcbr090", "randloss")}
 DM_TYPES.update({"calmsplit": "calm065", "calmtree8": "calm065", "calmuneven": "calm065",
                  "fps15": "burstcap", "fps60": "burstcap", "bw1": "burstcap", "bw8": "burstcap", "bwmix": "burstcap"})
+ROOT_SCALE = 2.0      # FLAG: K6R root capacity factor; the root queue limit stays 344 packets (half the ms depth)
 HELD_OUT = ("N1", "N2", "N3", "N4", "N5")   # grouping scores only with --score-held-out (after the rule freeze)
 GROUPS = {"core": ("K1", "K2", "K3", "K5", "K6", "C1", "N1", "N2", "N3", "N4", "N5"),
-          "negatives": ("G0",), "micro": ("M1", "M2", "M3", "M4", "M5", "M6"), "study": ("J1",)}
+          "negatives": ("G0",), "micro": ("M1", "M2", "M3", "M4", "M5", "M6"), "study": ("J1", "K6R")}
 HIER_VARIANTS = ("hierjit5", "hierjit10", "hierjit20", "hiersamephase", "hierrandphase")   # J1: the K1 plan
+# Keyframe phases (2026-11-13): "sync" = every client phase_ms 0 (one publisher, keyframes leave
+# together; the default from now on), "stag" = the topology files' staggered phases (all runs before
+# 2026-11-13). Renditions need no change: qvideo's live schedule puts frame k of every rendition at
+# start + phase + k / fps, keyframes every gop_ms (qvideo/src/Common.h, Schedule).
+PHASES = ("sync", "stag")
+PHASE = "sync"
+RENDITION_ALIGNMENT = "shared live schedule: frame k at start + phase + k/fps, keyframe every gop_ms on every rendition"
 
 
 # ---------------------------------------------------------------- planning
@@ -608,7 +621,7 @@ def plan_type(rtype: str, n: dict, seed: int, topology: str = "base") -> tuple[l
         out = plan_indep(n, seed, INDEP_MEANS[rtype])
     elif rtype == "hier" or rtype in HIER_VARIANTS:
         out = plan_hier(n, seed)
-    elif rtype == "depth":
+    elif rtype in ("depth", "depthroot2"):
         out = plan_depth(n, seed)
     elif rtype.startswith("part"):
         out = plan_part(n, seed, int(rtype[4:]) / 100)
@@ -694,12 +707,25 @@ def scenario_for(k: str, rtype: str, aqm: str, rep: int, kdir: Path) -> tuple[Pa
     topology = topology_of(k, rtype)
     topo_file, base_file, *_ = dm.TOPOLOGIES[topology]
     n = dm.topology_numbers(topology)
+    root_meta = {}
+    if rtype == "depthroot2":   # K6R: root egress capacity x ROOT_SCALE (calm value and burst ends)
+        root = n["hops"]["root"]
+        base_cap = root["base"]
+        root["base"] = round(base_cap * ROOT_SCALE, 3)
+        root_meta = {"root_capacity_mbps": root["base"], "root_capacity_default_mbps": base_cap,
+                     "root_planned_load": round(root["demand"] / root["base"], 3),
+                     "root_planned_load_default": round(root["demand"] / base_cap, 3)}
     if rtype in DM_TYPES:
         # det_matrix's own base: capacities per base_u, RTT scale, queue scale, editable loss.
         data = dm.scenario_data(DM_TYPES[rtype], topology, seed=rep)
     else:
         data = yaml.safe_load((ROOT / "configs" / "scenarios" / base_file).read_text())
     events, windows, duration, meta = plan_type(rtype, n, seed=rep, topology=topology)
+    meta = {**meta, **root_meta}
+    if root_meta:
+        for link in data["links"]:
+            if (link["from"], link["to"]) == (n["hops"]["root"]["link"]["from"], n["hops"]["root"]["link"]["to"]):
+                link.setdefault("forward", {})["bandwidth_mbps"] = n["hops"]["root"]["base"]
     data["events"], data["duration_s"] = events, duration
     apply_links(data, rtype, n)
     apply_aqm(data, aqm, n)
@@ -710,13 +736,28 @@ def scenario_for(k: str, rtype: str, aqm: str, rep: int, kdir: Path) -> tuple[Pa
     out.write_text(yaml.safe_dump(data, sort_keys=False))
     (gen / f"{rid}-windows.json").write_text(json.dumps(windows, indent=1))
     topo_path = ROOT / "configs" / "topologies" / topo_file
-    if rtype in ("hiersamephase", "hierrandphase"):
-        topo_path, meta = phase_topology(topo_path, rtype, rep, gen / f"{rid}-topology.yaml"), {**meta}
-        meta["phases_ms"] = {sid: s_.get("phase_ms", 0) for sid, s_ in yaml.safe_load(topo_path.read_text())["subscribers"].items()}
+    if PHASE == "sync":
+        topo_path = sync_topology(topo_path, gen / f"{rid}-topology.yaml")
+    elif rtype in ("hiersamephase", "hierrandphase"):
+        topo_path = phase_topology(topo_path, rtype, rep, gen / f"{rid}-topology.yaml")
+    meta = {**meta, "phase": PHASE, "rendition_alignment": RENDITION_ALIGNMENT,
+            "phases_ms": {sid: (s_ or {}).get("phase_ms", 0)
+                          for sid, s_ in yaml.safe_load(topo_path.read_text())["subscribers"].items()}}
     (gen / f"{rid}-plan.json").write_text(json.dumps({
         "campaign": k, "type": rtype, "topology": topology, "aqm": aqm, "rep": rep, "seed": rep,
         "duration_s": duration, "git": git_commit(), **meta}, indent=1))
     return out, topo_path, duration
+
+
+def sync_topology(base: Path, out: Path) -> Path:
+    """Copy of the topology with every subscriber's keyframe phase at 0 (PHASE sync)."""
+    topo = yaml.safe_load(base.read_text())
+    for sid, sub in topo["subscribers"].items():
+        if sub is None:
+            topo["subscribers"][sid] = sub = {}
+        sub["phase_ms"] = 0
+    out.write_text(yaml.safe_dump(topo, sort_keys=False))
+    return out
 
 
 def phase_topology(base: Path, rtype: str, rep: int, out: Path) -> Path:
@@ -766,7 +807,9 @@ def run_campaign(k: str, kdir: Path, reps: int | None, skip_existing: bool, dry:
     manifest = yaml.safe_load(man_path.read_text()) if man_path.exists() else {
         "campaign": k, "held_out": k in HELD_OUT, "started": datetime.datetime.now().isoformat(timespec="seconds"),
         "finished": None, "git": git_commit(), "reps": reps, "aqms": CAMPAIGNS[k]["aqms"],
-        "types": CAMPAIGNS[k]["types"], "runs": {}}
+        "types": CAMPAIGNS[k]["types"], "phase": PHASE, "runs": {}}
+    if manifest.get("phase", "stag") != PHASE:   # older manifests have no phase: they are staggered
+        sys.exit(f"{man_path}: campaign phase {manifest.get('phase', 'stag')} != --phase {PHASE}")
     manifest["aqms"], manifest["types"] = CAMPAIGNS[k]["aqms"], CAMPAIGNS[k]["types"]   # cells added later (e.g. codel)
     total = 0.0
     for rtype, aqm, rep in cells_of(k, reps):
@@ -807,6 +850,10 @@ def run_campaign(k: str, kdir: Path, reps: int | None, skip_existing: bool, dry:
                 print("   " + infra_line(infra_check(run_dir)), flush=True)
             except Exception as e:
                 print(f"   infra check failed on {rid}: {e!r}", flush=True)
+            try:   # check A of the synchronized campaign, recorded for every run
+                print("   " + keyframe_spread.line(keyframe_spread.write(run_dir)), flush=True)
+            except Exception as e:
+                print(f"   keyframe spread failed on {rid}: {e!r}", flush=True)
             manifest["runs"][rid] = f"done {datetime.datetime.now():%Y-%m-%dT%H:%M:%S}"
         man_path.write_text(yaml.safe_dump(manifest, sort_keys=False))
     if not dry:
@@ -1232,7 +1279,7 @@ def report(k: str, kdir: Path, cfg: Config, over: dict | None = None, tag: str =
             lines.append(f"| {r['run']} | {src} | {s_.get('cases')} | {fmt(s_.get('precision'))} / {fmt(s_.get('recall'))} "
                          f"| {fmt(s_.get('precision_link'))} / {fmt(s_.get('recall_link'))} | {fmt(s_.get('coverage'))} "
                          f"| {s_.get('fp')} | {s_.get('ctrl_grouped')} | {s_.get('tree_correct')} | {s_.get('leaves')} "
-                         f"| {s_.get('membership_events')} | {f'{sp['p50']:.0f} / {sp['p90']:.0f}' if sp else '-'} |")
+                         f"| {s_.get('membership_events')} | {'%.0f / %.0f' % (sp['p50'], sp['p90']) if sp else '-'} |")
     # 4. end to end: the same windows seen by the detector and the grouping (primary source)
     e2e = [r for r in (e2e_score.score_run(p, PRIMARY, tag) for p in runs) if r]
     lines += ["", f"## End to end ({PRIMARY}; shared windows hit by GT1: detector alarms of the members, ECG case, "
@@ -1279,7 +1326,21 @@ def main(argv: list[str]) -> None:
     ap.add_argument("--v12", action="store_true", help="(default since 2026-11-10) apply Config.V12 on top of --set")
     ap.add_argument("--v11", action="store_true", help="apply Config.V11 (brief v1.1 rules) for reproduction")
     ap.add_argument("--tag", default="", help="suffix for the output dirs and report (grouping-<tag>, report-<tag>.md)")
+    ap.add_argument("--phase", choices=PHASES, default="sync",
+                    help="keyframe phases: sync = all clients phase 0 (default), stag = the topology files' phases")
+    ap.add_argument("--aqms", default="", help="comma list overriding the campaigns' AQMs (e.g. codel,pie on K1 / K6 / C1)")
+    ap.add_argument("--skip-report", action="store_true",
+                    help="run only: no infra / grouping report after each campaign (score later with --report-only)")
     a = ap.parse_args(argv)
+    global PHASE
+    PHASE = a.phase
+    if a.aqms:
+        unknown_aqm = [q for q in a.aqms.split(",") if q not in dm.AQMS and q not in MIXED]
+        if unknown_aqm:
+            sys.exit(f"unknown AQMs {unknown_aqm}")
+        for k in a.ks.split(","):
+            if k in CAMPAIGNS:
+                CAMPAIGNS[k]["aqms"] = a.aqms.split(",")
     over = dict(ENGINE_SET)
     if a.v12:
         over.update(Config.V12)
@@ -1300,7 +1361,7 @@ def main(argv: list[str]) -> None:
         campaign = Path(tempfile.mkdtemp(prefix="grp-plan-"))
         atexit.register(shutil.rmtree, campaign, True)
     else:
-        campaign = a.campaign or RUNS / f"{datetime.datetime.now():%Y-%m-%d_%H%M}_{a.name}"
+        campaign = a.campaign or RUNS / f"{datetime.datetime.now():%Y-%m-%d_%H%M}_{a.name}-{a.phase}"
     campaign.mkdir(parents=True, exist_ok=True)
     print(f"campaign: {campaign}", flush=True)
     budget = 0.0
@@ -1318,7 +1379,7 @@ def main(argv: list[str]) -> None:
         budget += secs
         n = len([c for c in cells_of(k, a.reps) if not a.only or a.only in run_id(*c)])
         print(f"{k}: {n} runs, {secs / 3600:.1f} h of emulation (+ ~1 min setup each)", flush=True)
-        if not a.plan:
+        if not a.plan and not a.skip_report:
             infra_report(k, kdir)
             if scorable:
                 report(k, kdir, cfg, over, a.tag, a.compare)

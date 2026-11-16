@@ -180,7 +180,8 @@ def test_churn_sessions_alternate_and_windows_expect_whole_window_sessions(tmp_p
     assert duration == gc.N5_DURATION_S
 
 
-def test_uneven_keeps_per_egress_queue_limits_and_red_thresholds(tmp_path):
+def test_uneven_keeps_per_egress_queue_limits_and_red_thresholds(tmp_path, monkeypatch):
+    monkeypatch.setattr(gc, "PHASE", "stag")   # checks the topology file itself (sync writes a copy)
     for aqm in ("pfifo", "red"):
         scenario, topo, _ = gc.scenario_for("N2", "uneven", aqm, 1, tmp_path)
         load_scenario(scenario, load_topology(topo))
@@ -272,8 +273,8 @@ def test_link_lag_reads_applied_link_events_per_label():
 
 def test_only_filter_limits_the_cells(tmp_path):
     secs = gc.run_campaign("N2", tmp_path / "N2", None, False, dry=True, only="pfifo-r1")
-    assert secs == gc.N_DURATION_S and sorted(p.name for p in (tmp_path / "N2" / "_gen").glob("*.yaml")) == \
-        ["grp-uneven-pfifo-r1.yaml"]
+    assert secs == gc.N_DURATION_S and sorted(p.name for p in (tmp_path / "N2" / "_gen").glob("*.yaml")
+                                              if not p.name.endswith("-topology.yaml")) == ["grp-uneven-pfifo-r1.yaml"]
 
 
 def test_part_types_keep_their_severity():
@@ -334,8 +335,9 @@ def test_micro_variants_change_one_factor(tmp_path):
     assert gc.topology_of("G0", "calmtree8") == "tree8" and gc.CAMPAIGNS["M1"]["aqms"] == ["pfifo", "red", "pie", "cake", "codel"]
 
 
-def test_j1_jitter_and_phase_variants(tmp_path):
+def test_j1_jitter_and_phase_variants(tmp_path, monkeypatch):
     import yaml
+    monkeypatch.setattr(gc, "PHASE", "stag")   # the J1 phase variants only exist with staggered phases
     scen, topo, _ = gc.scenario_for("J1", "hierjit10", "pfifo", 1, tmp_path)
     links = yaml.safe_load(scen.read_text())["links"]
     fwd = [l["forward"] for l in links if l["to"] in ("a1", "a2", "a3", "b1", "b2", "b3")]
@@ -356,3 +358,71 @@ def test_revjit_keeps_ack_order(tmp_path):
     scen, _, _ = gc.scenario_for("M3", "revjit10", "pfifo", 1, tmp_path)
     revs = [l["reverse"] for l in yaml.safe_load(scen.read_text())["links"] if (l.get("reverse") or {}).get("jitter_ms")]
     assert revs and all(r["jitter_ms"] == 10 and r["jitter_keep_order"] for r in revs)
+
+
+def test_phase_sync_is_default_and_zeroes_every_phase(tmp_path):
+    import json
+    assert gc.PHASE == "sync"
+    _, topo, _ = gc.scenario_for("K1", "hier", "pfifo", 1, tmp_path)
+    subs = yaml.safe_load(topo.read_text())["subscribers"]
+    assert len(subs) == 7 and all(s["phase_ms"] == 0 for s in subs.values())
+    assert topo.parent == tmp_path / "_gen"   # a copy: the topology file itself is not changed
+    plan = json.loads((tmp_path / "_gen" / "grp-hier-pfifo-r1-plan.json").read_text())
+    assert plan["phase"] == "sync" and plan["seed"] == 1 and set(plan["phases_ms"].values()) == {0}
+    assert "rendition_alignment" in plan
+    load_scenario(tmp_path / "_gen" / "grp-hier-pfifo-r1.yaml", load_topology(topo))
+
+
+def test_phase_stag_keeps_the_topology_file(tmp_path, monkeypatch):
+    import json
+    monkeypatch.setattr(gc, "PHASE", "stag")
+    _, topo, _ = gc.scenario_for("M1", "burstcap", "pfifo", 2, tmp_path)
+    assert topo == gc.ROOT / "configs" / "topologies" / "detector.yaml"
+    plan = json.loads((tmp_path / "_gen" / "grp-burstcap-pfifo-r2-plan.json").read_text())
+    assert plan["phase"] == "stag" and plan["phases_ms"]["sub-d"] == 750
+
+
+def test_keyframe_spread_synthetic_run(tmp_path):
+    import keyframe_spread as kf
+    run = tmp_path / "run"
+    (run / "publishers" / "pub").mkdir(parents=True)
+    (run / "topology.yaml").write_text(yaml.safe_dump({
+        "publishers": {"pub": {}}, "subscribers": {"a": {"rate_kbps": 1000}, "b": {"rate_kbps": 1000},
+                                                   "c": {"rate_kbps": 5000, "phase_ms": 250}}}))
+    (run / "scenario.yaml").write_text(yaml.safe_dump({"duration_s": 10, "routers": {"r": {"aqm": "pfifo"}}}))
+    # epoch: run time 0 = unix 1_000 s = mono 50 s
+    (run / "events.csv").write_text("event,at_s,applied_s,applied_mono_ns,applied_unix_ns\n"
+                                    "epoch,0,0,50000000000,1000000000000\n")
+    for sid, off_ms, write_ms, pkt_ms in (("a", 0, 1, 2), ("b", 0, 3, 3), ("c", 250, 251, 251)):
+        rows = ["index,keyframe,size,send_us,write_us,stream"]
+        sent = ["send_mono_us,bytes,seq"]
+        for g in range(3):
+            t = 1_000_000_000 + g * 1_000_000 + off_ms * 1000
+            rows.append(f"{g * 30},1,9000,{t},{t + (write_ms - off_ms) * 1000},{g}")
+            rows.append(f"{g * 30 + 1},0,900,{t + 33_000},{t + 33_000},{g}")
+            sent.append(f"{50_000_000 + g * 1_000_000 + pkt_ms * 1000},1200,{g}")
+        (run / "publishers" / "pub" / f"{sid}-frames.csv").write_text("\n".join(rows) + "\n")
+        (run / "publishers" / "pub" / f"{sid}-sent.csv").write_text("\n".join(sent) + "\n")
+    res = kf.write(run)
+    within = res["groups"]["within 1000 kb/s"]
+    assert within["keyframes"] == 3 and within["scheduled"]["max_ms"] == 0
+    assert within["written"]["p50_ms"] == pytest.approx(2.0) and within["packet"]["p50_ms"] == pytest.approx(1.0)
+    across = res["groups"]["across renditions"]
+    assert across["scheduled"]["p50_ms"] == pytest.approx(250.0)
+    assert (run / "grouping" / "keyframe-spread.json").exists()
+
+
+def test_k6r_doubles_only_the_root_capacity(tmp_path):
+    import json
+    s0, _, d0 = gc.scenario_for("K6", "depth", "pfifo", 1, tmp_path / "a")
+    s1, _, d1 = gc.scenario_for("K6R", "depthroot2", "pfifo", 1, tmp_path / "b")
+    l0, l1 = (yaml.safe_load(s.read_text())["links"] for s in (s0, s1))
+    cap = lambda links, a, b: next(l["forward"].get("bandwidth_mbps") for l in links if (l["from"], l["to"]) == (a, b))
+    assert cap(l1, "rr", "r0") == 2 * cap(l0, "rr", "r0")
+    assert all(cap(l1, a, b) == cap(l0, a, b) for a, b in (("r0", "r1"), ("r1", "switch-a"), ("r2", "switch-d")))
+    e0, e1 = (yaml.safe_load(s.read_text())["events"] for s in (s0, s1))
+    assert d0 == d1 and len(e0) == len(e1)
+    drops0 = [e["bandwidth_mbps"] for e in e0 if e["label"] != "burst-end"]
+    assert drops0 == [e["bandwidth_mbps"] for e in e1 if e["label"] != "burst-end"]   # same bursts (sized by demand)
+    plan = json.loads((tmp_path / "b" / "_gen" / "grp-depthroot2-pfifo-r1-plan.json").read_text())
+    assert plan["root_planned_load"] == pytest.approx(plan["root_planned_load_default"] / 2, abs=0.002)
