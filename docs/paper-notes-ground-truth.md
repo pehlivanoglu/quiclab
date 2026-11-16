@@ -328,3 +328,38 @@ ECG v1.2 and h3 stay as comparison methods, frozen, with no further development.
   known weak point of the set method: congestion that lasts 30 s without a break gives one observation, so no
   group at k = 2. Report, per method, when it first groups within the first congestion and what happens after
   2, 3 and 4 repetitions; the curve method (h3) may lead there; decide only after seeing the result.
+
+## 10 Scenario design (suite v4, 2026-11-15)
+
+Spec reports/v4-suite/spec.md; hand-over and every deviation: reports/v4-suite/README.md. Built on suite v3
+(sizing C_e = D_e / (s U), BG_e = D_e (1 - s) / s, background generator, AQM settings, gate checks unchanged).
+
+- Operating points: DEF s 0.30 / U 0.50 (default); EXT s 0.30 / U 0.70 (extreme; every v3 event run);
+  HS50 s 0.50 / U 0.50; HS70 s 0.50 / U 0.70. U 0.85 removed; s 0.65 not run again (v3 runs = stress row).
+- New topologies: T-SPLIT4L and T-UNEVENL (low rendition sets, so the hierarchies fit at DEF); T-PARk
+  (k parallel leaves behind an unshaped link, no shared bottleneck; FlowBot-style), T-PAR4x8; T-LEAFn (one
+  leaf of n identical clients, n 4 to n_max <= 40; group size) and T-LEAF16W (base RTT 20 to 200 ms);
+  T-SPLITn; T-HAYES (every pair of four groups shares one link in turn; Hayes et al., LCN 2014, Fig. 4),
+  realised with forced forward paths; T-TEACUP (two access links and a shared link; Hayes et al., ToN 2020,
+  Fig. 1); SB / NSB (MPTCP-SBD style pair: one shared link vs two parallel ones with the same plan).
+- New background mode BG-ONOFF (exponential on / off UDP sources; Rubenstein et al., and the Hayes ToN testbed).
+- New stimuli: persist (a surge held 30 to 120 s), shorttcp (our own overload stimulus: salvos of short CUBIC
+  flows, Pareto sizes mean 500 kB, sized to the stimulus load; not taken from any RFC), pause (the sender stops
+  sending to one client), cold (overload already on when the clients start; FlowBot's run setup).
+- S-SHORT-RFC (decision 2026-11-15): the short-TCP model of RFC 8867 section 5.7 / RFC 8868 section 5.1 on
+  T-BASE at DEF: 10 short TCP flows (2 start ON, 8 OFF), files uniform 30-50 kB, idle times exponential with
+  mean 10 s, for the whole 300 s run, no other stimulus. Not an overload: it asks whether light, bursty TCP
+  arrivals cause detector false alarms or spurious groups; scored like CALM (false alarms per client-minute,
+  groups declared), next to CALM at DEF. Implementation detail: the next file of a flow starts one idle period
+  after the previous file's start (a 30-50 kB download lasts milliseconds at these rates).
+- New scenario types: H-SHIFT (shifting bottleneck), S-PERSIST and FB-* (persistent overload, FlowBot),
+  H-CHURN (join / leave / rejoin). A client changing branch was not measured: the "move" variant is not
+  possible in the testbed (a host stays behind its switch). H-CONC (share of concurrent events), H-SPARSE, S-MILD (sparse mild events), H-HIERL with other
+  background modes, negatives NEG-CALM / NEG-PRIV / NEG-LOSSH, S-SHORT, S-PAUSE, S-DENSE, R-REVASYM, D-CLEAN.
+- T-TEACUP: the access links are at calm load 0.80; the shared up link (2.5 times an access link, as in the
+  original setup) is at calm load 0.64 with the v3 background rule. This matches the original setup (accepted
+  2026-11-15).
+- Deviations (full list in the hand-over, section 5): T-HAYES background 80 % (theirs above 90 %, does not fit our limits); ACKs of
+  T-HAYES take the shortest reverse path; H-CONC ~820 s per run and C1 22 runs (the spec's ~600 s and 24
+  were wrong; accepted 2026-11-15); M7 / M8
+  on T-SPLIT4L at DEF; held-out N5 at DEF on the low set twice.
