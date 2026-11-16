@@ -1,0 +1,360 @@
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+v3-C10-hindep-s030-codel-r1 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+v3-C10-hindep-s030-codel-r2 ok
+v3-C10-hindep-s030-fq_codel-r1 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: invalid value encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+v3-C10-hindep-s030-fq_codel-r2 ok
+v3-C10-hindep-s030-pfifo-r1 ok
+v3-C10-hindep-s030-pfifo-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+v3-C11-huneven-uneven-codel-r1 ok
+v3-C11-huneven-uneven-codel-r2 ok
+v3-C11-huneven-uneven-pfifo-r1 ok
+v3-C11-huneven-uneven-pfifo-r2 ok
+v3-C12-amixed-access-codel-r1 ok
+v3-C12-amixed-access-codel-r2 ok
+v3-C12-amixed-access-fq_codel-r1 ok
+v3-C12-amixed-access-fq_codel-r2 ok
+v3-C12-amixed-access-pfifo-r1 ok
+v3-C12-amixed-access-pfifo-r2 ok
+v3-C12-amixed-access-pie-r1 ok
+v3-C12-amixed-access-pie-r2 ok
+v3-C13-llong-s030-codel-r1 ok
+v3-C13-llong-s030-codel-r2 ok
+v3-C13-llong-s030-pfifo-r1 ok
+v3-C13-llong-s030-pfifo-r2 ok
+v3-C14-rrev-rev-fq_codel-r1 ok
+v3-C14-rrev-rev-fq_codel-r2 ok
+v3-C14-rrev-rev-pfifo-r1 ok
+v3-C14-rrev-rev-pfifo-r2 ok
+v3-C15-nloss-s030u070-codel-r1 ok
+v3-C15-nloss-s030u070-codel-r2 ok
+v3-C15-nloss-s030u070-pfifo-r1 ok
+v3-C15-nloss-s030u070-pfifo-r2 ok
+v3-C1a-calm-legacy-codel-r1 ok
+v3-C1a-calm-legacy-codel-r2 ok
+v3-C1a-calm-legacy-pfifo-r1 ok
+v3-C1a-calm-legacy-pfifo-r2 ok
+v3-C1a-calm-s010u070-codel-r1 ok
+v3-C1a-calm-s010u070-codel-r2 ok
+v3-C1a-calm-s010u070-pfifo-r1 ok
+v3-C1a-calm-s010u070-pfifo-r2 ok
+v3-C1a-calm-s010u085-codel-r1 ok
+v3-C1a-calm-s010u085-codel-r2 ok
+v3-C1a-calm-s010u085-pfifo-r1 ok
+v3-C1a-calm-s010u085-pfifo-r2 ok
+v3-C1a-calm-s030u050-codel-r1 ok
+v3-C1a-calm-s030u050-codel-r2 ok
+v3-C1a-calm-s030u050-pfifo-r1 ok
+v3-C1a-calm-s030u050-pfifo-r2 ok
+v3-C1a-calm-s030u070-codel-r1 ok
+v3-C1a-calm-s030u070-codel-r2 ok
+v3-C1a-calm-s030u070-pfifo-r1 ok
+v3-C1a-calm-s030u070-pfifo-r2 ok
+v3-C1a-calm-s030u085-codel-r1 ok
+v3-C1a-calm-s030u085-codel-r2 ok
+v3-C1a-calm-s030u085-pfifo-r1 ok
+v3-C1a-calm-s030u085-pfifo-r2 ok
+v3-C1a-calm-s065u050-codel-r1 ok
+v3-C1a-calm-s065u050-codel-r2 ok
+v3-C1a-calm-s065u050-pfifo-r1 ok
+v3-C1a-calm-s065u050-pfifo-r2 ok
+v3-C1a-calm-s065u070-codel-r1 ok
+v3-C1a-calm-s065u070-codel-r2 ok
+v3-C1a-calm-s065u070-pfifo-r1 ok
+v3-C1a-calm-s065u070-pfifo-r2 ok
+v3-C1a-calm-s065u085-codel-r1 ok
+v3-C1a-calm-s065u085-codel-r2 ok
+v3-C1a-calm-s065u085-pfifo-r1 ok
+v3-C1a-calm-s065u085-pfifo-r2 ok
+v3-C1b-calm-split4-pfifo-r1 ok
+v3-C1b-calm-split4-pfifo-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+v3-C1b-calm-tree16-pfifo-r1 ok
+v3-C1b-calm-tree16-pfifo-r2 ok
+v3-C1b-calm-uneven-pfifo-r1 ok
+v3-C1b-calm-uneven-pfifo-r2 ok
+v3-C2-sburst-s030u070-cake-r1 ok
+v3-C2-sburst-s030u070-cake-r2 ok
+v3-C2-sburst-s030u070-codel-r1 ok
+v3-C2-sburst-s030u070-codel-r2 ok
+v3-C2-sburst-s030u070-fq_codel-r1 ok
+v3-C2-sburst-s030u070-fq_codel-r2 ok
+v3-C2-sburst-s030u070-pfifo-r1 ok
+v3-C2-sburst-s030u070-pfifo-r2 ok
+v3-C2-sburst-s030u070-pie-r1 ok
+v3-C2-sburst-s030u070-pie-r2 ok
+v3-C2-sburst-s030u070-red-r1 ok
+v3-C2-sburst-s030u070-red-r2 ok
+v3-C3a-sburst-s010u070-codel-r1 ok
+v3-C3a-sburst-s010u070-codel-r2 ok
+v3-C3a-sburst-s010u070-pfifo-r1 ok
+v3-C3a-sburst-s010u070-pfifo-r2 ok
+v3-C3a-sburst-s065u070-codel-r1 ok
+v3-C3a-sburst-s065u070-codel-r2 ok
+v3-C3a-sburst-s065u070-pfifo-r1 ok
+v3-C3a-sburst-s065u070-pfifo-r2 ok
+v3-C3b-sburst-legacy-pfifo-r1 ok
+v3-C3b-sburst-legacy-pfifo-r2 ok
+v3-C4-sramp-s030u070-codel-r1 ok
+v3-C4-sramp-s030u070-codel-r2 ok
+v3-C4-sramp-s030u070-fq_codel-r1 ok
+v3-C4-sramp-s030u070-fq_codel-r2 ok
+v3-C4-sramp-s030u070-pfifo-r1 ok
+v3-C4-sramp-s030u070-pfifo-r2 ok
+v3-C4-sramp-s030u070-pie-r1 ok
+v3-C4-sramp-s030u070-pie-r2 ok
+v3-C5-stcp-s030u070-codel-r1 ok
+v3-C5-stcp-s030u070-codel-r2 ok
+v3-C5-stcp-s030u070-fq_codel-r1 ok
+v3-C5-stcp-s030u070-fq_codel-r2 ok
+v3-C5-stcp-s030u070-pfifo-r1 ok
+v3-C5-stcp-s030u070-pfifo-r2 ok
+v3-C5-stcp-s030u070-pie-r1 ok
+v3-C5-stcp-s030u070-pie-r2 ok
+v3-C6-sjoin-s030u070-codel-r1 ok
+v3-C6-sjoin-s030u070-codel-r2 ok
+v3-C6-sjoin-s030u070-fq_codel-r1 ok
+v3-C6-sjoin-s030u070-fq_codel-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+v3-C6-sjoin-s030u070-pfifo-r1 ok
+v3-C6-sjoin-s030u070-pfifo-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+v3-C7-hhier-s030-codel-r1 ok
+v3-C7-hhier-s030-codel-r2 ok
+v3-C7-hhier-s030-fq_codel-r1 ok
+v3-C7-hhier-s030-fq_codel-r2 ok
+v3-C7-hhier-s030-pfifo-r1 ok
+v3-C7-hhier-s030-pfifo-r2 ok
+v3-C7-hhier-s030-pie-r1 ok
+v3-C7-hhier-s030-pie-r2 ok
+v3-C8-hhier-s065-pfifo-r1 ok
+v3-C8-hhier-s065-pfifo-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+v3-C9-hdepth-tree16-codel-r1 ok
+v3-C9-hdepth-tree16-codel-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:148: RuntimeWarning: divide by zero encountered in divide
+  F4 = np.where(R >= MIN_R_BYTES, P / R - base / 1000, np.nan)  # seconds: R = bytes delivered in the last 1 s
+v3-C9-hdepth-tree16-fq_codel-r1 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+v3-C9-hdepth-tree16-fq_codel-r2 ok
+v3-C9-hdepth-tree16-pfifo-r1 ok
+v3-C9-hdepth-tree16-pfifo-r2 ok
+v3-G1-calm-legacy-pfifo-r1 ok
+v3-G1-calm-s030u070-pfifo-r1 ok
+v3-G2-calm-access-pfifo-r1 ok
+v3-G2-calm-rev-pfifo-r1 ok
+v3-G2-calm-split4-pfifo-r1 ok
+v3-G2-calm-tree16-pfifo-r1 ok
+v3-G2-calm-uneven-pfifo-r1 ok
+v3-G3-sburst-s030u070-fq_codel-r1 ok
+v3-G3-sburst-s030u070-pfifo-r1 ok
+v3-M1-sburst-q100-pfifo-r1 ok
+v3-M1-sburst-q100-pfifo-r2 ok
+v3-M1-sburst-q300-pfifo-r1 ok
+v3-M1-sburst-q300-pfifo-r2 ok
+v3-M10-sburst-ip2-pfifo-r1 ok
+v3-M10-sburst-ip2-pfifo-r2 ok
+v3-M10-sburst-ip8-pfifo-r1 ok
+v3-M10-sburst-ip8-pfifo-r2 ok
+v3-M11-sburst-bw4x1-pfifo-r1 ok
+v3-M11-sburst-bw4x1-pfifo-r2 ok
+v3-M11-sburst-bw4x12-pfifo-r1 ok
+v3-M11-sburst-bw4x12-pfifo-r2 ok
+v3-M11-sburst-bw4x8-pfifo-r1 ok
+v3-M11-sburst-bw4x8-pfifo-r2 ok
+v3-M12-sburst-jitfwd-pfifo-r1 ok
+v3-M12-sburst-jitfwd-pfifo-r2 ok
+v3-M12-sburst-jitrev-pfifo-r1 ok
+v3-M12-sburst-jitrev-pfifo-r2 ok
+v3-M13-sburst-copa-codel-r1 ok
+v3-M13-sburst-copa-codel-r2 ok
+v3-M13-sburst-copa-pfifo-r1 ok
+v3-M13-sburst-copa-pfifo-r2 ok
+v3-M14-ssparse-s030u070-pfifo-r1 ok
+v3-M14-ssparse-s030u070-pfifo-r2 ok
+v3-M2-sburst-capdrop-codel-r1 ok
+v3-M2-sburst-capdrop-codel-r2 ok
+v3-M2-sburst-capdrop-pfifo-r1 ok
+v3-M2-sburst-capdrop-pfifo-r2 ok
+v3-M3-sburst-bgbursty-codel-r1 ok
+v3-M3-sburst-bgbursty-codel-r2 ok
+v3-M3-sburst-bgbursty-pfifo-r1 ok
+v3-M3-sburst-bgbursty-pfifo-r2 ok
+v3-M3-sburst-bgmix-codel-r1 ok
+v3-M3-sburst-bgmix-codel-r2 ok
+v3-M3-sburst-bgmix-pfifo-r1 ok
+v3-M3-sburst-bgmix-pfifo-r2 ok
+v3-M4-sburst-rttwide-pfifo-r1 ok
+v3-M4-sburst-rttwide-pfifo-r2 ok
+v3-M4-sburst-rttx05-pfifo-r1 ok
+v3-M4-sburst-rttx05-pfifo-r2 ok
+v3-M4-sburst-rttx4-pfifo-r1 ok
+v3-M4-sburst-rttx4-pfifo-r2 ok
+v3-M5-sburst-fps15-codel-r1 ok
+v3-M5-sburst-fps15-codel-r2 ok
+v3-M5-sburst-fps15-pfifo-r1 ok
+v3-M5-sburst-fps15-pfifo-r2 ok
+v3-M5-sburst-fps60-codel-r1 ok
+v3-M5-sburst-fps60-codel-r2 ok
+v3-M5-sburst-fps60-pfifo-r1 ok
+v3-M5-sburst-fps60-pfifo-r2 ok
+v3-M6-calm-stag-pfifo-r1 ok
+v3-M6-calm-stag-pfifo-r2 ok
+v3-M6-sburst-stag-pfifo-r1 ok
+v3-M6-sburst-stag-pfifo-r2 ok
+v3-M7-hhier-noroot-pfifo-r1 ok
+v3-M7-hhier-noroot-pfifo-r2 ok
+v3-M8-hhier-mixab-mixab-r1 ok
+v3-M8-hhier-mixab-mixab-r2 ok
+v3-M9-sstress-s030u070-codel-r1 ok
+v3-M9-sstress-s030u070-codel-r2 ok
+v3-M9-sstress-s030u070-pfifo-r1 ok
+v3-M9-sstress-s030u070-pfifo-r2 ok
+203 runs scored, 0 failed: []

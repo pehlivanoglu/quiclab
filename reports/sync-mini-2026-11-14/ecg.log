@@ -1,0 +1,14 @@
+grp-calm065-pfifo-r2 ok
+grp-calm065-pfifo-r1 ok
+grp-burstcap-pfifo-r1 ok
+grp-burstcap-pfifo-r2 ok
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+/home/ubuntu/Research/Repos/multirelay/quiclab/scripts/shadow_v2_step1.py:69: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  a = pd.read_csv(dump / f"{sid}.csv")
+grp-hier-pfifo-r2 ok
+grp-hier-pfifo-r1 ok
+grp-burstlongsplit-pfifo-r2 ok
+grp-burstlongsplit-pfifo-r1 ok
+grp-depth-pfifo-r2 ok
+grp-depth-pfifo-r1 ok
