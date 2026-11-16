@@ -156,6 +156,9 @@ class Run:
 
 
 def path_hops(run: Run, src: str, dst: str) -> list[tuple[str, str]]:
+    sub = (run.topology.get("subscribers") or {}).get(dst) or {}
+    if sub.get("path") and src == sub.get("connects_to"):   # forced forward path (suite v4 T-HAYES)
+        return list(zip(sub["path"], sub["path"][1:]))
     adj = defaultdict(set)
     for link in run.topology["links"]:
         adj[link["from"]].add(link["to"])

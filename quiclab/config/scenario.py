@@ -280,7 +280,10 @@ class BgEvent(_Event):
     process poisson: qtraffic, one Poisson process per entry of flow_weights.
     process tcp: one qtraffic TCP connection (cc), application-paced to rate_mbps;
       with on_s / off_s it sends rate_mbps x (on_s + off_s) / on_s for on_s, then
-      idles off_s, starting phase_s into the cycle."""
+      idles off_s, starting phase_s into the cycle.
+    periods (poisson only; suite v4 BG-ONOFF): explicit on periods [start_s, duration_s]
+      relative to at_s; the source sends rate_mbps (its on rate) inside them and nothing
+      outside."""
 
     type: Literal["bg"]
     id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$")
@@ -296,6 +299,8 @@ class BgEvent(_Event):
     on_s: float | None = Field(default=None, gt=0)
     off_s: float | None = Field(default=None, gt=0)
     phase_s: float = Field(default=0, ge=0)
+    periods: list[tuple[Annotated[float, Field(ge=0)], Annotated[float, Field(gt=0)]]] | None = \
+        Field(default=None, min_length=1)
 
     @model_validator(mode="after")
     def _check_process(self) -> "BgEvent":
@@ -303,10 +308,17 @@ class BgEvent(_Event):
             raise ValueError("cc / on_s / off_s / phase_s require process: tcp")
         if (self.on_s is None) != (self.off_s is None):
             raise ValueError("on_s and off_s go together")
+        if self.periods is not None:
+            if self.process != "poisson":
+                raise ValueError("periods require process: poisson")
+            if any(a + d > self.duration_s + 1e-9 for a, d in self.periods):
+                raise ValueError("a period runs past duration_s")
         return self
 
     def schedule(self) -> list[tuple[float, float, float]]:
         """qtraffic --schedule entries relative to at_s."""
+        if self.periods is not None:
+            return [(float(a), float(d), self.rate_mbps) for a, d in self.periods]
         if self.on_s is None:
             return [(0.0, self.duration_s, self.rate_mbps)]
         cycle = self.on_s + self.off_s
@@ -334,8 +346,46 @@ class LeaveEvent(_Event):
     subscriber: str
 
 
+class SalvoFlow(_StrictBase):
+    start_s: float = Field(ge=0)   # from the event's at_s
+    bytes: int = Field(gt=0)
+
+
+class SalvoEvent(_Event):
+    """Short TCP flows (suite v4 `shorttcp`; qtraffic --process=salvo): each entry opens
+    its own TCP connection (cc) at at_s + start_s, writes `bytes` as fast as the
+    connection allows and closes. The process lives duration_s (unfinished flows are
+    cut there)."""
+
+    type: Literal["salvo"]
+    id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$")
+    route: str
+    duration_s: float = Field(gt=0)
+    flows: list[SalvoFlow] = Field(min_length=1, max_length=4096)
+    cc: Literal["cubic", "reno", "bbr"] | None = None
+    packet_size_bytes: int = Field(default=1200, ge=64, le=1472)   # qtraffic's common flag; TCP ignores it
+
+    @model_validator(mode="after")
+    def _check_flows(self) -> "SalvoEvent":
+        if any(f.start_s >= self.duration_s for f in self.flows):
+            raise ValueError("a salvo flow starts at or after duration_s")
+        return self
+
+
+class PauseEvent(_Event):
+    """The publisher stops sending video to one subscriber (session 1) for duration_s
+    (qvideo-server --pause): no frame due in [at_s, at_s + duration_s) is produced for
+    it; production resumes at the first keyframe due at or after the end. The
+    connection stays up (the client keeps pinging)."""
+
+    type: Literal["pause"]
+    subscriber: str
+    duration_s: float = Field(gt=0)
+
+
 Event = Annotated[
-    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | BurstsEvent | BgEvent | JoinEvent | LeaveEvent,
+    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | BurstsEvent | BgEvent | JoinEvent | LeaveEvent
+    | SalvoEvent | PauseEvent,
     Field(discriminator="type"),
 ]
 
@@ -363,13 +413,16 @@ class Scenario(_StrictBase):
     def flows(self) -> list[TcpFlowEvent | UdpFlowEvent]:
         return [e for e in self.events if e.type == "flow"]
 
-    def ppbp(self) -> list[PpbpEvent | BurstsEvent | BgEvent]:
-        """qtraffic sources: PPBP, fixed bursts and background."""
-        return [e for e in self.events if e.type in ("ppbp", "bursts", "bg")]
+    def ppbp(self) -> list[PpbpEvent | BurstsEvent | BgEvent | SalvoEvent]:
+        """qtraffic sources: PPBP, fixed bursts, background and short-TCP salvos."""
+        return [e for e in self.events if e.type in ("ppbp", "bursts", "bg", "salvo")]
+
+    def pauses(self) -> list[PauseEvent]:
+        return [e for e in self.events if e.type == "pause"]
 
     def traffic_ids(self) -> list[str]:
         """iperf3 flows and qtraffic processes share one port range, in file order."""
-        return [e.id for e in self.events if e.type in ("flow", "ppbp", "bursts", "bg")]
+        return [e.id for e in self.events if e.type in ("flow", "ppbp", "bursts", "bg", "salvo")]
 
     def join_at(self, subscriber: str) -> float:
         """First connection time (0 unless the subscriber's first event is a join)."""
@@ -465,7 +518,12 @@ class Scenario(_StrictBase):
                 if event.router not in topology.routers:
                     raise ValueError(f"{where}: {event.router!r} is not a topology router")
                 check_egress(event.router, event, where)
-            elif event.type in ("flow", "ppbp", "bursts", "bg"):
+            elif event.type == "pause":
+                if event.subscriber not in topology.subscribers:
+                    raise ValueError(f"{where}: {event.subscriber!r} is not a topology subscriber")
+                if event.at_s + event.duration_s > self.duration_s:
+                    raise ValueError(f"{where}: pause of {event.subscriber!r} runs past duration_s")
+            elif event.type in ("flow", "ppbp", "bursts", "bg", "salvo"):
                 if event.route not in routes:
                     raise ValueError(f"{where}: flow {event.id!r} uses unknown traffic route {event.route!r}")
                 if event.id in flow_ids:

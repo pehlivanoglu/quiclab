@@ -121,6 +121,11 @@ class SubscriberConfig(_StrictBase):
     phase_ms: int = Field(default=0, ge=0)
     buffer_ms: int = Field(default=600, ge=0)
     stats_ms: int = Field(default=100, gt=0)
+    # Forced forward path publisher -> ... -> subscriber (node ids, consecutive nodes
+    # linked); unset: the shortest path. Suite v4 T-HAYES (several equal-length paths).
+    # Only the forward direction is pinned: routes are per destination, so the
+    # reverse (ACK) path stays the shortest path to the publisher.
+    path: list[str] | None = Field(default=None, min_length=2)
 
 
 class QueueMetricsConfig(_StrictBase):
@@ -355,6 +360,16 @@ class TopologyConfig(_StrictBase):
         for rid in self.routers:
             if rid not in linked_nodes:
                 raise ValueError(f"router {rid!r} does not appear in any link")
+        for sid, s in self.subscribers.items():
+            if s.path is None:
+                continue
+            if s.path[0] != s.connects_to or s.path[-1] != sid:
+                raise ValueError(f"subscriber {sid!r} path must run from {s.connects_to!r} to {sid!r}")
+            if len(set(s.path)) != len(s.path):
+                raise ValueError(f"subscriber {sid!r} path visits a node twice")
+            for a, b in zip(s.path, s.path[1:]):
+                if tuple(sorted((a, b))) not in {tuple(sorted(k)) for k in seen_links}:
+                    raise ValueError(f"subscriber {sid!r} path hop {a!r} -> {b!r} is not a link")
 
         # Bridges use no STP: reject loops and duplicate attachments to one LAN.
         switch_parent = {sid: sid for sid in self.switches}

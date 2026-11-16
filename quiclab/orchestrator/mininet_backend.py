@@ -230,7 +230,8 @@ class MininetBackend:
             mono_now, unix_now_ns = time.monotonic(), time.time_ns()
             start_unix_ns = unix_now_ns + int(topology.startup.stream_start_s * 1e9)
             record.epoch_mono_s = mono_now + topology.startup.stream_start_s
-            processes.extend(_launch_publishers(net, topology, record, start_unix_ns // 1000, info, pkt_log=gtq_on))
+            processes.extend(_launch_publishers(net, topology, record, start_unix_ns // 1000, info, pkt_log=gtq_on,
+                                                scenario=scenario))
             if topology.startup.publisher_warmup_s > 0:
                 time.sleep(topology.startup.publisher_warmup_s)
             processes.extend(_start_iperf_servers(net, topology, scenario, record, info))
@@ -257,6 +258,10 @@ class MininetBackend:
                 "bursts": lambda e: (e.id, f"bursts={len(e.bursts)} process={e.process}"),
                 "bg": lambda e: (e.id, f"bg {e.process} rate_mbps={e.rate_mbps:g} flows={len(e.flow_weights)}"
                                        + (f" cc={e.cc}" if e.cc else "")),
+                "salvo": lambda e: (e.id, f"salvo flows={len(e.flows)} bytes={sum(f.bytes for f in e.flows)}"
+                                          + (f" cc={e.cc}" if e.cc else "")),
+                # qvideo-server holds the pause window since setup; the row records it.
+                "pause": lambda e: (e.subscriber, f"pause {e.subscriber} duration_s={e.duration_s:g}"),
                 "join": lambda e: _join(net, topology, e.subscriber, record, clients, launches, info),
                 "leave": lambda e: _leave(e.subscriber, clients),
             })
@@ -379,6 +384,15 @@ class MininetBackend:
             node = net.get(nid)
             for cmd in route_commands(nid, hops[nid], record.loopback_ips, neighbor_addrs.get(nid, {})):
                 node.cmd(cmd)
+        # Forced forward paths (subscriber `path`): the subscriber's /32 along its path.
+        for sid, sub in topology.subscribers.items():
+            if sub.path is None:
+                continue
+            path = routed_path(sub.path, topology.switches)
+            for current, neighbor in zip(path, path[1:]):
+                next_ip, iface = neighbor_addrs[current][neighbor]
+                net.get(current).cmd(f"ip route replace {record.loopback_ips[sid]}/32 via {next_ip} dev {iface} "
+                                     f"src {record.loopback_ips[current]}")
 
         if topology.traffic is not None:
             aliases = traffic_route_ips(topology)
@@ -445,7 +459,11 @@ def initial_shaping_commands(topology: TopologyConfig, scenario: Scenario) -> li
 
 
 def _path_hops(topology: TopologyConfig, src: str, dst: str) -> list[tuple[str, str]]:
-    """Directed hops of the shortest src -> dst path over the links (BFS, sorted neighbours)."""
+    """Directed hops of the shortest src -> dst path over the links (BFS, sorted neighbours);
+    a subscriber's forced `path` from its publisher instead, where it has one."""
+    sub = topology.subscribers.get(dst)
+    if sub is not None and sub.path is not None and src == sub.connects_to:
+        return list(zip(sub.path, sub.path[1:]))
     adjacency: dict[str, set[str]] = {}
     for link in topology.links:
         adjacency.setdefault(link.from_, set()).add(link.to)
@@ -505,8 +523,18 @@ def _popen(net, node_id: str, argv: list[str], log_path: Path) -> subprocess.Pop
         log.close()  # the child keeps its own descriptor
 
 
+def pause_argv(topology: TopologyConfig, scenario: Scenario | None, pid: str) -> list[str]:
+    """qvideo-server --pause=<client>@<start_s>+<duration_s>,... for the scenario's pause
+    events of this publisher's subscribers (times on the stream clock, t=0 = T0)."""
+    if scenario is None:
+        return []
+    items = [f"{e.subscriber}@{e.at_s:g}+{e.duration_s:g}" for e in scenario.pauses()
+             if topology.subscribers[e.subscriber].connects_to == pid]
+    return [f"--pause={','.join(items)}"] if items else []
+
+
 def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_unix_us: int, info,
-                       pkt_log: bool = False) -> list:
+                       pkt_log: bool = False, scenario: Scenario | None = None) -> list:
     started = []
     for pid, publisher in topology.publishers.items():
         out_dir = record.run_dir / "publishers" / pid
@@ -529,6 +557,7 @@ def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_u
             f"--send_buffer_ms={publisher.send_buffer_ms}",
             f"--out_dir={out_dir}",
             *(["--pkt_log=true"] if pkt_log else []),
+            *pause_argv(topology, scenario, pid),
             "--logtostderr",
         ]
         info(f"*** {pid}: {shlex.join(argv)}\n")
@@ -655,7 +684,7 @@ def _start_flow(net, topology, scenario, record: RunRecord, processes: list, flo
 def qtraffic_recv_argv(topology: TopologyConfig, scenario: Scenario, e, out: Path) -> list[str]:
     """Sink of one qtraffic source (PPBP, bursts, background)."""
     _, receiver_ip = traffic_route_ips(topology)[e.route]
-    tcp = e.type == "bg" and e.process == "tcp"
+    tcp = (e.type == "bg" and e.process == "tcp") or e.type == "salvo"
     return [str(_QTRAFFIC), "--mode=recv", f"--bind={receiver_ip}", f"--port={_flow_port(topology, scenario, e.id)}",
             *(["--proto=tcp"] if tcp else []), f"--out={out}"]
 
@@ -668,7 +697,10 @@ def qtraffic_send_argv(topology: TopologyConfig, scenario: Scenario, e, stream_s
     argv = [str(_QTRAFFIC), "--mode=send", f"--bind={sender_ip}", f"--dest={receiver_ip}",
             f"--port={_flow_port(topology, scenario, e.id)}",
             f"--start_unix_us={stream_start_unix_us + int(e.at_s * 1e6)}", f"--duration_s={e.duration_s:g}"]
-    if e.type == "ppbp":
+    if e.type == "salvo":
+        argv += ["--proto=tcp", "--process=salvo", *([f"--cc={e.cc}"] if e.cc else []),
+                 "--flows=" + ",".join(f"{f.start_s:g}:{f.bytes}" for f in e.flows)]
+    elif e.type == "ppbp":
         argv += [f"--mean_mbps={e.mean_mbps:g}", f"--burst_mbps={e.burst_mbps:g}",
                  f"--mean_burst_s={e.mean_burst_s:g}", f"--hurst={e.hurst:g}", f"--seed={e.seed}"]
     elif e.type == "bg":
@@ -708,7 +740,7 @@ def _start_ppbp(net, topology: TopologyConfig, scenario: Scenario, record: RunRe
         started.append((path[-1], _popen(net, path[-1],
                                          qtraffic_recv_argv(topology, scenario, e, record.run_dir / "traffic" / e.id),
                                          record.run_dir / "logs" / f"{e.id}-recv.log")))
-    if any(e.type == "bg" and e.process == "tcp" for e in events):
+    if any((e.type == "bg" and e.process == "tcp") or e.type == "salvo" for e in events):
         time.sleep(0.2)   # TCP sinks listen before their sources connect (the sources also retry)
     for e in events:
         path = topology.traffic.routes[e.route].path

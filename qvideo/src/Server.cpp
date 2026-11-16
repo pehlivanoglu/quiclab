@@ -48,6 +48,9 @@ DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all 
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
 DEFINE_bool(record_acks, true, "write per-ACK detector inputs (<client>-acks.csv, -sent.csv)");
 DEFINE_bool(owd, true, "write exact one-way delay per 5 ms (<client>-owd.csv) from ACK receive timestamps");
+DEFINE_string(pause, "",
+              "client@start_s+duration_s,...: no frame due in the window is produced for that client; "
+              "production resumes at the first keyframe due at or after the end (suite v4 pause)");
 DEFINE_bool(pkt_log, false,
             "GT-Q t_obs log: every sent packet (<client>-pkts.csv) and every ACK's newly acked "
             "packet numbers (<client>-pktacks.csv); recording only");
@@ -61,7 +64,33 @@ struct Config {
   std::vector<uint32_t> ladder;
   uint64_t startUs{0};
   quic::samples::FizzServerContextPtr fizz;
+  // --pause: client id -> [start_us, end_us) windows on the stream clock (since startUs).
+  std::map<std::string, std::vector<std::pair<uint64_t, uint64_t>>> pauses;
 };
+
+// "client@start_s+duration_s,..." -> windows; false on any malformed entry.
+bool parsePauses(const std::string& text, Config& cfg) {
+  std::istringstream in(text);
+  std::string item;
+  while (std::getline(in, item, ',')) {
+    const auto at = item.rfind('@');
+    const auto plus = item.rfind('+');
+    if (at == std::string::npos || plus == std::string::npos || plus < at || at == 0) {
+      return false;
+    }
+    try {
+      const double a = std::stod(item.substr(at + 1, plus - at - 1));
+      const double d = std::stod(item.substr(plus + 1));
+      if (a < 0 || d <= 0) {
+        return false;
+      }
+      cfg.pauses[item.substr(0, at)].emplace_back(uint64_t(a * 1e6), uint64_t((a + d) * 1e6));
+    } catch (const std::exception&) {
+      return false;
+    }
+  }
+  return true;
+}
 
 // TransportInfo has no pacing rate (its pacingInterval is the time until the
 // next write); the pacer reports its rate through this observer event.
@@ -502,6 +531,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
                  "app_bytes,queue_bytes,queue_age_us,quic_unsent_bytes,backlog_bytes,dropped_frames\n";
 
     nextIndex_ = schedule_.firstFrame(qvideo::nowUs());
+    if (auto it = cfg_.pauses.find(request_->clientId); it != cfg_.pauses.end()) {
+      pauses_ = &it->second;
+    }
     LOG(INFO) << request_->clientId << " rate=" << params_.rateKbps << "kbps phase="
               << request_->phaseMs << "ms first_frame=" << nextIndex_;
 
@@ -520,6 +552,33 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     }
   }
 
+  // Frame k is not produced: due inside a pause window of this client, or after one
+  // until the next keyframe (the client resumes on a GOP boundary).
+  bool paused(uint64_t k) {
+    if (pauses_ == nullptr) {
+      return false;
+    }
+    const uint64_t t = schedule_.timeUs(k) - cfg_.startUs;
+    const bool key = k % params_.gopFrames == 0;
+    for (const auto& [a, b] : *pauses_) {
+      if (t >= a && t < b) {
+        if (!inPause_) {
+          LOG(INFO) << request_->clientId << " pause from frame " << k;
+        }
+        inPause_ = true;
+        return true;
+      }
+    }
+    if (inPause_ && !key) {
+      return true;
+    }
+    if (inPause_) {
+      LOG(INFO) << request_->clientId << " resume at keyframe " << k;
+    }
+    inPause_ = false;
+    return false;
+  }
+
   void scheduleFrame() {
     const uint64_t now = qvideo::nowUs();
     const uint64_t due = schedule_.timeUs(nextIndex_);
@@ -535,6 +594,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     std::vector<qvideo::QueuedFrame> dropped;
     for (uint64_t now = qvideo::nowUs(); schedule_.timeUs(nextIndex_) <= now; ++nextIndex_) {
       const uint64_t k = nextIndex_;
+      if (paused(k)) {
+        continue;
+      }
       queue_->push({k, k / params_.gopFrames, k % params_.gopFrames == 0,
                     qvideo::frameSize(params_, k), qvideo::nowUs()}, dropped);
     }
@@ -686,6 +748,8 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
 
   folly::EventBase* evb_;
   const Config& cfg_;
+  const std::vector<std::pair<uint64_t, uint64_t>>* pauses_{nullptr};
+  bool inPause_{false};
   std::shared_ptr<quic::QuicSocket> sock_;
   std::shared_ptr<PacingObserver> pacing_;
   std::shared_ptr<AckRecorder> acks_;
@@ -772,6 +836,10 @@ int main(int argc, char** argv) {
   Config cfg;
   cfg.ladder = qvideo::parseList(FLAGS_ladder_kbps);
   cfg.startUs = FLAGS_start_unix_us ? FLAGS_start_unix_us : qvideo::nowUs();
+  if (!parsePauses(FLAGS_pause, cfg)) {
+    LOG(ERROR) << "invalid --pause " << FLAGS_pause;
+    return 2;
+  }
   if (cfg.ladder.empty() || FLAGS_fps <= 0 || FLAGS_gop_ms <= 0 || FLAGS_workers <= 0) {
     LOG(ERROR) << "invalid ladder/fps/gop/workers";
     return 2;

@@ -9,10 +9,14 @@
 //                                     (Departures.h); suite v3 background and surges;
 //           --process=asv             aggregate synchronized video (Departures.h), one socket;
 //           --proto=tcp               one TCP connection (--cc), the 1 ms credit loop paces
-//                                     the application writes (rate-limited / on-off TCP).
+//                                     the application writes (rate-limited / on-off TCP);
+//           --process=salvo --proto=tcp  short TCP flows (--flows start_s:bytes,...): each
+//                                     opens its own connection at its start, writes its bytes
+//                                     as fast as TCP allows and closes (suite v4 shorttcp);
+//                                     <out>-flows.csv holds the plan and each flow's outcome.
 //   recv: sink; per 100 ms writes packets, bytes, sequence gaps (loss, per flow) and
 //         one-way delay (sender and receiver share one kernel clock). --proto=tcp
-//         accepts one connection and counts bytes.
+//         accepts any number of connections and counts their bytes.
 //   plan: --process=poisson|asv without sockets: writes every departure of the
 //         process to <out>-plan.csv (t_us since start, flow, bytes), for tests.
 
@@ -25,11 +29,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <poll.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
@@ -38,6 +44,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 DEFINE_string(mode, "", "send or recv");
 DEFINE_string(bind, "0.0.0.0", "local address");
@@ -67,6 +74,7 @@ DEFINE_double(size_sigma, 0.2, "asv: lognormal frame-size sigma");
 DEFINE_uint64(video_seed, 1, "asv: the video frame-size seed");
 DEFINE_uint64(asv_key_spread_us, 0, "asv: emission time of a keyframe");
 DEFINE_uint64(asv_p_spread_us, 0, "asv: emission time of a P-frame");
+DEFINE_string(flows, "", "send --process=salvo: short TCP flows start_s:bytes,... (one connection each)");
 DEFINE_uint64(bin5_us, 5000, "send poisson/asv/tcp: bin of <out>-sent5.csv (byte counts for the phase-lock check)");
 
 namespace {
@@ -130,6 +138,28 @@ std::vector<qvideo::Burst> parseSchedule(const std::string& text) {
     bursts.push_back(b);
   }
   return bursts;
+}
+
+struct SalvoFlow {
+  double startS = 0;
+  uint64_t bytes = 0;
+};
+
+// "start:bytes,..." -> flows; empty on any malformed entry.
+std::vector<SalvoFlow> parseFlows(const std::string& text) {
+  std::vector<SalvoFlow> flows;
+  std::istringstream in(text);
+  std::string item;
+  while (std::getline(in, item, ',')) {
+    SalvoFlow f;
+    char c = 0;
+    std::istringstream fields(item);
+    if (!(fields >> f.startS >> c >> f.bytes) || c != ':' || f.startS < 0 || f.bytes == 0) {
+      return {};
+    }
+    flows.push_back(f);
+  }
+  return flows;
 }
 
 std::vector<qvideo::Burst> scheduledBursts() {
@@ -444,38 +474,149 @@ int runSend() {
   return 0;
 }
 
+int tcpSocket() {
+  int fd = socket(AF_INET, SOCK_STREAM, 0);
+  sockaddr_in a = address(FLAGS_bind, 0);
+  if (fd < 0 || bind(fd, reinterpret_cast<sockaddr*>(&a), sizeof(a)) != 0) {
+    if (fd >= 0) {
+      ::close(fd);
+    }
+    return -1;
+  }
+  if (!FLAGS_cc.empty()) {
+    setsockopt(fd, IPPROTO_TCP, TCP_CONGESTION, FLAGS_cc.c_str(), socklen_t(FLAGS_cc.size()));
+  }
+  return fd;
+}
+
+// Short TCP flows: one thread per flow, started at its planned time; each connects,
+// writes its bytes (blocking, so TCP sets the pace) and closes. Flows still running
+// at the end of the process are cut. sent.csv: per 100 ms the active flows and bytes.
+int runSalvo() {
+  const std::vector<SalvoFlow> flows = parseFlows(FLAGS_flows);
+  const uint64_t start = FLAGS_start_unix_us ? FLAGS_start_unix_us : qvideo::nowUs();
+  const uint64_t end = start + uint64_t(FLAGS_duration_s * 1e6);
+  const sockaddr_in dest = address(FLAGS_dest, FLAGS_port);
+  struct Outcome {
+    uint64_t connectUs = 0, doneUs = 0, sent = 0;
+    int error = 0;
+  };
+  std::vector<Outcome> outcome(flows.size());
+  std::atomic<uint64_t> sentBytes{0};
+  std::atomic<int> active{0};
+  auto runFlow = [&](size_t i) {
+    Outcome& o = outcome[i];
+    int fd = tcpSocket();
+    if (fd < 0) {
+      o.error = errno;
+      return;
+    }
+    // Blocking connect (SYN retransmits under congestion take seconds); the send timeout
+    // is set only afterwards, so the write loop can still check the end of the process.
+    if (connect(fd, reinterpret_cast<const sockaddr*>(&dest), sizeof(dest)) != 0) {
+      o.error = errno;
+      ::close(fd);
+      return;
+    }
+    timeval timeout{0, 100000};
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    o.connectUs = qvideo::nowUs();
+    ++active;
+    std::vector<char> buf(1 << 16, 0);
+    while (o.sent < flows[i].bytes && !stopRequested && qvideo::nowUs() < end) {
+      const size_t want = size_t(std::min<uint64_t>(buf.size(), flows[i].bytes - o.sent));
+      const ssize_t n = send(fd, buf.data(), want, MSG_NOSIGNAL);
+      if (n > 0) {
+        o.sent += uint64_t(n);
+        sentBytes += uint64_t(n);
+      } else if (n < 0 && errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) {
+        o.error = errno;
+        break;
+      }
+    }
+    if (o.sent >= flows[i].bytes) {
+      o.doneUs = qvideo::nowUs();
+    }
+    --active;
+    ::close(fd);
+  };
+  std::ofstream sent(FLAGS_out + "-sent.csv");
+  sent << "t_us,active_bursts,offered_mbps,sent_bytes,send_errors\n";
+  std::vector<size_t> order(flows.size());
+  for (size_t i = 0; i < order.size(); ++i) {
+    order[i] = i;
+  }
+  std::stable_sort(order.begin(), order.end(), [&](size_t a, size_t b) { return flows[a].startS < flows[b].startS; });
+  std::vector<std::thread> threads;
+  threads.reserve(flows.size());
+  size_t next = 0;
+  uint64_t binStart = start, lastBytes = 0;
+  sleepUntil(start);
+  for (uint64_t tick = start; tick < end && !stopRequested; tick += kTickUs) {
+    sleepUntil(tick);
+    const uint64_t now = qvideo::nowUs();
+    while (next < order.size() && start + uint64_t(flows[order[next]].startS * 1e6) <= now) {
+      threads.emplace_back(runFlow, order[next++]);
+    }
+    if (now - binStart >= kBinUs) {
+      const uint64_t total = sentBytes.load();
+      sent << now << ',' << active.load() << ",0," << (total - lastBytes) << ",0\n";
+      lastBytes = total;
+      binStart = now;
+    }
+  }
+  for (auto& t : threads) {
+    t.join();
+  }
+  std::ofstream rows(FLAGS_out + "-flows.csv");
+  rows << "index,start_us,bytes,connect_us,done_us,sent_bytes,error\n";
+  for (size_t i = 0; i < flows.size(); ++i) {
+    rows << i << ',' << start + uint64_t(flows[i].startS * 1e6) << ',' << flows[i].bytes << ','
+         << outcome[i].connectUs << ',' << outcome[i].doneUs << ',' << outcome[i].sent << ','
+         << outcome[i].error << '\n';
+  }
+  return 0;
+}
+
+// TCP sink: any number of connections (poll), their bytes summed per 100 ms.
 int runRecvTcp() {
   int lfd = socket(AF_INET, SOCK_STREAM, 0);
   int one = 1;
   setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
   sockaddr_in a = address(FLAGS_bind, FLAGS_port);
-  if (bind(lfd, reinterpret_cast<sockaddr*>(&a), sizeof(a)) != 0 || listen(lfd, 1) != 0) {
+  if (bind(lfd, reinterpret_cast<sockaddr*>(&a), sizeof(a)) != 0 || listen(lfd, 256) != 0) {
     std::perror("bind/listen");
     return 1;
   }
   std::ofstream out(FLAGS_out + "-recv.csv");
   out << "t_us,packets,bytes,lost,owd_mean_us,owd_max_us\n";
-  timeval timeout{0, 100000};
-  setsockopt(lfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-  int fd = -1;
-  while (fd < 0 && !stopRequested) {
-    fd = accept(lfd, nullptr, nullptr);
-  }
-  if (fd < 0) {
-    return 0;
-  }
-  setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  std::vector<pollfd> fds{{lfd, POLLIN, 0}};
   std::vector<char> buf(1 << 16);
   uint64_t bytes = 0, binStart = qvideo::nowUs();
   while (!stopRequested) {
-    const ssize_t n = recv(fd, buf.data(), buf.size(), 0);
-    if (n == 0) {
-      break;
+    poll(fds.data(), nfds_t(fds.size()), 20);
+    if (fds[0].revents & POLLIN) {
+      const int fd = accept(lfd, nullptr, nullptr);
+      if (fd >= 0) {
+        fds.push_back({fd, POLLIN, 0});
+      }
     }
+    for (size_t i = 1; i < fds.size();) {
+      if (fds[i].revents & (POLLIN | POLLHUP | POLLERR)) {
+        const ssize_t n = recv(fds[i].fd, buf.data(), buf.size(), MSG_DONTWAIT);
+        if (n > 0) {
+          bytes += uint64_t(n);
+        } else if (n == 0 || (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR)) {
+          ::close(fds[i].fd);
+          fds.erase(fds.begin() + long(i));
+          continue;
+        }
+      }
+      fds[i].revents = 0;
+      ++i;
+    }
+    fds[0].revents = 0;
     const uint64_t now = qvideo::nowUs();
-    if (n > 0) {
-      bytes += uint64_t(n);
-    }
     if (now - binStart >= kBinUs) {
       out << now << ",0," << bytes << ",0,0,0\n";
       out.flush();
@@ -542,8 +683,16 @@ int main(int argc, char** argv) {
     return runRecv();
   }
   const bool departures = FLAGS_process == "poisson" || FLAGS_process == "asv";
+  if (FLAGS_process == "salvo") {
+    if (FLAGS_mode != "send" || FLAGS_proto != "tcp" || FLAGS_dest.empty() || FLAGS_duration_s <= 0 ||
+        parseFlows(FLAGS_flows).empty()) {
+      std::cerr << "salvo needs --mode=send --proto=tcp, --dest, --duration_s and valid --flows start_s:bytes,...\n";
+      return 2;
+    }
+    return runSalvo();
+  }
   if (!departures && FLAGS_process != "pace") {
-    std::cerr << "--process must be pace, poisson or asv\n";
+    std::cerr << "--process must be pace, poisson, asv or salvo\n";
     return 2;
   }
   if ((FLAGS_proto != "udp" && FLAGS_proto != "tcp") || (FLAGS_proto == "tcp" && departures)) {
