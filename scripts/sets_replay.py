@@ -41,7 +41,7 @@ def fixture() -> None:
                     "true_sets": p["ordinary"], "levels": {n: p["levels"][n] for n in p["ordinary"]}}
         for k in (2, 3):
             s = r10[run]["O1"]["sets"][f"old|{k}|None"]
-            out[run][f"k{k}"] = {"pairs": s["pairs"], "leaf": s["levels"].get("leaf"),
+            out[run][f"k{k}"] = {"pairs": s["pairs"], "leaf": s["levels"].get("leaf"), "spur_mean": s["spur_mean"],
                                  "end_groups": [[g["members"], g["support"], g["jaccard"]]
                                                 for g in r9[run]["v2-owd"]["detail"][f"quantile|{k}|False"]]}
     FIXTURE.parent.mkdir(parents=True, exist_ok=True)
@@ -68,12 +68,19 @@ def replay_run(args):
     rank = {c: i for i, c in enumerate(clients)}
     key = lambda g: tuple(sorted((rank[c] for c in g), reverse=True))   # noqa: E731  (Step 9 bitmask order)
     leaves = [frozenset(v) for v in exp["leaves"].values()]
-    acc = {k: {"pairs": [0] * 6, "leaf": [0.0] * 4, "n": 0} for k in (2, 3)}
+    trues = [frozenset(v) for v in exp["true_sets"].values()]
+    acc = {k: {"pairs": [0] * 6, "leaf": [0.0] * 4, "n": 0, "spur": []} for k in (2, 3)}
 
     def on_close(eng, e):
         for k in (2, 3):
             gs = [frozenset(g.members) for g in eng.groups(k)]
             a = acc[k]
+            bests = set()
+            for t in trues:
+                b = max(((_f1(g, t), g) for g in gs), key=lambda z: z[0][2], default=((0.0, 0.0, 0.0), None))
+                if b[1] is not None:
+                    bests.add(b[1])
+            a["spur"].append(sum(g not in bests for g in gs))
             for t in leaves:
                 best = max(((_f1(g, t), g) for g in gs), key=lambda z: z[0][2], default=((0.0, 0.0, 0.0), None))
                 (p, r, f), g = best
@@ -102,6 +109,7 @@ def replay_run(args):
     for k in (2, 3):
         a = acc[k]
         out[f"k{k}"] = {"pairs": a["pairs"], "leaf": [x / a["n"] for x in a["leaf"]] if a["n"] else None,
+                        "spur_mean": sum(a["spur"]) / len(a["spur"]) if a["spur"] else math.nan,
                         "end_groups": [[list(g.members), g.support, round(g.jaccard, 3)] for g in eng.groups(k)]}
     return out
 
@@ -114,6 +122,8 @@ def compare(exp, got, tol=1e-9):
             bad.append(f"{k} pairs {e['pairs']} != {g['pairs']}")
         if (e["leaf"] is None) != (g["leaf"] is None) or (e["leaf"] and any(abs(a - b) > tol for a, b in zip(e["leaf"], g["leaf"]))):
             bad.append(f"{k} leaf {e['leaf']} != {g['leaf']}")
+        if abs(e["spur_mean"] - g["spur_mean"]) > tol:
+            bad.append(f"{k} spurious {e['spur_mean']} != {g['spur_mean']}")
         if [[sorted(m), s, j] for m, s, j in e["end_groups"]] != [[sorted(m), s, j] for m, s, j in g["end_groups"]]:
             bad.append(f"{k} end groups differ")
     return bad
@@ -130,6 +140,23 @@ def check(kdir: Path) -> int:
             fails += 1
             print("MISMATCH", run, "; ".join(bad))
     print(f"{len(exp) - fails} of {len(exp)} runs reproduce the Step 9 / Step 10 values exactly")
+    print("\nPer block (replayed = stored when the line above says all runs reproduce), rep 1 / rep 2:\n")
+    print("| block | k | leaf F1 | pair P | pair R | spurious / close |")
+    print("|---|---|---|---|---|---|")
+    blocks = sorted({e["block"] for e in exp.values()}, key=lambda b: (b[0], int(b[1:])))
+    for b in blocks + ["all"]:
+        for k in ("k2", "k3"):
+            cells = {"F1": [], "P": [], "R": [], "S": []}
+            for rep in (1, 2):
+                rs = [r for r in got if exp[r]["rep"] == rep and (b == "all" or exp[r]["block"] == b)]
+                p = [sum(got[r][k]["pairs"][i] for r in rs) for i in range(6)]
+                lf = [got[r][k]["leaf"][2] for r in rs if got[r][k]["leaf"]]
+                cells["F1"].append(f"{sum(lf) / len(lf):.2f}" if lf else "-")
+                cells["P"].append(f"{p[0] / (p[0] + p[1]):.2f}" if p[0] + p[1] else "-")
+                cells["R"].append(f"{p[0] / (p[0] + p[2]):.2f}" if p[0] + p[2] else "-")
+                cells["S"].append(f"{sum(got[r][k]['spur_mean'] for r in rs) / len(rs):.2f}" if rs else "-")
+            print(f"| {b} | {k[1]} | " + " | ".join(" / ".join(cells[x]) for x in ("F1", "P", "R", "S")) + " |")
+    print()
     for k in ("k2", "k3"):
         for rep in (1, 2):
             p = [sum(got[r][k]["pairs"][i] for r in got if exp[r]["rep"] == rep) for i in range(6)]

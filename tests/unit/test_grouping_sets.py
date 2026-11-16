@@ -100,6 +100,93 @@ def test_memberships_list_nested_groups_smallest_first() -> None:
     assert [g.members for g in eng.memberships("a", 2)] == [("a", "b"), ("a", "b", "c", "d")]
 
 
+def test_matching_rule_extra_and_quantile() -> None:
+    cfg = S.FROZEN
+    assert S.qmiss(4, 0.0, cfg) == 0                       # m = 0: no missing flow allowed
+    assert S.qmiss(4, 0.0714, cfg) == 2                    # Binomial(4, 0.0714): 0.99 quantile is 2
+    assert S.qmiss(16, 0.15, cfg) == 6
+    # {a,b,c,d,e} (one extra flow) counts toward {a,b,c,d}; {a,b,c,d,e,f} (two extra) does not
+    t = Counter({frozenset("abcd"): 5, frozenset("abcde"): 1, frozenset("abcdef"): 1})
+    g = {x.members: x.support for x in S.groups(t, 2)}
+    assert g[("a", "b", "c", "d")] == 6
+
+
+def test_extraction_at_k2_and_k3_and_mean_jaccard() -> None:
+    t = Counter({frozenset("ab"): 2, frozenset("cde"): 3, frozenset("cd"): 1})
+    k2 = {x.members: (x.support, round(x.jaccard, 4)) for x in S.groups(t, 2)}
+    k3 = {x.members for x in S.groups(t, 3)}
+    assert ("a", "b") in k2 and k2[("a", "b")] == (2, 1.0)
+    assert ("a", "b") not in k3 and ("c", "d", "e") in k3
+    # mean Jaccard of {c,d,e}: 3 x 1.0 plus, when {c,d} counts toward it, 1 x 2/3
+    sup, jac = k2[("c", "d", "e")]
+    assert (sup, jac) in ((3, 1.0), (4, round((3 + 2 / 3) / 4, 4)))
+
+
+def test_smallest_group_and_parent() -> None:
+    t = Counter({frozenset("ab"): 3, frozenset("cd"): 3, frozenset("abcd"): 3})
+    gs = S.groups(t, 2)
+    assert S.smallest_group(gs, "a").members == ("a", "b")
+    assert S.smallest_group(gs, "z") is None
+    par = {g.members: g.parent for g in gs}
+    assert par[("a", "b")] == ("a", "b", "c", "d") and par[("a", "b", "c", "d")] is None
+
+
+def test_crossing_filter_off_by_default_and_on_drops_the_crossing_set() -> None:
+    # {a,b,c,d} and {e,f,g,h} recur; {c,d,e,f} crosses both (two flows off each, so it matches neither)
+    # and is dropped by the filter: it takes part in more crossings
+    t = Counter({frozenset("abcd"): 4, frozenset("efgh"): 4, frozenset("cdef"): 3})
+    off = {g.members for g in S.groups(t, 2)}
+    on = {g.members for g in S.groups(t, 2, crossing=True)}
+    cross = ("c", "d", "e", "f")
+    assert cross in off and cross not in on and {("a", "b", "c", "d"), ("e", "f", "g", "h")} <= on
+    assert S.FROZEN.crossing is False
+
+
+def test_config_lists_every_constant_with_a_tag() -> None:
+    names = {n for n, _, _ in S.FROZEN.constants()}
+    assert {"q", "extra", "m_tol", "m_iters", "k_est", "min_set", "crossing", "exclude", "event.delta",
+            "event.delta_max", "event.hold", "event.align_mode", "event.obs_window", "event.in_episode_rule"} <= names
+    vals = {n: (v, tag) for n, v, tag in S.FROZEN.constants()}
+    assert vals["event.delta"][0] == 0.150 and vals["event.delta_max"][0] == 0.300 and vals["event.hold"][0] == 1.0
+    assert all(tag for _, _, tag in S.FROZEN.constants())
+    assert S.SetsConfig.from_dict(S.FROZEN.to_dict()) == S.FROZEN
+
+
+def test_reading_does_not_change_state_and_dump_restore_roundtrip(tmp_path) -> None:
+    eng, _ = run_scenario("S4", "realistic", 0)
+    before = Counter(eng.table)
+    g1 = eng.groups(2)
+    eng.groups(3), eng.tree(2), eng.smallest_group("f1", 2), eng.snapshot()
+    assert eng.table == before and eng.groups(2) == g1
+    p = tmp_path / "state.json"
+    eng.save(p)
+    back = SetsEngine.load(p)
+    assert back.table == eng.table and back.scfg == eng.scfg
+    for k in (2, 3):
+        assert back.groups(k) == eng.groups(k)
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_order_independence_random_sequences(seed) -> None:
+    rng = random.Random(seed)
+    flows = [f"f{i}" for i in range(rng.randint(4, 30))]
+    groups = [rng.sample(flows, rng.randint(2, min(10, len(flows)))) for _ in range(rng.randint(1, 6))]
+    obs = []
+    for _ in range(rng.randint(5, 80)):
+        g = rng.choice(groups)
+        o = [f for f in g if rng.random() > 0.15] + ([rng.choice(flows)] if rng.random() < 0.05 else [])
+        if len(set(o)) >= 2:
+            obs.append(frozenset(o))
+    ref = {(k, c): S.groups(Counter(obs), k, crossing=c) for k in (2, 3) for c in (False, True)}
+    for i in range(5):
+        o = list(obs) if i == 0 else obs[::-1] if i == 1 else rng.sample(obs, len(obs))
+        t = Counter()
+        for x in o:
+            t[x] += 1
+        for (k, c), r in ref.items():
+            assert S.groups(t, k, crossing=c) == r
+
+
 # ── synthetic scenarios (properties that hold on every seed tested) ─────
 
 @pytest.mark.parametrize("profile", ["exact", "realistic"])
@@ -188,6 +275,24 @@ FIXTURE = ROOT / "tests" / "data" / "sets_v1_expected.json"
 KDIR = ROOT / ".runs" / "2026-11-14_1818_v3"
 REPLAY_RUNS = ["v3-C7-hhier-s030-pfifo-r1", "v3-C9-hdepth-tree16-pfifo-r2", "v3-C11-huneven-uneven-codel-r2",
                "v3-M8-hhier-mixab-mixab-r1"]
+
+
+@pytest.mark.skipif(not KDIR.exists(), reason="v3 run folders not present")
+@pytest.mark.parametrize("run", REPLAY_RUNS)
+def test_order_independence_recorded_v3_sequences(run) -> None:
+    from grouping.sets_engine import replay_log
+    gdir = KDIR / run / "grouping-d150-v2-owd"
+    eng = replay_log(gdir / "onsets.jsonl", Config.from_dict(json.loads((gdir / "metrics.json").read_text())["config"]),
+                     exclude={"sub-ctrl"})
+    obs = [frozenset(e["members"]) for e in eng.events if e["stored"]]
+    rng = random.Random(7)
+    for o in (obs[::-1], rng.sample(obs, len(obs)), rng.sample(obs, len(obs)), rng.sample(obs, len(obs))):
+        t = Counter()
+        for x in o:
+            t[x] += 1
+        for k in (2, 3):
+            for c in (False, True):
+                assert S.groups(t, k, crossing=c) == eng.groups(k, crossing=c)
 
 
 @pytest.mark.skipif(not KDIR.exists(), reason="v3 run folders not present")
