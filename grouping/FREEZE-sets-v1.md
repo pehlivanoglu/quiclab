@@ -275,6 +275,16 @@ It measures time per event (the table update), time per read (groups at k = 2, a
 - `scripts/tc_fq_pin_leak_probe.sh fixed`, and `old` for comparison (netns, docker): 2000 unpinned 5-tuples, pinned clients silent. PASS means no backlog on a client's class.
 - One short run per topology: `scripts/fq_pin_short.py` writes 60 s scenarios (T-BASE, H-HIER, H-DEPTH, A-MIXED, mixab) and prints the `quiclab run` commands. Check each run with `scripts/fq_pin_check.py`.
 - Existing v3 fq_codel runs stay flagged.
+- **Probe result (2026-11-15, user run).** 6250 datagrams over 2000 unpinned 5-tuples, 70 class dumps.
+  - `fixed`: unpinned backlog on classes ≤ 20:300 in 70 of 70 dumps, on a pinned client class in 0. PASS.
+  - `old`: on a pinned client class in 40 of 70 dumps. LEAK.
+  - The leak was real, and the catch-all closes it.
+- **Short runs (2026-11-15, user run, `scripts/run_pinfix_short.sh`, `.runs/2026-11-15_2238_pinfix`).** All five topologies OK on `fq_pin_check.py`:
+  - the catch-all filter is on every fq_codel egress (T-BASE 3 / 3, H-HIER 6 / 6, H-DEPTH 12 / 12, A-MIXED 11 / 11, mixab 1 / 1);
+  - unpinned background is backlogged only on classes ≤ 20:300 (2 701–23 647 samples per run);
+  - no backlog on any non-client class above 20:300.
+  - The run data cannot show packets inside a client's own class; that part rests on the probe.
+  - **The fix is verified.**
 - **Not in the tagged commit.** The fix and its scripts are in the working tree, not in the `grouping-sets-v1.1` commit: `shaping.py`, `mininet_backend.py` and `test_shaping.py` also carry other uncommitted v3 testbed changes, so the fix is committed together with them.
 
 ## 9. Notes for later (not done now)
