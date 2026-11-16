@@ -24,6 +24,8 @@
 #include <quic/server/ThreadedQuicServer.h>
 #include <quic/state/StateData.h>
 
+#include <algorithm>
+#include <array>
 #include <atomic>
 #include <csignal>
 #include <filesystem>
@@ -46,6 +48,9 @@ DEFINE_uint64(start_unix_us, 0, "stream start (CLOCK_REALTIME us) shared by all 
 DEFINE_string(out_dir, "/tmp/qvideo-server", "per-connection logs");
 DEFINE_bool(record_acks, true, "write per-ACK detector inputs (<client>-acks.csv, -sent.csv)");
 DEFINE_bool(owd, true, "write exact one-way delay per 5 ms (<client>-owd.csv) from ACK receive timestamps");
+DEFINE_bool(pkt_log, false,
+            "GT-Q t_obs log: every sent packet (<client>-pkts.csv) and every ACK's newly acked "
+            "packet numbers (<client>-pktacks.csv); recording only");
 
 namespace {
 
@@ -324,6 +329,75 @@ class AckRecorder : public quic::ManagedObserver {
   uint32_t lost_{0};
 };
 
+// GT-Q sender log (--pkt_log): which QUIC packet left when, and which ACK
+// acknowledged it first, so offline analysis can map a router-traced packet to
+// the first ACK that could tell the sender about its queueing (t_obs). Pure
+// recording: rows go into large in-memory stream buffers, written out on the
+// stats timer, never on the send or ACK path's critical section.
+class PacketLog : public quic::ManagedObserver {
+ public:
+  explicit PacketLog(const std::string& base)
+      : quic::ManagedObserver(EventSetBuilder()
+                                  .enable(Events::packetsWrittenEvents)
+                                  .enable(Events::acksProcessedEvents)
+                                  .build()) {
+    pkts_.rdbuf()->pubsetbuf(pktsBuf_.data(), pktsBuf_.size());
+    acks_.rdbuf()->pubsetbuf(acksBuf_.data(), acksBuf_.size());
+    pkts_.open(base + "-pkts.csv");
+    acks_.open(base + "-pktacks.csv");
+    // size: the QUIC packet's encoded bytes (UDP payload).
+    pkts_ << "send_mono_us,pn,size\n";
+    // ranges: newly acked packet numbers "a-b;c-d" (inclusive), ascending.
+    acks_ << "ack_mono_us,ranges\n";
+  }
+
+  void packetsWritten(quic::QuicSocketLite*, const PacketsWrittenEvent& event) noexcept override {
+    event.invokeForEachNewOutstandingPacketOrdered([&](const auto& packet) {
+      if (packet.packet.header.getPacketNumberSpace() != quic::PacketNumberSpace::AppData) {
+        return;
+      }
+      pkts_ << monoUs(packet.metadata.time) << ',' << packet.packet.header.getPacketSequenceNum() << ','
+            << packet.metadata.encodedSize << '\n';
+    });
+  }
+
+  void acksProcessed(quic::QuicSocketLite*, const AcksProcessedEvent& event) noexcept override {
+    for (const auto& ack : event.ackEvents) {
+      if (ack.implicit || ack.packetNumberSpace != quic::PacketNumberSpace::AppData || ack.ackedPackets.empty()) {
+        continue;
+      }
+      pns_.clear();
+      for (const auto& packet : ack.ackedPackets) {
+        pns_.push_back(packet.packetNum);
+      }
+      std::sort(pns_.begin(), pns_.end());
+      acks_ << monoUs(ack.ackTime) << ',';
+      size_t i = 0;
+      while (i < pns_.size()) {
+        size_t j = i;
+        while (j + 1 < pns_.size() && pns_[j + 1] == pns_[j] + 1) {
+          ++j;
+        }
+        acks_ << (i ? ";" : "") << pns_[i] << '-' << pns_[j];
+        i = j + 1;
+      }
+      acks_ << '\n';
+    }
+  }
+
+  void flush() {
+    pkts_.flush();
+    acks_.flush();
+  }
+
+ private:
+  std::array<char, 1 << 20> pktsBuf_{};
+  std::array<char, 1 << 18> acksBuf_{};
+  std::ofstream pkts_;
+  std::ofstream acks_;
+  std::vector<quic::PacketNum> pns_;
+};
+
 class Session : public quic::QuicSocket::ConnectionSetupCallback,
                 public quic::QuicSocket::ConnectionCallback,
                 public quic::QuicSocket::ReadCallback {
@@ -416,6 +490,10 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (FLAGS_owd && request_->recvBasisUs > 0) {
       owd_ = std::make_shared<OwdRecorder>(base, request_->recvBasisUs);
       sock_->addObserver(owd_);
+    }
+    if (FLAGS_pkt_log) {
+      pktLog_ = std::make_shared<PacketLog>(base);
+      sock_->addObserver(pktLog_);
     }
     statsCsv_.open(base + "-cc.csv");
     // cc: the controller mvfst actually runs (TransportInfo), not the flag.
@@ -571,6 +649,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (owd_) {
       owd_->flush(false);
     }
+    if (pktLog_) {
+      pktLog_->flush();
+    }
     statsTimer_->scheduleTimeout(FLAGS_stats_ms);
   }
 
@@ -597,6 +678,9 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     if (owd_) {
       owd_->flush(true);
     }
+    if (pktLog_) {
+      pktLog_->flush();
+    }
     LOG(INFO) << (request_ ? request_->clientId : std::string("?")) << " session end: " << why;
   }
 
@@ -606,6 +690,7 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
   std::shared_ptr<PacingObserver> pacing_;
   std::shared_ptr<AckRecorder> acks_;
   std::shared_ptr<OwdRecorder> owd_;
+  std::shared_ptr<PacketLog> pktLog_;
   std::string requestBuf_;
   std::optional<qvideo::Request> request_;
   qvideo::VideoParams params_;

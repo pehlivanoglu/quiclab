@@ -13,6 +13,7 @@ from quiclab.config.scenario import load_scenario
 from quiclab.config.schema import load_topology
 from quiclab.designer import DesignerHTTPServer, make_designer_server
 from quiclab.exceptions import QuiclabError
+from quiclab.router_trace import GTQ_ENV
 from quiclab.runtime import default_run_id, default_runs_dir, validate_run_id
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -181,6 +182,8 @@ def _run_container(config: Path, scenario: Path, runs_dir: Path, run_id: str, in
         "-v", "/lib/modules:/lib/modules:ro",
         "-w", str(_PROJECT_ROOT),
     ]
+    if os.environ.get(GTQ_ENV, "").strip():  # GT-Q logging override reaches the orchestrator
+        argv += ["-e", f"{GTQ_ENV}={os.environ[GTQ_ENV].strip()}"]
     for path, mode in mounts.items():
         if not any(path != other and path.is_relative_to(other) for other in mounts):
             argv += ["-v", f"{path}:{path}:{mode}"]

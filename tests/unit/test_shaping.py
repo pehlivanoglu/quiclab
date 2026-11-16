@@ -216,12 +216,17 @@ def test_flow_pins_mark_priority_on_fq_codel_and_filter_on_cake():
     fq = flow_pin_commands("r-eth1", AqmKind.fq_codel, ips, ids)
     assert fq == [
         "tc qdisc replace dev r-eth1 clsact",
+        "tc filter replace dev r-eth1 parent 20: pref 1124 handle 1 protocol all "
+        "flow hash keys src,dst,proto,proto-src,proto-dst divisor 768 baseclass 20:1",
         "tc filter replace dev r-eth1 egress pref 100 handle 1 protocol ip flower dst_ip 10.0.0.2 "
         "action skbedit priority 20:301 continue",
         "tc filter replace dev r-eth1 egress pref 101 handle 1 protocol ip flower dst_ip 10.0.0.3 "
         "action skbedit priority 20:302 continue",
     ]
-    assert not any("parent 20:" in c for c in fq)   # a filter on fq_codel drops what it does not classify
+    # the only qdisc filter is the catch-all: every protocol, onto sub-queues 0..767, below the pinned ids 0x301..
+    qd = [c for c in fq if "parent 20:" in c]
+    assert len(qd) == 1 and "protocol all" in qd[0] and "divisor 768 baseclass 20:1" in qd[0]
+    assert all(int(c.split("priority 20:")[1].split()[0], 16) - 1 >= 768 for c in fq if "priority 20:" in c)
     cake = flow_pin_commands("r-eth1", AqmKind.cake, ips, ids)
     assert cake == [
         "tc filter replace dev r-eth1 parent 20: pref 100 handle 1 protocol ip flower dst_ip 10.0.0.2 classid 20:301",

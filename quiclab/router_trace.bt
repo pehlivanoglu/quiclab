@@ -1,0 +1,130 @@
+/*
+ * GT-Q router tracer: one record per packet that leaves (or is dropped by) a
+ * traced egress qdisc. Started by the orchestrator inside the router's netns:
+ *
+ *   bpftrace -B full -o <raw> router_trace.bt <netns inode> <ifindex bitmask>
+ *
+ * $1  inode of the router's network namespace (ifindexes repeat across netns)
+ * $2  bitmask of traced ifindexes: bit i = ifindex i (i < 64)
+ *
+ * Enqueue time = tracepoint net_dev_queue, which fires for every packet
+ * just before the root qdisc's enqueue. qdisc_enqueue is not used: it
+ * fires only when enqueue returns NET_XMIT_SUCCESS, so it misses a packet that
+ * fq_codel accepts while dropping from the same (fattest) flow (NET_XMIT_CN).
+ *
+ * Raw tracepoints (2026-11-14): a classic tracepoint program is skipped whenever any BPF
+ * program already runs on the CPU (one per-CPU guard, bpf_prog_active), so a dequeue in
+ * softirq that interrupts the enqueue program was lost; a raw tracepoint program has its own
+ * guard and is skipped only when the same program nests. Arguments are the tracepoints'
+ * TP_PROTO (checked on this kernel: packets = 1, skb lengths and both ifindex paths agree):
+ *   net_dev_queue(skb)   qdisc_dequeue(qdisc, txq, packets, skb)   kfree_skb(skb, location, reason, ...)
+ *
+ * Record kinds (first column):
+ *   1 dequeue   first dequeue of an enqueued skb (qdisc:qdisc_dequeue)
+ *   2 requeue   a later dequeue of the same skb (dev_requeue_skb); offline keeps the last
+ *   3 nohit     dequeue of an skb with no enqueue record (enqueued before attach, or a full map)
+ *   4 drop      skb:kfree_skb of an enqueued, not yet dequeued skb: the dropped skb itself,
+ *               so fq_codel's drop from the fattest flow is attributed to that flow
+ *   5 orphan    an enqueue record that a new enqueue of the same skb address overwrites:
+ *               that packet's dequeue / drop was never seen (t_enq = its enqueue time,
+ *               ifindex = its interface); every other field 0
+ * Enqueue records still open at exit are printed by bpftrace's own map dump (@enq: time,
+ * @eif: ifindex, keyed by skb address): packets queued at stop, or whose dequeue was missed.
+ * A batched dequeue (packets > 1) hands over an skb list: every skb on it is walked.
+ * skb addresses are reused: an enqueue overwrites any older entry of that address.
+ *
+ * Columns: kind,t_enq_ns,t_ns,ifindex,eth_proto,saddr,daddr,ip_proto,sport,dport,len,hash,prio,reason
+ * Addresses / ports are raw network-order words; offline conversion decodes them.
+ * Counters (@n_*, per ifindex) print at exit; the conversion checks them against the rows.
+ */
+
+BEGIN
+{
+	printf("# gtq-tracer start %llu\n", nsecs);
+}
+
+rawtracepoint:net_dev_queue
+{
+	$s = (struct sk_buff *)arg0;
+	$d = $s->dev;
+	$i = $d->ifindex;
+	if ($i < 64 && (($2 >> $i) & 1) && $d->nd_net.net->ns.inum == $1) {
+		$old = @enq[$s];
+		if ($old != 0) {
+			$oi = @eif[$s];
+			@n_orphan[$oi] = count();
+			printf("5,%llu,%llu,%d,0,0,0,0,0,0,0,0,0,0\n", $old, nsecs, $oi);
+		}
+		@enq[$s] = nsecs;
+		@eif[$s] = $i;
+		delete(@deq[$s]);
+		@n_enq[$i] = count();
+	}
+}
+
+rawtracepoint:qdisc_dequeue
+/arg3 != 0 && ((struct netdev_queue *)arg1)->dev->ifindex < 64 && (($2 >> ((struct netdev_queue *)arg1)->dev->ifindex) & 1)/
+{
+	$q = (struct Qdisc *)arg0;
+	if ($q->dev_queue->dev->nd_net.net->ns.inum == $1) {
+		$i = ((struct netdev_queue *)arg1)->dev->ifindex;
+		if ((int32)arg2 > 1) {
+			@n_batched[$i] = count();
+		}
+		$s = (struct sk_buff *)arg3;
+		$n = (int32)arg2;
+		$k = 0;
+		while ($k < 16 && $k < $n && $s != 0) {
+			$kind = 1;
+			$t0 = @enq[$s];
+			if ($t0 != 0) {
+				delete(@enq[$s]);
+				delete(@eif[$s]);
+				@deq[$s] = $t0;
+				@n_deq[$i] = count();
+			} else {
+				$t0 = @deq[$s];
+				if ($t0 != 0) {
+					$kind = 2;
+					@n_requeue[$i] = count();
+				} else {
+					$kind = 3;
+					@n_nohit[$i] = count();
+				}
+			}
+			$ip = (struct iphdr *)($s->head + $s->network_header);
+			$l4 = $s->head + $s->transport_header;
+			printf("%d,%llu,%llu,%d,%u,%u,%u,%u,%u,%u,%u,%u,%u,0\n", $kind, $t0, nsecs, $i,
+			       $s->protocol, $ip->saddr, $ip->daddr, $ip->protocol,
+			       *(uint16 *)$l4, *(uint16 *)($l4 + 2), $s->len, $s->hash, $s->priority);
+			$s = $s->next;
+			$k = $k + 1;
+		}
+		if ($n > 16) {
+			@n_truncated[$i] = count();
+		}
+	}
+}
+
+rawtracepoint:kfree_skb
+{
+	$s = (struct sk_buff *)arg0;
+	$t0 = @enq[$s];
+	if ($t0 != 0) {
+		delete(@enq[$s]);
+		delete(@eif[$s]);
+		$i = $s->dev->ifindex;
+		@n_drop[$i] = count();
+		$ip = (struct iphdr *)($s->head + $s->network_header);
+		$l4 = $s->head + $s->transport_header;
+		printf("4,%llu,%llu,%d,%u,%u,%u,%u,%u,%u,%u,%u,%u,%d\n", $t0, nsecs, $i,
+		       $s->protocol, $ip->saddr, $ip->daddr, $ip->protocol,
+		       *(uint16 *)$l4, *(uint16 *)($l4 + 2), $s->len, $s->hash, $s->priority, (int32)arg2);
+	}
+}
+
+END
+{
+	clear(@deq);
+	printf("# gtq-tracer end %llu\n", nsecs);
+}

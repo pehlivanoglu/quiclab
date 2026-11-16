@@ -275,6 +275,11 @@ class TopologyConfig(_StrictBase):
     switches: dict[str, SwitchConfig] = Field(default_factory=dict)
     traffic: TrafficConfig | None = None
     links: list[LinkSpec] = Field(default_factory=list)
+    # GT-Q logging (quiclab/router_trace.py): the bpftrace router tracer on the
+    # bottleneck egresses plus qvideo-server --pkt_log. One switch for both;
+    # QUICLAB_GTQ_LOGGING=0 / 1 in the environment overrides it. A failing tracer
+    # never stops a run: the run is marked gt_q_invalid in <run>/gtq-health.csv.
+    gtq_logging: bool = True
 
     @model_validator(mode="after")
     def _check(self) -> "TopologyConfig":

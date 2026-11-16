@@ -40,10 +40,17 @@ class RouterQueue(_StrictBase):
     dualpi2_target_ms: float | None = Field(default=None, gt=0)
     # Hard queue limit for every AQM (packets; RED converts at 1500 B).
     queue_limit_packets: int | None = Field(default=None, gt=0, le=100_000)
+    # Alternative to queue_limit_packets: the limit as a multiple of the egress's
+    # BDP at t=0 (initial bandwidth x largest base RTT of the subscribers behind
+    # it, full-size packets, at least 2). Off unless set; no scenario sets it.
+    queue_limit_bdp: float | None = Field(default=None, gt=0, le=100)
     # RED thresholds in bytes (default 20 kB / 60 kB); scale them with the
     # link's BDP, or a fast link drops at a fraction of a millisecond of queue.
     red_min_bytes: int | None = Field(default=None, gt=0)
     red_max_bytes: int | None = Field(default=None, gt=0)
+    # ECN marking on red / pie / fq_codel / codel; unset = on (every scenario before
+    # suite v3). Suite v3 sets false. pfifo never marks; cake keeps its own default.
+    ecn: bool | None = None
     egress: dict[str, "RouterQueue"] | None = None
 
     def on(self, neighbor: str) -> "RouterQueue":
@@ -62,6 +69,10 @@ class RouterQueue(_StrictBase):
             raise ValueError("dualpi2_target_ms requires aqm: dualpi2")
         if self.queue_limit_packets is not None and self.aqm is None:
             raise ValueError("queue_limit_packets requires an aqm")
+        if self.queue_limit_bdp is not None and (self.aqm is None or self.queue_limit_packets is not None):
+            raise ValueError("queue_limit_bdp requires an aqm and excludes queue_limit_packets")
+        if self.ecn is not None and self.aqm not in (AqmKind.red, AqmKind.pie, AqmKind.fq_codel, AqmKind.codel):
+            raise ValueError("ecn applies to red, pie, fq_codel and codel")
         if (self.red_min_bytes is not None or self.red_max_bytes is not None) and self.aqm != AqmKind.red:
             raise ValueError("red_min_bytes / red_max_bytes require aqm: red")
         if (self.red_min_bytes or 20_000) >= (self.red_max_bytes or 60_000):
@@ -185,20 +196,128 @@ class Burst(_StrictBase):
     rate_mbps: float = Field(gt=0)
 
 
+class AsvSpec(_StrictBase):
+    """Aggregate synchronized video (qtraffic --process=asv): the frame-size
+    pattern of one rendition of the run's publisher (same seed), frames on the
+    shared live grid at phase 0, every frame scaled by the scheduled rate at its
+    GOP start / the rendition's payload rate, and spread evenly over the given
+    emission times (measured on real clients: key_spread_ms / p_spread_ms)."""
+
+    rendition_kbps: int = Field(default=5000, gt=0)
+    key_spread_ms: float = Field(ge=0)
+    p_spread_ms: float = Field(ge=0)
+
+
 class BurstsEvent(_Event):
     """Fixed UDP bursts (qtraffic --schedule): each burst sends at its rate
     from at_s + start_s for duration_s, timed on the stream clock like PPBP,
-    so burst starts are exact ground truth. Overlapping bursts add up."""
+    so burst starts are exact ground truth. Overlapping bursts add up.
+
+    process pace (default): one socket, 1 ms credit loop (every scenario before suite v3).
+    process poisson: one socket and one Poisson departure process per entry of
+      flow_weights (relative rates; seed fixes every departure).
+    process asv: aggregate synchronized video (`asv`), one socket.
+    ramp_up_s / ramp_down_s (poisson, asv): every burst rises linearly from 0 to
+    its rate over ramp_up_s and falls back over ramp_down_s, in ramp_step_s
+    steps; the burst's start / duration / rate stay the truth (the ramp's peak)."""
 
     type: Literal["bursts"]
     id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$")
     route: str
     bursts: list[Burst] = Field(min_length=1)
     packet_size_bytes: int = Field(default=1200, ge=64, le=1472)
+    process: Literal["pace", "poisson", "asv"] = "pace"
+    flow_weights: list[Annotated[float, Field(gt=0)]] | None = Field(default=None, min_length=1, max_length=256)
+    seed: int = Field(default=1, ge=0)
+    ramp_up_s: float = Field(default=0, ge=0)
+    ramp_down_s: float = Field(default=0, ge=0)
+    ramp_step_s: float = Field(default=0.5, gt=0)
+    asv: AsvSpec | None = None
+
+    @model_validator(mode="after")
+    def _check_process(self) -> "BurstsEvent":
+        if self.flow_weights is not None and self.process != "poisson":
+            raise ValueError("flow_weights requires process: poisson")
+        if (self.asv is not None) != (self.process == "asv"):
+            raise ValueError("process: asv requires asv, and asv requires process: asv")
+        if (self.ramp_up_s or self.ramp_down_s) and self.process == "pace":
+            raise ValueError("ramp_up_s / ramp_down_s require process poisson or asv")
+        for b in self.bursts:
+            if self.ramp_up_s + self.ramp_down_s > b.duration_s + 1e-9:
+                raise ValueError("ramp_up_s + ramp_down_s exceed a burst's duration")
+        return self
 
     @property
     def duration_s(self) -> float:
         return max(b.start_s + b.duration_s for b in self.bursts)
+
+    def schedule(self) -> list[tuple[float, float, float]]:
+        """qtraffic --schedule entries (start_s, duration_s, rate_mbps): the bursts,
+        each ramp as a staircase of overlapping steps that add up to the burst's rate."""
+        out: list[tuple[float, float, float]] = []
+        for b in self.bursts:
+            up = max(1, round(self.ramp_up_s / self.ramp_step_s)) if self.ramp_up_s else 0
+            down = max(1, round(self.ramp_down_s / self.ramp_step_s)) if self.ramp_down_s else 0
+            if not up and not down:
+                out.append((b.start_s, b.duration_s, b.rate_mbps))
+                continue
+            # n = max(up, down) layers of rate / n: layer i switches on at step i of the
+            # ramp-up and off at step i of the ramp-down (same height on both sides when
+            # up == down; otherwise the ramp with fewer steps takes bigger ones).
+            n = max(up, down, 1)
+            end = b.start_s + b.duration_s
+            for i in range(n):
+                on = b.start_s + (self.ramp_up_s * i / n if up else 0.0)
+                off = end - (self.ramp_down_s * (n - 1 - i) / n if down else 0.0)
+                out.append((round(on, 6), round(off - on, 6), b.rate_mbps / n))
+        return out
+
+
+class BgEvent(_Event):
+    """Always-on background on one traffic route (suite v3), not a stimulus: no
+    truth script treats it as a burst. `rate_mbps` is the mean UDP payload / TCP
+    goodput rate.
+    process poisson: qtraffic, one Poisson process per entry of flow_weights.
+    process tcp: one qtraffic TCP connection (cc), application-paced to rate_mbps;
+      with on_s / off_s it sends rate_mbps x (on_s + off_s) / on_s for on_s, then
+      idles off_s, starting phase_s into the cycle."""
+
+    type: Literal["bg"]
+    id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$")
+    route: str
+    duration_s: float = Field(gt=0)
+    rate_mbps: float = Field(gt=0)
+    process: Literal["poisson", "tcp"] = "poisson"
+    flow_weights: list[Annotated[float, Field(gt=0)]] = Field(default_factory=lambda: [1.0], min_length=1,
+                                                               max_length=256)
+    seed: int = Field(default=1, ge=0)
+    packet_size_bytes: int = Field(default=1200, ge=64, le=1472)
+    cc: Literal["cubic", "reno", "bbr"] | None = None
+    on_s: float | None = Field(default=None, gt=0)
+    off_s: float | None = Field(default=None, gt=0)
+    phase_s: float = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def _check_process(self) -> "BgEvent":
+        if self.process != "tcp" and (self.cc or self.on_s or self.off_s or self.phase_s):
+            raise ValueError("cc / on_s / off_s / phase_s require process: tcp")
+        if (self.on_s is None) != (self.off_s is None):
+            raise ValueError("on_s and off_s go together")
+        return self
+
+    def schedule(self) -> list[tuple[float, float, float]]:
+        """qtraffic --schedule entries relative to at_s."""
+        if self.on_s is None:
+            return [(0.0, self.duration_s, self.rate_mbps)]
+        cycle = self.on_s + self.off_s
+        peak = self.rate_mbps * cycle / self.on_s
+        out, t = [], -(self.phase_s % cycle)
+        while t < self.duration_s:
+            a, b = max(t, 0.0), min(t + self.on_s, self.duration_s)
+            if b > a:
+                out.append((round(a, 6), round(b - a, 6), peak))
+            t += cycle
+        return out
 
 
 class JoinEvent(_Event):
@@ -216,7 +335,7 @@ class LeaveEvent(_Event):
 
 
 Event = Annotated[
-    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | BurstsEvent | JoinEvent | LeaveEvent,
+    LinkEvent | AqmEvent | FlowEvent | PpbpEvent | BurstsEvent | BgEvent | JoinEvent | LeaveEvent,
     Field(discriminator="type"),
 ]
 
@@ -244,13 +363,13 @@ class Scenario(_StrictBase):
     def flows(self) -> list[TcpFlowEvent | UdpFlowEvent]:
         return [e for e in self.events if e.type == "flow"]
 
-    def ppbp(self) -> list[PpbpEvent | BurstsEvent]:
-        """qtraffic sources: PPBP and fixed bursts."""
-        return [e for e in self.events if e.type in ("ppbp", "bursts")]
+    def ppbp(self) -> list[PpbpEvent | BurstsEvent | BgEvent]:
+        """qtraffic sources: PPBP, fixed bursts and background."""
+        return [e for e in self.events if e.type in ("ppbp", "bursts", "bg")]
 
     def traffic_ids(self) -> list[str]:
-        """iperf3 flows and PPBP processes share one port range, in file order."""
-        return [e.id for e in self.events if e.type in ("flow", "ppbp", "bursts")]
+        """iperf3 flows and qtraffic processes share one port range, in file order."""
+        return [e.id for e in self.events if e.type in ("flow", "ppbp", "bursts", "bg")]
 
     def join_at(self, subscriber: str) -> float:
         """First connection time (0 unless the subscriber's first event is a join)."""
@@ -346,7 +465,7 @@ class Scenario(_StrictBase):
                 if event.router not in topology.routers:
                     raise ValueError(f"{where}: {event.router!r} is not a topology router")
                 check_egress(event.router, event, where)
-            elif event.type in ("flow", "ppbp", "bursts"):
+            elif event.type in ("flow", "ppbp", "bursts", "bg"):
                 if event.route not in routes:
                     raise ValueError(f"{where}: flow {event.id!r} uses unknown traffic route {event.route!r}")
                 if event.id in flow_ids:

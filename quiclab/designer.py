@@ -36,6 +36,7 @@ UI_MANIFEST: dict[str, object] = {
         "switches",
         "traffic",
         "links",
+        "gtq_logging",  # not edited in the UI: the default (on) applies
     ],
     "genericSections": ["defaults", "startup"],
     "nodeCollections": {

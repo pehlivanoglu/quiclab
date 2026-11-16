@@ -85,6 +85,7 @@ def shaping_commands(
     dualpi2_target_ms: float | None = None,
     queue_limit_packets: int | None = None,
     red_bytes: tuple[int | None, int | None] = (None, None),
+    ecn: bool | None = None,
 ) -> list[str]:
     """Ordered tc commands building the egress qdisc chain for one direction.
 
@@ -113,7 +114,7 @@ def shaping_commands(
         parent = "10:1"
 
     if aqm is not None:
-        aqm_name = _aqm_name(aqm, spec, dualpi2_target_ms, queue_limit_packets, red_bytes)
+        aqm_name = _aqm_name(aqm, spec, dualpi2_target_ms, queue_limit_packets, red_bytes, ecn)
         if parent is None:
             cmds.append(f"tc qdisc replace dev {iface} root handle 20: {aqm_name}")
         else:
@@ -128,8 +129,13 @@ def _aqm_name(
     dualpi2_target_ms: float | None,
     queue_limit_packets: int | None = None,
     red_bytes: tuple[int | None, int | None] = (None, None),
+    ecn: bool | None = None,
 ) -> str:
+    """The AQM leaf's tc arguments. `ecn` None = on (RouterQueue.ecn); False = off, written out
+    as `noecn` where tc has the keyword (codel, pie, fq_codel; fq_codel's kernel default is ecn
+    on), left out for red (off unless asked)."""
     limit = f" limit {queue_limit_packets}" if queue_limit_packets else ""
+    mark = " ecn" if ecn is not False else " noecn" if aqm in (AqmKind.codel, AqmKind.pie, AqmKind.fq_codel) else ""
     if aqm == AqmKind.pfifo:
         # No ECN: a FIFO only drops at its tail.
         return f"pfifo{limit}"
@@ -146,11 +152,11 @@ def _aqm_name(
             if spec.bandwidth_mbps is not None
             else ""
         )
-        return f"red {_red_profile(*red_bytes, queue_limit_packets)}{bandwidth} ecn"
+        return f"red {_red_profile(*red_bytes, queue_limit_packets)}{bandwidth}{mark}"
     if aqm == AqmKind.cake:
         # The HTB class above shapes; cake only queues (flow isolation + COBALT, ECN on by default).
         return "cake unlimited besteffort"
-    return f"{aqm.value}{limit} ecn"
+    return f"{aqm.value}{limit}{mark}"
 
 
 # Per-client flow pinning on multi-queue AQMs (docs/per-flow-queue-counters.md):
@@ -175,10 +181,13 @@ def flow_pin_commands(iface: str, aqm: AqmKind | None, client_ips: dict[str, str
                       flow_ids: dict[str, int]) -> list[str]:
     """Pin every client (by destination address) to its flow id on one egress.
 
-    fq_codel: no filter on the qdisc (a filter there drops every packet it does
-    not classify, ARP included); clsact egress sets skb->priority = 20:<id>,
-    which fq_codel takes as the flow, and `continue` lets router-metrics'
-    matchall still count the packet. Unmarked traffic keeps fq_codel's hash.
+    fq_codel: clsact egress sets skb->priority = 20:<id>, which fq_codel takes
+    as the flow, and `continue` lets router-metrics' matchall still count the
+    packet. Unmarked traffic goes through one catch-all flow-hash filter on the
+    qdisc onto sub-queues below FLOW_ID_BASE (until 2026-11-15 it kept
+    fq_codel's own hash over all 1024 sub-queues, so ~1 % of the background
+    landed in a client's sub-queue). A qdisc filter drops what it does not
+    classify, so the catch-all takes every protocol (ARP included).
     cake: reads skb->priority only for the tin, so a flower filter on the qdisc
     sets the flow; packets no filter matches fall back to cake's hash.
     Idempotent (`replace` with fixed pref / handle): safe to repeat after a live
@@ -186,6 +195,13 @@ def flow_pin_commands(iface: str, aqm: AqmKind | None, client_ips: dict[str, str
     if aqm not in PINNED_AQMS:
         return []
     out = [f"tc qdisc replace dev {iface} clsact"] if aqm == AqmKind.fq_codel else []
+    if aqm == AqmKind.fq_codel:
+        # Unpinned traffic must never share a client's sub-queue. fq_codel uses skb->priority first
+        # (the pins below); everything else goes through this catch-all flow-hash filter onto classes
+        # 20:1 .. 20:FLOW_ID_BASE (sub-queues 0 .. FLOW_ID_BASE - 1), below every pinned id. It
+        # classifies every packet (protocol all), so nothing is dropped as unclassified.
+        out.append(f"tc filter replace dev {iface} parent 20: pref {PIN_PREF_BASE + FLOW_ID_MAX} handle 1 protocol all "
+                   f"flow hash keys src,dst,proto,proto-src,proto-dst divisor {FLOW_ID_BASE} baseclass 20:1")
     for i, sid in enumerate(sorted(client_ips)):
         pref, ip, fid = PIN_PREF_BASE + i, client_ips[sid], flow_ids[sid]
         if aqm == AqmKind.fq_codel:
@@ -205,6 +221,7 @@ def live_aqm_commands(
     dualpi2_target_ms: float | None = None,
     queue_limit_packets: int | None = None,
     red_bytes: tuple[int | None, int | None] = (None, None),
+    ecn: bool | None = None,
 ) -> list[str]:
     """Replace only the AQM leaf, preserving any HTB/netem ancestors."""
     has_rate = spec.bandwidth_mbps is not None
@@ -215,7 +232,7 @@ def live_aqm_commands(
         location = f"parent {parent} handle 20:" if parent else "root handle 20:"
         commands.append(f"tc qdisc del dev {iface} {location}")
     if updated is not None:
-        aqm_name = _aqm_name(updated, spec, dualpi2_target_ms, queue_limit_packets, red_bytes)
+        aqm_name = _aqm_name(updated, spec, dualpi2_target_ms, queue_limit_packets, red_bytes, ecn)
         if parent:
             commands.append(
                 f"tc qdisc add dev {iface} parent {parent} handle 20: {aqm_name}"

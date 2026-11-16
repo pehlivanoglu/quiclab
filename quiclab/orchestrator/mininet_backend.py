@@ -22,6 +22,7 @@ from __future__ import annotations
 import csv
 import json
 import logging
+import math
 import os
 import shlex
 import shutil
@@ -41,6 +42,7 @@ from quiclab.config.scenario import (
     load_scenario,
 )
 from quiclab.config.schema import DirectionSpec, TopologyConfig, load_topology
+from quiclab import router_trace
 from quiclab.exceptions import OrchestratorError
 from quiclab.orchestrator.routing import (
     addressed_links,
@@ -73,6 +75,9 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _QVIDEO_SERVER = _PROJECT_ROOT / "qvideo" / "build" / "qvideo-server"
 _QVIDEO_CLIENT = _PROJECT_ROOT / "qvideo" / "build" / "qvideo-client"
 _QTRAFFIC = _PROJECT_ROOT / "qvideo" / "build" / "qtraffic"
+# ethtool -k features recorded per interface after offload_disable_commands.
+_OFFLOAD_FEATURES = ("tcp-segmentation-offload", "generic-segmentation-offload", "generic-receive-offload",
+                     "tx-udp-segmentation")
 _ROUTER_METRICS = _PROJECT_ROOT / "quiclab" / "router_metrics.py"
 
 _LINK_SUBNET_POOL = "10.20.0.0/16"
@@ -190,6 +195,10 @@ class MininetBackend:
         clients: dict[str, subprocess.Popen] = {}
         runner = None
         events = None
+        gtq_on = router_trace.enabled(topology)
+        gtq_tracers: list[router_trace.Tracer] = []
+        gtq_errors: list[str] = []
+        cpu = None
         try:
             self._build(net, topology, record, info)
             info("*** Starting network\n")
@@ -213,13 +222,15 @@ class MininetBackend:
 
             self._configure_network(net, topology, scenario, record, info)
             processes.extend(_start_router_metrics(net, topology, record, info))
+            if gtq_on:
+                gtq_tracers, gtq_errors = _start_gtq_tracers(net, topology, scenario, record, info)
             _sanity_ping(net, topology, record)
             # One stream start (T0) shared by every client is also the scenario's
             # t=0, so events land at the same point of the GOP grid every run.
             mono_now, unix_now_ns = time.monotonic(), time.time_ns()
             start_unix_ns = unix_now_ns + int(topology.startup.stream_start_s * 1e9)
             record.epoch_mono_s = mono_now + topology.startup.stream_start_s
-            processes.extend(_launch_publishers(net, topology, record, start_unix_ns // 1000, info))
+            processes.extend(_launch_publishers(net, topology, record, start_unix_ns // 1000, info, pkt_log=gtq_on))
             if topology.startup.publisher_warmup_s > 0:
                 time.sleep(topology.startup.publisher_warmup_s)
             processes.extend(_start_iperf_servers(net, topology, scenario, record, info))
@@ -243,10 +254,16 @@ class MininetBackend:
                 # Already waiting for T0 + at_s since setup; the row records when it began.
                 "ppbp": lambda e: (e.id, f"mean_mbps={e.mean_mbps:g} burst_mbps={e.burst_mbps:g} "
                                          f"mean_burst_s={e.mean_burst_s:g} hurst={e.hurst:g} seed={e.seed}"),
-                "bursts": lambda e: (e.id, f"bursts={len(e.bursts)}"),
+                "bursts": lambda e: (e.id, f"bursts={len(e.bursts)} process={e.process}"),
+                "bg": lambda e: (e.id, f"bg {e.process} rate_mbps={e.rate_mbps:g} flows={len(e.flow_weights)}"
+                                       + (f" cc={e.cc}" if e.cc else "")),
                 "join": lambda e: _join(net, topology, e.subscriber, record, clients, launches, info),
                 "leave": lambda e: _leave(e.subscriber, clients),
             })
+            try:  # GT-Q health input; never stops the run
+                cpu = router_trace.CpuSampler(run_dir / router_trace.CPU_FILE).start()
+            except Exception as e:  # noqa: BLE001
+                _log.warning("host CPU sampler not started: %r", e)
             runner.start()
             info(f"*** scenario: {len(scenario.events)} event(s), {scenario.duration_s:g} s\n")
             if on_running is not None:
@@ -264,6 +281,9 @@ class MininetBackend:
                 runner.stop()
             processes.extend(clients.items())
             _stop_processes(processes)
+            if cpu is not None:
+                cpu.stop()
+            _stop_gtq_tracers(gtq_tracers)
             if events is not None:
                 events.write("teardown", "")
                 events.close()
@@ -273,6 +293,7 @@ class MininetBackend:
                 net.stop()
             except Exception as e:  # net.stop() can throw on partial state
                 _log.warning("net.stop() raised during teardown: %s", e)
+            _gtq_health(topology, scenario, record, gtq_on, gtq_tracers, gtq_errors, info)
             _hand_back_run_dir(run_dir)
         return record
 
@@ -323,6 +344,7 @@ class MininetBackend:
                 node.cmd(f"echo {value} > /proc/sys/{key.replace('.', '/')}")
 
         info("*** Disabling NIC offloads on link interfaces\n")
+        offload_rows = []
         for nid, iface_ips in record.node_iface_ips.items():
             node = net.get(nid)
             for iface, _ in iface_ips:
@@ -330,6 +352,15 @@ class MininetBackend:
                     out = node.cmd(cmd)
                     if out and out.strip():
                         _log.warning("%s: %r printed: %s", nid, cmd, out.strip())
+                # The state the qdiscs see, recorded per interface (<run>/offloads.csv).
+                state = dict(line.split(":", 1) for line in node.cmd(f"ethtool -k {iface}").splitlines()
+                             if ":" in line)
+                offload_rows.append({"node": nid, "iface": iface, **{k: state.get(k, "").strip().split(" ")[0]
+                                     for k in _OFFLOAD_FEATURES}})
+        with (record.run_dir / "offloads.csv").open("w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=["node", "iface", *_OFFLOAD_FEATURES])
+            w.writeheader()
+            w.writerows(offload_rows)
 
         info("*** Installing static /32 routes\n")
         edges = edge_interfaces(topology)
@@ -373,6 +404,16 @@ class MininetBackend:
             status, out = _node_command_status(net.get(nid), cmd)
             if status:
                 raise OrchestratorError(f"{nid}: {cmd!r} failed: {out or f'exit {status}'}")
+        # The installed qdiscs of every router and publisher interface, as tc prints them.
+        with (record.run_dir / "qdiscs.txt").open("w") as fh:
+            for nid in (*topology.publishers, *topology.routers):
+                for iface, _ in record.node_iface_ips.get(nid, []):
+                    fh.write(f"== {nid} {iface}\n{net.get(nid).cmd(f'tc qdisc show dev {iface}').strip()}\n")
+        # The AQM-level filters (fq_codel catch-all, cake pins) per router interface, for the pin check.
+        with (record.run_dir / "tc-filters.txt").open("w") as fh:
+            for nid in topology.routers:
+                for iface, _ in record.node_iface_ips.get(nid, []):
+                    fh.write(f"== {nid} {iface}\n{net.get(nid).cmd(f'tc filter show dev {iface} parent 20:').strip()}\n")
 
 
 def client_pins(topology: TopologyConfig) -> tuple[dict[str, str], dict[str, int]]:
@@ -392,12 +433,58 @@ def initial_shaping_commands(topology: TopologyConfig, scenario: Scenario) -> li
         for nid, peer, iface, spec in ((edge.a, edge.b, edge.a_iface, forward),
                                        (edge.b, edge.a, edge.b_iface, reverse)):
             queue = scenario.router_queue(nid).on(peer) if nid in topology.routers else RouterQueue()
+            limit = queue.queue_limit_packets
+            if queue.queue_limit_bdp is not None:
+                limit = bdp_queue_limit(topology, scenario, (nid, peer), spec, queue.queue_limit_bdp)
             commands += [(nid, cmd) for cmd in shaping_commands(
-                iface, spec, queue.aqm, queue.dualpi2_target_ms, queue.queue_limit_packets,
-                (queue.red_min_bytes, queue.red_max_bytes))]
+                iface, spec, queue.aqm, queue.dualpi2_target_ms, limit,
+                (queue.red_min_bytes, queue.red_max_bytes), queue.ecn)]
             if nid in topology.routers:
                 commands += [(nid, cmd) for cmd in flow_pin_commands(iface, queue.aqm, client_ips, flow_ids)]
     return commands
+
+
+def _path_hops(topology: TopologyConfig, src: str, dst: str) -> list[tuple[str, str]]:
+    """Directed hops of the shortest src -> dst path over the links (BFS, sorted neighbours)."""
+    adjacency: dict[str, set[str]] = {}
+    for link in topology.links:
+        adjacency.setdefault(link.from_, set()).add(link.to)
+        adjacency.setdefault(link.to, set()).add(link.from_)
+    prev: dict[str, str | None] = {src: None}
+    todo = [src]
+    for node in todo:
+        for n in sorted(adjacency.get(node, ())):
+            if n not in prev:
+                prev[n] = node
+                todo.append(n)
+    if dst not in prev:
+        return []
+    nodes, n = [], dst
+    while n is not None:
+        nodes.append(n)
+        n = prev[n]
+    nodes.reverse()
+    return list(zip(nodes, nodes[1:]))
+
+
+def base_rtt_s(topology: TopologyConfig, scenario: Scenario, src: str, dst: str) -> float:
+    """Two-way propagation src <-> dst from the scenario's t=0 link delays."""
+    delay: dict[tuple[str, str], float] = {}
+    for link in topology.links:
+        forward, reverse = scenario.initial_link(link.from_, link.to)
+        delay[(link.from_, link.to)] = forward.delay_ms or 0.0
+        delay[(link.to, link.from_)] = reverse.delay_ms or 0.0
+    return sum(delay.get(h, 0.0) + delay.get(h[::-1], 0.0) for h in _path_hops(topology, src, dst)) / 1000
+
+
+def bdp_queue_limit(topology: TopologyConfig, scenario: Scenario, hop: tuple[str, str], spec, factor: float) -> int:
+    """queue_limit_bdp in packets: factor x initial bandwidth x the largest base RTT of
+    the subscribers whose path crosses `hop`, at 1500 B per packet, at least 2."""
+    rtts = [base_rtt_s(topology, scenario, sub.connects_to, sid) for sid, sub in topology.subscribers.items()
+            if hop in _path_hops(topology, sub.connects_to, sid)]
+    if spec.bandwidth_mbps is None or not rtts:
+        raise OrchestratorError(f"queue_limit_bdp on {hop[0]}->{hop[1]} needs a bandwidth and a subscriber behind it")
+    return max(2, math.ceil(factor * spec.bandwidth_mbps * 1e6 * max(rtts) / (8 * 1500)))
 
 
 def _write_etc_hosts(record: RunRecord) -> None:
@@ -418,7 +505,8 @@ def _popen(net, node_id: str, argv: list[str], log_path: Path) -> subprocess.Pop
         log.close()  # the child keeps its own descriptor
 
 
-def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_unix_us: int, info) -> list:
+def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_unix_us: int, info,
+                       pkt_log: bool = False) -> list:
     started = []
     for pid, publisher in topology.publishers.items():
         out_dir = record.run_dir / "publishers" / pid
@@ -440,6 +528,7 @@ def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_u
             f"--start_unix_us={start_unix_us}",
             f"--send_buffer_ms={publisher.send_buffer_ms}",
             f"--out_dir={out_dir}",
+            *(["--pkt_log=true"] if pkt_log else []),
             "--logtostderr",
         ]
         info(f"*** {pid}: {shlex.join(argv)}\n")
@@ -563,35 +652,68 @@ def _start_flow(net, topology, scenario, record: RunRecord, processes: list, flo
     return flow.id, f"{flow.kind} {shlex.join(argv[1:])}"
 
 
+def qtraffic_recv_argv(topology: TopologyConfig, scenario: Scenario, e, out: Path) -> list[str]:
+    """Sink of one qtraffic source (PPBP, bursts, background)."""
+    _, receiver_ip = traffic_route_ips(topology)[e.route]
+    tcp = e.type == "bg" and e.process == "tcp"
+    return [str(_QTRAFFIC), "--mode=recv", f"--bind={receiver_ip}", f"--port={_flow_port(topology, scenario, e.id)}",
+            *(["--proto=tcp"] if tcp else []), f"--out={out}"]
+
+
+def qtraffic_send_argv(topology: TopologyConfig, scenario: Scenario, e, stream_start_unix_us: int,
+                       out: Path) -> list[str]:
+    """Source of one qtraffic process; it sleeps until T0 + at_s (exact, every run)."""
+    sender_ip, receiver_ip = traffic_route_ips(topology)[e.route]
+    sched = lambda entries: "--schedule=" + ",".join(f"{a:g}:{d:g}:{r:g}" for a, d, r in entries)  # noqa: E731
+    argv = [str(_QTRAFFIC), "--mode=send", f"--bind={sender_ip}", f"--dest={receiver_ip}",
+            f"--port={_flow_port(topology, scenario, e.id)}",
+            f"--start_unix_us={stream_start_unix_us + int(e.at_s * 1e6)}", f"--duration_s={e.duration_s:g}"]
+    if e.type == "ppbp":
+        argv += [f"--mean_mbps={e.mean_mbps:g}", f"--burst_mbps={e.burst_mbps:g}",
+                 f"--mean_burst_s={e.mean_burst_s:g}", f"--hurst={e.hurst:g}", f"--seed={e.seed}"]
+    elif e.type == "bg":
+        argv.append(sched(e.schedule()))
+        if e.process == "tcp":
+            argv += ["--proto=tcp", *([f"--cc={e.cc}"] if e.cc else [])]
+        else:
+            argv += ["--process=poisson", "--flow_weights=" + ",".join(f"{w:g}" for w in e.flow_weights),
+                     f"--seed={e.seed}"]
+    elif e.process == "pace":
+        argv.append(sched((b.start_s, b.duration_s, b.rate_mbps) for b in e.bursts))
+    else:
+        argv.append(sched(e.schedule()))
+        if e.process == "poisson":
+            argv += ["--process=poisson", "--flow_weights=" + ",".join(f"{w:g}" for w in (e.flow_weights or [1.0])),
+                     f"--seed={e.seed}"]
+        else:
+            pub = next(iter(topology.publishers.values()))
+            argv += ["--process=asv", f"--stream_start_us={stream_start_unix_us}",
+                     f"--asv_kbps={e.asv.rendition_kbps}", f"--fps={pub.fps}", f"--gop_ms={pub.gop_ms}",
+                     f"--ip_ratio={pub.ip_ratio:g}", f"--size_sigma={pub.size_sigma:g}", f"--video_seed={pub.seed}",
+                     f"--asv_key_spread_us={round(e.asv.key_spread_ms * 1000)}",
+                     f"--asv_p_spread_us={round(e.asv.p_spread_ms * 1000)}"]
+    return argv + [f"--packet_size={e.packet_size_bytes}", f"--out={out}"]
+
+
 def _start_ppbp(net, topology: TopologyConfig, scenario: Scenario, record: RunRecord,
                 start_unix_us: int, info) -> list:
-    """PPBP receivers, then senders that sleep until T0 + at_s (exact, every run)."""
+    """qtraffic receivers, then senders that sleep until T0 + at_s (exact, every run)."""
     events = scenario.ppbp()
     if not events:
         return []
     assert topology.traffic is not None
-    aliases = traffic_route_ips(topology)
     started = []
     for e in events:
         path = topology.traffic.routes[e.route].path
-        port = _flow_port(topology, scenario, e.id)
-        out = record.run_dir / "traffic" / e.id
-        started.append((path[-1], _popen(net, path[-1], [
-            str(_QTRAFFIC), "--mode=recv", f"--bind={aliases[e.route][1]}", f"--port={port}", f"--out={out}",
-        ], record.run_dir / "logs" / f"{e.id}-recv.log")))
+        started.append((path[-1], _popen(net, path[-1],
+                                         qtraffic_recv_argv(topology, scenario, e, record.run_dir / "traffic" / e.id),
+                                         record.run_dir / "logs" / f"{e.id}-recv.log")))
+    if any(e.type == "bg" and e.process == "tcp" for e in events):
+        time.sleep(0.2)   # TCP sinks listen before their sources connect (the sources also retry)
     for e in events:
         path = topology.traffic.routes[e.route].path
-        sender_ip, receiver_ip = aliases[e.route]
-        started.append((path[0], _popen(net, path[0], [
-            str(_QTRAFFIC), "--mode=send", f"--bind={sender_ip}", f"--dest={receiver_ip}",
-            f"--port={_flow_port(topology, scenario, e.id)}",
-            f"--start_unix_us={start_unix_us + int(e.at_s * 1e6)}", f"--duration_s={e.duration_s:g}",
-            *([f"--schedule={','.join(f'{b.start_s:g}:{b.duration_s:g}:{b.rate_mbps:g}' for b in e.bursts)}"]
-              if e.type == "bursts" else
-              [f"--mean_mbps={e.mean_mbps:g}", f"--burst_mbps={e.burst_mbps:g}",
-               f"--mean_burst_s={e.mean_burst_s:g}", f"--hurst={e.hurst:g}", f"--seed={e.seed}"]),
-            f"--packet_size={e.packet_size_bytes}", f"--out={record.run_dir / 'traffic' / e.id}",
-        ], record.run_dir / "logs" / f"{e.id}-send.log")))
+        argv = qtraffic_send_argv(topology, scenario, e, start_unix_us, record.run_dir / "traffic" / e.id)
+        started.append((path[0], _popen(net, path[0], argv, record.run_dir / "logs" / f"{e.id}-send.log")))
     info(f"*** {len(events)} qtraffic source(s) armed for their start times\n")
     return started
 
@@ -707,6 +829,136 @@ def _start_router_metrics(net, topology: TopologyConfig, record: RunRecord, info
     return started
 
 
+def gtq_trace_interfaces(topology: TopologyConfig, scenario: Scenario) -> dict[str, list[tuple[str, tuple[str, str]]]]:
+    """Node -> [(egress interface, (node, next node))] the GT-Q tracer watches:
+    rate-shaped (HTB) router and publisher egresses on at least one subscriber's forward
+    path (the publisher's own link queues when every keyframe leaves at once) whose
+    netem, if any, only delays: no loss (a netem loss would look like a queue drop)
+    and no jitter (the delay to subtract would not be known per packet), neither at
+    t=0 nor in any scenario event. The labeler subtracts the netem delay in force at
+    each packet's enqueue (HTB -> netem -> AQM: t_deq - t_enq - delay is the time
+    spent queued, in the AQM or held by HTB)."""
+    on_path: set[tuple[str, str]] = set()
+    for sid, sub in topology.subscribers.items():
+        on_path.update(_path_hops(topology, sub.connects_to, sid))
+    out: dict[str, list[tuple[str, tuple[str, str]]]] = {}
+    for edge, link in zip(edge_interfaces(topology), topology.links):
+        forward, reverse = scenario.initial_link(link.from_, link.to)
+        for nid, peer, iface, spec, direction in ((edge.a, edge.b, edge.a_iface, forward, "forward"),
+                                                  (edge.b, edge.a, edge.b_iface, reverse, "reverse")):
+            lossy = spec.loss_pct is not None or spec.jitter_ms is not None or any(
+                e.type == "link" and (e.from_, e.to) == (link.from_, link.to) and e.direction == direction
+                and (e.loss_pct is not None or e.jitter_ms is not None) for e in scenario.events)
+            if ((nid in topology.routers or nid in topology.publishers) and spec.bandwidth_mbps is not None
+                    and not lossy and (nid, peer) in on_path):
+                out.setdefault(nid, []).append((iface, (nid, peer)))
+    return out
+
+
+def _start_gtq_tracers(net, topology: TopologyConfig, scenario: Scenario, record: RunRecord,
+                       info) -> tuple[list[router_trace.Tracer], list[str]]:
+    """One bpftrace per router with a traced egress. Never raises: failures are
+    returned as errors (the run goes on, health marks it gt_q_invalid)."""
+    tracers: list[router_trace.Tracer] = []
+    errors: list[str] = []
+    try:
+        selected = gtq_trace_interfaces(topology, scenario)
+        trace_dir = record.run_dir / router_trace.TRACE_DIR
+        trace_dir.mkdir(parents=True, exist_ok=True)
+        if not selected:
+            errors.append("no bottleneck egress to trace")
+            return tracers, errors
+        error = router_trace.ensure_tracefs()
+        if error:
+            errors.append(error)
+            return tracers, errors
+        meta = []
+        for rid, entries in selected.items():
+            node = net.get(rid)
+            netns = int(node.cmd("stat -L -c %i /proc/self/ns/net").strip())
+            ifaces, hops = {}, {}
+            for iface, hop in entries:
+                index = int(node.cmd(f"ip -o link show dev {iface}").split(":", 1)[0])
+                if index >= 64:
+                    errors.append(f"{rid}: {iface} has ifindex {index} >= 64; not traced")
+                    continue
+                ifaces[index], hops[iface] = iface, hop
+                meta.append({"router": rid, "iface": iface, "ifindex": index, "netns": netns,
+                             "hop": f"{hop[0]}->{hop[1]}"})
+            if not ifaces:
+                continue
+            tracer = router_trace.Tracer(router=rid, ifaces=ifaces, hops=hops, netns=netns,
+                                         raw=trace_dir / f"{rid}.raw",
+                                         log=record.run_dir / "logs" / f"{rid}-tracer.log")
+            info(f"*** GT-Q tracer on {rid}: {', '.join(ifaces.values())}\n")
+            # Started in the container's own namespaces, not the router's: tracepoints are
+            # kernel-wide (the script filters by the router's netns inode), and a
+            # namespace with its own /sys mount (ip netns exec) does not see tracefs.
+            with tracer.log.open("ab") as log:
+                tracer.process = subprocess.Popen(router_trace.tracer_argv(tracer.raw, netns, list(ifaces)),
+                                                  stdout=log, stderr=subprocess.STDOUT,
+                                                  env={**os.environ, **router_trace.TRACER_ENV})
+            if router_trace.wait_ready(tracer):
+                tracer.started_ns = time.monotonic_ns()
+            else:
+                _log.warning("%s: GT-Q tracer failed to start (%s); run continues untraced",
+                             rid, "; ".join(tracer.errors))
+                if tracer.process.poll() is None:
+                    tracer.process.kill()
+                    tracer.process.wait()
+            tracers.append(tracer)
+        with (trace_dir / "interfaces.csv").open("w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=["router", "iface", "ifindex", "netns", "hop"])
+            w.writeheader()
+            w.writerows(meta)
+    except Exception as e:  # noqa: BLE001 - the logging must never break a run
+        errors.append(f"tracer setup failed: {e!r}")
+        _log.warning("GT-Q tracer setup failed: %r; run continues untraced", e)
+        for tracer in tracers:
+            if tracer.process is not None and tracer.process.poll() is None:
+                tracer.process.kill()
+    return tracers, errors
+
+
+def _stop_gtq_tracers(tracers: list[router_trace.Tracer]) -> None:
+    """After every traffic source stopped: let the queues drain, then SIGINT."""
+    live = [t for t in tracers if t.started_ns]
+    if not live:
+        return
+    try:
+        time.sleep(router_trace.DRAIN_S)
+        for tracer in live:
+            router_trace.stop(tracer)
+    except Exception as e:  # noqa: BLE001
+        _log.warning("GT-Q tracer stop failed: %r", e)
+
+
+def _gtq_health(topology: TopologyConfig, scenario: Scenario, record: RunRecord, on: bool,
+                tracers: list[router_trace.Tracer], errors: list[str], info) -> None:
+    """Convert the tracer output and write <run>/gtq-health.csv. Never raises."""
+    try:
+        counts = router_trace.finalize(record.run_dir, tracers) if on and tracers else []
+        flows = {sid: (sub.connects_to, record.loopback_ips[sub.connects_to], record.loopback_ips[sid])
+                 for sid, sub in topology.subscribers.items()}
+        _, line = router_trace.health(
+            record.run_dir, on=on, scenario=scenario,
+            epoch_mono_ns=round((record.epoch_mono_s or 0.0) * 1e9), tracers=tracers,
+            counts=counts, flows=flows, setup_errors=errors)
+    except Exception as e:  # noqa: BLE001
+        line = f"gtq health: check failed: {e!r}"
+        try:
+            (record.run_dir / router_trace.HEALTH_FILE).write_text(
+                f"key,value\ngtq_logging,{int(on)}\ngt_q_invalid,{int(on)}\ninvalid_reasons,health check failed\n")
+        except OSError:
+            pass
+    info(f"*** {line}\n")
+    try:
+        with (record.run_dir / "logs" / "gtq-health.log").open("a") as f:
+            f.write(line + "\n")
+    except OSError:
+        pass
+
+
 def _sanity_ping(net, topology: TopologyConfig, record: RunRecord) -> None:
     """Best-effort ping along every publisher/subscriber pair; warn-only."""
     for sid, subscriber in topology.subscribers.items():
@@ -771,7 +1023,7 @@ def apply_live_router_aqm(
             new = value.on(peer)
             for command in live_aqm_commands(
                 iface, spec, new.aqm, current.on(peer).aqm, new.dualpi2_target_ms,
-                new.queue_limit_packets, (new.red_min_bytes, new.red_max_bytes),
+                new.queue_limit_packets, (new.red_min_bytes, new.red_max_bytes), new.ecn,
             ) + flow_pin_commands(iface, new.aqm, client_ips, flow_ids):
                 status, output = run(router_id, command)
                 if status:
@@ -906,7 +1158,8 @@ def _modprobe_modules(topology: TopologyConfig, scenario: Scenario) -> None:
     modules = {f"sch_{q.aqm.value}" for q in queues if q.aqm}
     modules.discard("sch_pfifo")  # built into sch_fifo
     modules |= {"sch_htb", "sch_netem"}
-    if any(isinstance(f, TcpFlowEvent) and f.cc == "bbr" for f in scenario.flows()):
+    if any(isinstance(f, TcpFlowEvent) and f.cc == "bbr" for f in scenario.flows()) or any(
+            e.type == "bg" and e.cc == "bbr" for e in scenario.events):
         modules.add("tcp_bbr")
     for module in sorted(modules):
         try:

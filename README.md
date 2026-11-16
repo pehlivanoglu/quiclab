@@ -161,6 +161,9 @@ All outputs are CSV (no JSON on disk).
 | `router-metrics/<router>/<iface>*.csv` | qdisc counters and queue occupancy (`queue_metrics`) |
 | `traffic/<flow>.csv` | iperf3 per-interval result (converted from iperf3's JSON, which is deleted) |
 | `traffic/<id>-bursts.csv`, `-sent.csv`, `-recv.csv` | PPBP: every burst (offered-load truth); sent bytes and active bursts per 100 ms; received bytes, loss and one-way delay per 100 ms |
+| `router-trace/<iface>-packets.csv` | GT-Q logging (on by default, see `docs/gtq-logging.md`): one row per packet that left or was dropped by a bottleneck egress qdisc: enqueue / dequeue / drop time (mono ns), drop reason, 5-tuple, length, `skb->hash`, `skb->priority`; `interfaces.csv`, `tracer-counts.csv` |
+| `publishers/<pub>/<sub>-pkts.csv`, `-pktacks.csv` | GT-Q logging: every sent QUIC packet (send time, packet number, size) and every ACK's newly acked packet-number ranges |
+| `gtq-health.csv`, `host-cpu.csv` | per-run GT-Q logging health (tracer start / stop, lost events, enqueue = dequeue + drops, oversize skbs, inter-dequeue vs ideal, CPU idle, sender match rate, bytes; `gt_q_invalid`) and host CPU idle once per second |
 | `logs/` | stdout/stderr of every process |
 
 Timestamps: `*_us` columns are `CLOCK_REALTIME` microseconds. `*_mono_ns` are

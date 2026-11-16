@@ -1,0 +1,103 @@
+{
+ "access": {
+  "run": "v3-SMOKE-calm-access-pfifo-r1",
+  "check4_ok": false,
+  "targets_failing": [
+   "router->switch (4a)"
+  ],
+  "unmatched_deq_all": 28,
+  "unmatched_enq_all": 38,
+  "unmatched_deq_targets": 19,
+  "unmatched_enq_targets": 3,
+  "recursion_misses_per_tracer": [
+   158
+  ],
+  "tracers": 6
+ },
+ "rev": {
+  "run": "v3-SMOKE-calm-rev-pfifo-r1",
+  "check4_ok": true,
+  "targets_failing": [],
+  "unmatched_deq_all": 14,
+  "unmatched_enq_all": 21,
+  "unmatched_deq_targets": 3,
+  "unmatched_enq_targets": 3,
+  "recursion_misses_per_tracer": [
+   90
+  ],
+  "tracers": 3
+ },
+ "s030u070": {
+  "run": "v3-SMOKE-calm-s030u070-pfifo-r1",
+  "check4_ok": true,
+  "targets_failing": [],
+  "unmatched_deq_all": 4,
+  "unmatched_enq_all": 8,
+  "unmatched_deq_targets": 1,
+  "unmatched_enq_targets": 1,
+  "recursion_misses_per_tracer": [
+   38
+  ],
+  "tracers": 2
+ },
+ "split4": {
+  "run": "v3-SMOKE-calm-split4-pfifo-r1",
+  "check4_ok": true,
+  "targets_failing": [],
+  "unmatched_deq_all": 16,
+  "unmatched_enq_all": 48,
+  "unmatched_deq_targets": 16,
+  "unmatched_enq_targets": 27,
+  "recursion_misses_per_tracer": [
+   223
+  ],
+  "tracers": 3
+ },
+ "tree16": {
+  "run": "v3-SMOKE-calm-tree16-pfifo-r1",
+  "check4_ok": false,
+  "targets_failing": [
+   "r0->r1 (4a)",
+   "r0->r2 (4a)",
+   "r2->switch-d (4a)",
+   "rr->r0 (4a4b)"
+  ],
+  "unmatched_deq_all": 50,
+  "unmatched_enq_all": 140,
+  "unmatched_deq_targets": 48,
+  "unmatched_enq_targets": 87,
+  "recursion_misses_per_tracer": [
+   667
+  ],
+  "tracers": 5
+ },
+ "uneven": {
+  "run": "v3-SMOKE-calm-uneven-pfifo-r1",
+  "check4_ok": false,
+  "targets_failing": [
+   "r2->switch-a (4a)",
+   "r2->switch-b (4a)"
+  ],
+  "unmatched_deq_all": 59,
+  "unmatched_enq_all": 119,
+  "unmatched_deq_targets": 26,
+  "unmatched_enq_targets": 28,
+  "recursion_misses_per_tracer": [
+   599
+  ],
+  "tracers": 3
+ },
+ "sburst-s030u070": {
+  "run": "v3-SMOKE-sburst-s030u070-pfifo-r1",
+  "check4_ok": true,
+  "targets_failing": [],
+  "unmatched_deq_all": 8,
+  "unmatched_enq_all": 23,
+  "unmatched_deq_targets": 6,
+  "unmatched_enq_targets": 4,
+  "recursion_misses_per_tracer": [
+   102
+  ],
+  "tracers": 2
+ }
+}

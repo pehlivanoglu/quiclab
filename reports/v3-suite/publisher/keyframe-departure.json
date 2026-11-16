@@ -1,0 +1,620 @@
+[
+ {
+  "run": "night-sync/G0/grp-randloss-pfifo-r1",
+  "feed_mbps": 100.0,
+  "clients": 5,
+  "gops": 204,
+  "overhead_B_per_packet": {
+   "sub-a": 33.7,
+   "sub-b": 31.5,
+   "sub-c": 33.5,
+   "sub-d": 34.2,
+   "sub-ctrl": 30.7
+  },
+  "span_ms_p50_p90_max": [
+   69.2,
+   124.4,
+   440.6
+  ],
+  "model_ms_p50": 17.6,
+  "per_client": {
+   "sub-a": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 33.8,
+    "emission_ms_p90": 66.7,
+    "pacing_mbps_p50": 2.8
+   },
+   "sub-b": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 43.5,
+    "emission_ms_p90": 74.7,
+    "pacing_mbps_p50": 6.2
+   },
+   "sub-c": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 39.0,
+    "emission_ms_p90": 71.0,
+    "pacing_mbps_p50": 6.8
+   },
+   "sub-ctrl": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 40.9,
+    "emission_ms_p90": 72.3,
+    "pacing_mbps_p50": 7.5
+   },
+   "sub-d": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 43.6,
+    "emission_ms_p90": 87.4,
+    "pacing_mbps_p50": 13.9
+   }
+  }
+ },
+ {
+  "run": "night-sync/G0/grp-randloss-pfifo-r2",
+  "feed_mbps": 100.0,
+  "clients": 5,
+  "gops": 209,
+  "overhead_B_per_packet": {
+   "sub-a": 33.5,
+   "sub-b": 30.6,
+   "sub-c": 34.0,
+   "sub-d": 33.9,
+   "sub-ctrl": 30.4
+  },
+  "span_ms_p50_p90_max": [
+   64.0,
+   126.3,
+   1397.4
+  ],
+  "model_ms_p50": 17.6,
+  "per_client": {
+   "sub-a": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 26.5,
+    "emission_ms_p90": 53.2,
+    "pacing_mbps_p50": 3.6
+   },
+   "sub-b": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 40.5,
+    "emission_ms_p90": 74.8,
+    "pacing_mbps_p50": 6.2
+   },
+   "sub-c": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 41.8,
+    "emission_ms_p90": 70.8,
+    "pacing_mbps_p50": 6.3
+   },
+   "sub-ctrl": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 34.9,
+    "emission_ms_p90": 75.4,
+    "pacing_mbps_p50": 7.7
+   },
+   "sub-d": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 46.1,
+    "emission_ms_p90": 88.5,
+    "pacing_mbps_p50": 13.2
+   }
+  }
+ },
+ {
+  "run": "night-sync/M1/grp-burstcap-pie-r1",
+  "feed_mbps": 100.0,
+  "clients": 5,
+  "gops": 192,
+  "overhead_B_per_packet": {
+   "sub-a": 33.7,
+   "sub-b": 30.9,
+   "sub-c": 31.2,
+   "sub-d": 29.8,
+   "sub-ctrl": 28.7
+  },
+  "span_ms_p50_p90_max": [
+   65.1,
+   225.2,
+   768.7
+  ],
+  "model_ms_p50": 17.5,
+  "per_client": {
+   "sub-a": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 45.2,
+    "emission_ms_p90": 67.8,
+    "pacing_mbps_p50": 2.2
+   },
+   "sub-b": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 41.8,
+    "emission_ms_p90": 76.3,
+    "pacing_mbps_p50": 5.7
+   },
+   "sub-c": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 48.1,
+    "emission_ms_p90": 69.1,
+    "pacing_mbps_p50": 5.5
+   },
+   "sub-ctrl": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 3.5,
+    "emission_ms_p90": 32.4,
+    "pacing_mbps_p50": 72.1
+   },
+   "sub-d": {
+    "rank_p50": 2.0,
+    "emission_ms_p50": 51.0,
+    "emission_ms_p90": 81.3,
+    "pacing_mbps_p50": 11.3
+   }
+  }
+ },
+ {
+  "run": "night-sync/K1/grp-hier-pie-r1",
+  "feed_mbps": 100.0,
+  "clients": 7,
+  "gops": 679,
+  "overhead_B_per_packet": {
+   "a1": 33.5,
+   "a2": 30.9,
+   "a3": 29.8,
+   "b1": 34.4,
+   "b2": 30.9,
+   "b3": 29.6,
+   "sub-ctrl": 28.8
+  },
+  "span_ms_p50_p90_max": [
+   65.8,
+   255.8,
+   765.1
+  ],
+  "model_ms_p50": 25.0,
+  "per_client": {
+   "a1": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 37.1,
+    "emission_ms_p90": 59.5,
+    "pacing_mbps_p50": 2.5
+   },
+   "a2": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 42.4,
+    "emission_ms_p90": 68.7,
+    "pacing_mbps_p50": 6.1
+   },
+   "a3": {
+    "rank_p50": 4.0,
+    "emission_ms_p50": 50.4,
+    "emission_ms_p90": 72.2,
+    "pacing_mbps_p50": 11.5
+   },
+   "b1": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 33.5,
+    "emission_ms_p90": 60.2,
+    "pacing_mbps_p50": 2.5
+   },
+   "b2": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 43.5,
+    "emission_ms_p90": 68.2,
+    "pacing_mbps_p50": 6.1
+   },
+   "b3": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 51.1,
+    "emission_ms_p90": 76.1,
+    "pacing_mbps_p50": 11.5
+   },
+   "sub-ctrl": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 3.5,
+    "emission_ms_p90": 32.0,
+    "pacing_mbps_p50": 100.0
+   }
+  }
+ },
+ {
+  "run": "night-sync/K1/grp-hier-codel-r2",
+  "feed_mbps": 100.0,
+  "clients": 7,
+  "gops": 682,
+  "overhead_B_per_packet": {
+   "a1": 33.6,
+   "a2": 30.9,
+   "a3": 30.0,
+   "b1": 34.4,
+   "b2": 31.2,
+   "b3": 29.9,
+   "sub-ctrl": 28.8
+  },
+  "span_ms_p50_p90_max": [
+   63.8,
+   181.2,
+   926.5
+  ],
+  "model_ms_p50": 25.0,
+  "per_client": {
+   "a1": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 34.5,
+    "emission_ms_p90": 60.5,
+    "pacing_mbps_p50": 2.4
+   },
+   "a2": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 40.5,
+    "emission_ms_p90": 65.4,
+    "pacing_mbps_p50": 6.3
+   },
+   "a3": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 49.8,
+    "emission_ms_p90": 68.5,
+    "pacing_mbps_p50": 11.3
+   },
+   "b1": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 33.1,
+    "emission_ms_p90": 58.6,
+    "pacing_mbps_p50": 2.6
+   },
+   "b2": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 41.3,
+    "emission_ms_p90": 60.7,
+    "pacing_mbps_p50": 6.3
+   },
+   "b3": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 50.7,
+    "emission_ms_p90": 69.5,
+    "pacing_mbps_p50": 10.9
+   },
+   "sub-ctrl": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 3.4,
+    "emission_ms_p90": 9.8,
+    "pacing_mbps_p50": 102.4
+   }
+  }
+ },
+ {
+  "run": "night-sync/C1/grp-burstlongsplit-pfifo-r3",
+  "feed_mbps": 100.0,
+  "clients": 7,
+  "gops": 295,
+  "overhead_B_per_packet": {
+   "a1": 34.1,
+   "a2": 31.2,
+   "a3": 30.0,
+   "b1": 35.2,
+   "b2": 31.5,
+   "b3": 30.0,
+   "sub-ctrl": 28.8
+  },
+  "span_ms_p50_p90_max": [
+   61.6,
+   127.4,
+   417.8
+  ],
+  "model_ms_p50": 25.3,
+  "per_client": {
+   "a1": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 28.9,
+    "emission_ms_p90": 53.0,
+    "pacing_mbps_p50": 2.0
+   },
+   "a2": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 38.3,
+    "emission_ms_p90": 61.0,
+    "pacing_mbps_p50": 4.5
+   },
+   "a3": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 50.2,
+    "emission_ms_p90": 67.5,
+    "pacing_mbps_p50": 9.1
+   },
+   "b1": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 30.3,
+    "emission_ms_p90": 51.0,
+    "pacing_mbps_p50": 2.0
+   },
+   "b2": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 38.8,
+    "emission_ms_p90": 61.5,
+    "pacing_mbps_p50": 4.9
+   },
+   "b3": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 49.9,
+    "emission_ms_p90": 67.7,
+    "pacing_mbps_p50": 9.6
+   },
+   "sub-ctrl": {
+    "rank_p50": 3.0,
+    "emission_ms_p50": 3.6,
+    "emission_ms_p90": 33.0,
+    "pacing_mbps_p50": 85.5
+   }
+  }
+ },
+ {
+  "run": "night-sync/G0/grp-calmuneven-pfifo-r1",
+  "feed_mbps": 1000.0,
+  "clients": 17,
+  "gops": 108,
+  "overhead_B_per_packet": {
+   "a1": 28.4,
+   "a2": 28.9,
+   "b1": 34.2,
+   "b2": 29.3,
+   "b3": 29.7,
+   "b4": 28.4,
+   "b5": 29.2,
+   "c1": 34.4,
+   "c2": 34.2,
+   "c3": 30.1,
+   "c4": 29.7,
+   "c5": 29.8,
+   "c6": 28.1,
+   "c7": 28.0,
+   "c8": 27.4,
+   "c9": 28.4,
+   "sub-ctrl": 28.6
+  },
+  "span_ms_p50_p90_max": [
+   57.8,
+   142.9,
+   328.4
+  ],
+  "model_ms_p50": 9.5,
+  "per_client": {
+   "a1": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 36.6,
+    "emission_ms_p90": 82.9,
+    "pacing_mbps_p50": 15.0
+   },
+   "a2": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 32.9,
+    "emission_ms_p90": 64.2,
+    "pacing_mbps_p50": 143.4
+   },
+   "b1": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 5.5,
+    "emission_ms_p90": 8.1,
+    "pacing_mbps_p50": 20.9
+   },
+   "b2": {
+    "rank_p50": 7.0,
+    "emission_ms_p50": 4.9,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 77.4
+   },
+   "b3": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 5.9,
+    "emission_ms_p90": 33.0,
+    "pacing_mbps_p50": 62.9
+   },
+   "b4": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 6.4,
+    "emission_ms_p90": 33.0,
+    "pacing_mbps_p50": 104.9
+   },
+   "b5": {
+    "rank_p50": 7.0,
+    "emission_ms_p50": 36.0,
+    "emission_ms_p90": 56.4,
+    "pacing_mbps_p50": 23.4
+   },
+   "c1": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 4.4,
+    "emission_ms_p90": 6.9,
+    "pacing_mbps_p50": 23.6
+   },
+   "c2": {
+    "rank_p50": 7.0,
+    "emission_ms_p50": 5.8,
+    "emission_ms_p90": 8.0,
+    "pacing_mbps_p50": 21.1
+   },
+   "c3": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 25.8,
+    "emission_ms_p90": 42.4,
+    "pacing_mbps_p50": 11.6
+   },
+   "c4": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 6.7,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 49.4
+   },
+   "c5": {
+    "rank_p50": 9.5,
+    "emission_ms_p50": 6.0,
+    "emission_ms_p90": 32.9,
+    "pacing_mbps_p50": 53.0
+   },
+   "c6": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 5.1,
+    "emission_ms_p90": 32.7,
+    "pacing_mbps_p50": 147.5
+   },
+   "c7": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 7.1,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 143.8
+   },
+   "c8": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 6.7,
+    "emission_ms_p90": 32.6,
+    "pacing_mbps_p50": 171.1
+   },
+   "c9": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 7.5,
+    "emission_ms_p90": 33.5,
+    "pacing_mbps_p50": 240.6
+   },
+   "sub-ctrl": {
+    "rank_p50": 7.5,
+    "emission_ms_p50": 5.6,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 65.3
+   }
+  }
+ },
+ {
+  "run": "night-sync/G0/grp-calmuneven-pfifo-r2",
+  "feed_mbps": 1000.0,
+  "clients": 17,
+  "gops": 108,
+  "overhead_B_per_packet": {
+   "a1": 27.3,
+   "a2": 28.9,
+   "b1": 34.3,
+   "b2": 29.4,
+   "b3": 29.6,
+   "b4": 28.4,
+   "b5": 28.8,
+   "c1": 33.8,
+   "c2": 34.5,
+   "c3": 29.3,
+   "c4": 29.4,
+   "c5": 29.7,
+   "c6": 28.0,
+   "c7": 27.9,
+   "c8": 28.1,
+   "c9": 27.4,
+   "sub-ctrl": 28.6
+  },
+  "span_ms_p50_p90_max": [
+   44.8,
+   150.7,
+   405.6
+  ],
+  "model_ms_p50": 9.5,
+  "per_client": {
+   "a1": {
+    "rank_p50": 8.5,
+    "emission_ms_p50": 4.7,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 150.0
+   },
+   "a2": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 32.8,
+    "emission_ms_p90": 57.4,
+    "pacing_mbps_p50": 133.4
+   },
+   "b1": {
+    "rank_p50": 6.0,
+    "emission_ms_p50": 4.2,
+    "emission_ms_p90": 7.1,
+    "pacing_mbps_p50": 24.6
+   },
+   "b2": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 6.3,
+    "emission_ms_p90": 33.1,
+    "pacing_mbps_p50": 57.8
+   },
+   "b3": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 5.0,
+    "emission_ms_p90": 33.0,
+    "pacing_mbps_p50": 72.9
+   },
+   "b4": {
+    "rank_p50": 8.5,
+    "emission_ms_p50": 7.8,
+    "emission_ms_p90": 33.3,
+    "pacing_mbps_p50": 100.2
+   },
+   "b5": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 36.8,
+    "emission_ms_p90": 55.1,
+    "pacing_mbps_p50": 25.4
+   },
+   "c1": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 3.0,
+    "emission_ms_p90": 7.5,
+    "pacing_mbps_p50": 35.2
+   },
+   "c2": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 6.1,
+    "emission_ms_p90": 9.2,
+    "pacing_mbps_p50": 18.0
+   },
+   "c3": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 4.8,
+    "emission_ms_p90": 33.0,
+    "pacing_mbps_p50": 73.4
+   },
+   "c4": {
+    "rank_p50": 10.0,
+    "emission_ms_p50": 5.7,
+    "emission_ms_p90": 32.7,
+    "pacing_mbps_p50": 58.2
+   },
+   "c5": {
+    "rank_p50": 5.5,
+    "emission_ms_p50": 5.8,
+    "emission_ms_p90": 33.0,
+    "pacing_mbps_p50": 55.5
+   },
+   "c6": {
+    "rank_p50": 6.5,
+    "emission_ms_p50": 5.3,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 138.2
+   },
+   "c7": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 5.6,
+    "emission_ms_p90": 33.2,
+    "pacing_mbps_p50": 132.4
+   },
+   "c8": {
+    "rank_p50": 10.0,
+    "emission_ms_p50": 32.4,
+    "emission_ms_p90": 45.3,
+    "pacing_mbps_p50": 31.3
+   },
+   "c9": {
+    "rank_p50": 8.0,
+    "emission_ms_p50": 7.4,
+    "emission_ms_p90": 33.4,
+    "pacing_mbps_p50": 241.6
+   },
+   "sub-ctrl": {
+    "rank_p50": 9.0,
+    "emission_ms_p50": 6.1,
+    "emission_ms_p90": 32.8,
+    "pacing_mbps_p50": 54.4
+   }
+  }
+ }
+]

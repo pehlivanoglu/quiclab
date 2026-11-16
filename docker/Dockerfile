@@ -49,6 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libmnl0 \
         ethtool \
         tcpdump \
+        bpftrace \
         iputils-ping \
         procps \
         kmod \
@@ -68,6 +69,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=iproute2-build /staging/ /
+
+# bpftrace: the GT-Q router tracer (quiclab/router_trace.bt). It runs against the
+# host kernel through the privileged container; BTF comes from /sys/kernel/btf.
 
 # Ubuntu ships pydantic v1; quiclab needs v2 (same pins as requirements.txt).
 COPY requirements.txt /tmp/requirements.txt
