@@ -1,0 +1,46 @@
+{
+ "abl:ref": {
+  "g_ref": 56.505,
+  "g_max": 45.204
+ },
+ "abl:F1-only": {
+  "g_ref": 62.041,
+  "g_max": 41.36
+ },
+ "abl:F2-only": {
+  "g_ref": 38.912,
+  "g_max": 12.971
+ },
+ "abl:F3-only": {
+  "g_ref": 37.584,
+  "g_max": 37.584
+ },
+ "abl:L-only": {
+  "g_ref": 40.105,
+  "g_max": 20.053
+ },
+ "abl:no-F2": {
+  "g_ref": 58.735,
+  "g_max": 39.157
+ },
+ "abl:no-F3": {
+  "g_ref": 77.205,
+  "g_max": 38.603
+ },
+ "abl:no-loss": {
+  "g_ref": 56.54,
+  "g_max": 45.232
+ },
+ "abl:no-gate": {
+  "g_ref": 67.806,
+  "g_max": 45.204
+ },
+ "abl:no-hold": {
+  "g_ref": 56.505,
+  "g_max": 45.204
+ },
+ "abl:no-masks": {
+  "g_ref": 56.298,
+  "g_max": 45.039
+ }
+}
