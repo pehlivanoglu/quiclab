@@ -363,3 +363,50 @@ Spec reports/v4-suite/spec.md; hand-over and every deviation: reports/v4-suite/R
   T-HAYES take the shortest reverse path; H-CONC ~820 s per run and C1 22 runs (the spec's ~600 s and 24
   were wrong; accepted 2026-11-15); M7 / M8
   on T-SPLIT4L at DEF; held-out N5 at DEF on the low set twice.
+
+## 11 Sender policy (2026-11-17, user's K5-sender note, Part 0)
+
+- **System model.** The sender keeps at most send_buffer_ms = 1000 ms of video (qvideo/src/SendQueue.h). When the
+  oldest queued frame is older than that, it drops from that frame to the next keyframe and continues there. There
+  is no bitrate adaptation in the main configuration.
+- **Why.** A live sender does not send stale video; an unbounded queue is not live streaming.
+- **Consequences.**
+  - F3 is measured under this policy.
+  - Under sustained overload, part of the video's rate fall is dropped GOPs, which shortens the router queue's
+    congestion.
+  - Harm shows up as dropped GOPs as well as late frames.
+- **Measured on v3 (2026-11-17; reports/sender-policy-2026-11-17, drop-split-2026-11-17, adapt-whatif-2026-11-17):**
+  - GT-H counts frames the sender drops as deadline misses (scripts/gtq.py frame_table / deadline_misses); a harmful
+    GT-H 600 episode exists in all but 1 of 2 599 windows with a GOP drop (1.2).
+  - Every detector alarms before the first GOP drop, ~2 s at p50 (p10 1.0-1.3 s); v2-owd's alarm is on at 100 % of
+    the drop events (1.4).
+  - The headline detector and grouping results do not depend on the drops: before t_drop v2-owd has GT3 P 1.00,
+    R 0.99, p50 212 / 204 ms; grouping pair P 0.996 / 0.974 before t_drop and 1.000 / 0.987 in windows without a
+    drop (1.5).
+  - CC-driven adaptation (target = x * estimate, open-loop what-if) would cut ~0.25-0.6 s after our alarm and
+    before the first GOP drop in 94-99 % of onsets (1.8).
+  - F3's contribution and "Copa: backlog first" remain untested under this policy (K5-sender answers them).
+- **K5-sender adaptation constants (user decision 2026-11-17, evidence 1.8):** x = 0.85 (P): 92 % of onsets cut,
+  98 % before the first drop, <= 0.65 false cuts per client-minute in calm; floor = 0.3 x nominal (P); no recovery
+  rule (BBR ignores lower app-limited samples, so the estimate does not spiral down).
+- **Main configuration for the paper:** no adaptation, 1 s limit (K1-K3). 3 s and unlimited are sensitivity
+  settings, not low-latency configurations. The adaptation (K5-sender) is "simple CC-driven rate adaptation", not
+  an ABR. Our detector and grouping never feed it.
+- **Copa caveat (R2).** Results are "mvfst Copa, default mode": no competitive mode, no loss reaction except
+  persistent congestion, app-limited unsupported (Copa.cpp:438).
+
+## 12 Deviation: NPR STEP 0b selection condition re-specified (2026-11-17)
+
+A pre-set selection condition was re-specified after the results were seen, because the truth rule it used
+mislabels short congestion. Condition 3 ("false-inclusion error not above E0's") used the strict-hot "off" label;
+reports/npr-step0b-2026-11-17 (0b.4) shows the events that decided it are real short congestion (66 T-BASE events:
+GT-Q episode in 100 %, harmful at 600 ms in 42 %, GT1 episode in 98 %, strict cover p50 0.25 < 0.5). New condition 3:
+a member's inclusion is false if its alarm start is a false positive under the frozen gtq_score rule; the mean
+false-inclusion share of a candidate must not exceed E0's by more than 0.005 in either rep (P). "Truly congested"
+in condition 1 becomes strict-hot OR at least half of the leaf's onsets in the event are gtq_score true positives.
+The old strict-hot number is reported next to it, unchanged.
+Correction (user, 2026-11-17, second look): condition 1's truth was altered by mistake in the re-specification
+("OR at least half of the leaf's onsets are gtq_score true positives": with a single onset it marks a whole leaf
+congested because one member had a private episode) and is restored to its pre-set definition (majority-vote
+error <= 0.02 on leaves that are congested by the strict-hot rule). Condition 3 remains re-specified (gtq_score on
+the member's own onset). No further change to these conditions.
