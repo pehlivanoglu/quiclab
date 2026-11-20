@@ -410,3 +410,94 @@ Correction (user, 2026-11-17, second look): condition 1's truth was altered by m
 congested because one member had a private episode) and is restored to its pre-set definition (majority-vote
 error <= 0.02 on leaves that are congested by the strict-hot rule). Condition 3 remains re-specified (gtq_score on
 the member's own onset). No further change to these conditions.
+
+## 13 NPR event formation: E1-0.5 adopted over the rule's choice E3 (user, 2026-11-18)
+
+The pre-set selection rule ("fewest constants first") chose E3 (join-while-majority-in-alarm). The second candidate,
+E1-0.5 (anchored window of 0.5 s after the first onset), was carried on purpose and is better on every outcome
+measure in NPR steps 1-3 (reports/npr-2026-11-17): E3 mixes leaves (65 % of its events last over 5 s, 30 % of
+those hold onsets of two or more true leaves; C10 hindep pair precision 0.71 against 0.96), and E1-0.5's member set
+is final after 0.5 s against 6-7 s. E1-0.5 is adopted as the primary event formation; its constant W = 0.5 s is to
+be justified from a measured quantity (onset spread within a leaf, item D3).
+
+NPR acceptance test corrected (user, 2026-11-18): the note's test compared likelihoods of different statistics
+(counts k for one leaf, k1, k2 for two leaves). Both models are now likelihoods of the full member vector of the
+event (no binomial coefficients; NA members left out), each hypothesis with its own nuisance parameters (the
+alternative fitted on events before t, the null by an EM maximum-likelihood fit on events up to t). This replaces
+the pooled m, f from the untested candidate tree used in the first run. V-bb dropped.
+
+NPR D1 / D3 (accepted by the user 2026-11-18; reports/npr-2026-11-17 README):
+- D1: the first test's false splits (STEP 2) follow late responders, not chance: the two halves are ordered by the
+  members' access delay in 25 of 34 (E1-0.5) and 15 of 20 (E3) splits against 16 and 11 expected by chance; in
+  E1-0.5 a third of the evidence events had members whose onset fell into the next event (window cut).
+- D3: the event-formation window W is stated as a high quantile of a measured quantity, not a hand-picked value:
+  W = 0.5 s is about the 98th percentile of the within-leaf onset spread (max - min of the members' aligned onsets
+  in one stimulus; single-queue, both reps: p50 58 ms, p95 270-290 ms, p99 680-720 ms; 98.1-98.3 % <= 0.5 s). The
+  spread grows with leaf size, RTT spread and at low intensity, so the same rule gives a larger W there.
+
+NPR corrected test, power diagnosis (2026-11-18; reports/npr-2026-11-17 README "Diagnosis"):
+- The alpha guarantee controls false splits (one leaf reported as two), while the costly error for the application
+  is a false merge (two leaves reported as one group). The corrected test trades the second for the first: false
+  splits 0.007 against 0.06-0.08 for the first test, but pair precision 0.930 / 0.871 against 0.988 / 0.989,
+  because leaves are split late (root split 5 / 26 events after the first separating event, p50 / p90, in 2-leaf
+  groups).
+- The reviewer's hypothesis (a), that the two-leaf alternative fits groups of three or more leaves badly, was tested
+  and rejected: the delay is largest in 2-leaf groups, where the alternative is the correct model, and smaller in
+  groups of 3 or more. The cause is (b), the in-sample null fit (the null refitted on all events up to t, including
+  the scored event): with the null fitted on past events only, the delay falls to 2 / 9.
+
+## 14 Deviation: NPR pair-precision condition lowered from 0.93 to 0.90 (user, 2026-11-18)
+
+The pair-precision condition for an NPR variant is now >= 0.90 in both seeds (was 0.93), with no tolerance band.
+- 0.93 was a judgment value with no derivation, and it is finer than the seed-to-seed spread of the measure itself
+  (0.04-0.06 between r1 and r2 for one method, e.g. corr 0.940 / 0.884).
+- The change was made after the v3 variant table (reports/npr-2026-11-17/tables-v3.md) had been seen. On that table
+  it turns A-m0.20-f0.05 (the pre-declared V-A setting; pair precision 0.958 / 0.919 at alpha 0.05) from fail to
+  pass; the corr rows (r2 0.866-0.884) still fail. tables-v3.md keeps its original column ("meets all three", 0.93)
+  and has one added column "passes at 0.90"; no older table was relabelled.
+- The threshold was set after the v3 table had been seen and before any result on the validation set of the
+  2026-11-18 note A (never-used runs only: K1 A1-A3, A8, A9; K2; K3; reports/npr-2026-11-17/valset.md). K1
+  G1-G3 and A4-A7 (102 of the 263 NPR runs) were development data, so K1 as a whole is not a validation set;
+  an earlier wording here ("K1 has not been looked at") was wrong for NPR and is withdrawn. The held-out set
+  N1-N5 stays closed.
+
+## 15 Frozen grouping candidates (user, 2026-11-18)
+
+Frozen as copied, read-only files in reports/npr-2026-11-17/frozen-2026-11-18/ (FREEZE.md lists every file with
+its sha256; loader candidates.py). Event formation E1-0.5 for all NPR rows; alpha 0.05.
+- NPR-B: past-fitted null. Leading candidate; measured error rate, no guarantee.
+- NPR-A: bounded null m_max 0.20, f_max 0.05 (pre-declared).
+- NPR-A10: bounded null m_max 0.10, f_max 0.05 (post-hoc, labelled; its bound is violated in 17 / 312 leaves).
+- SETS-v1.1: frozen SETS (tag grouping-sets-v1.1) on its own 150 ms events, k = 2 (k = 3 side by side).
+- SETS@E1-0.5: the same SETS rule on E1-0.5 events (separates the gain of event formation from the gain of NPR).
+The frozen copies reproduce the v3 / v2 table rows exactly (pair vectors identical on three runs, all five rows).
+No further variants or test changes on the v3 data.
+
+## 16 Deviation: 8 K3 runs run late under a changed run id (user, 2026-11-19)
+
+The 8 K3 I1 runs of the I/P-ratio 1.2 variant (`v4-I1-{calm,hhier}-ip1.2-pfifo`, `v4-I1-sburst-ip1.2-{pfifo,codel}`,
+r1 / r2) never ran in K3: the cell name `ip{r:g}` gives "ip1.2" and the runtime refuses "." in a run id. They are run
+after K3, on the same binary, in the re-run folder, as `ip1p2`. Nothing else changed: the plans are regenerated by
+the unchanged v4 planner and are identical to K3's (scripts/rerun_v4.py checks this); only the run id and the file
+names differ. The frozen validation list keeps them in their tables under the new names (mapping in
+reports/npr-2026-11-17/a4-rules.md). They ran about a day after the other K3 runs, not interleaved with them.
+
+## 17 NPR diagnosis notes (diag3, accepted 2026-11-19)
+
+- V-B false-split share differs between seeds: 0.134 (r1, 16 / 119 leaves) and 0.034 (r2, 4 / 118). The difference is
+  not explained by late responders (late-responder leaves 24 vs 26), wide-RTT leaves or single runs (at most one false
+  split per run; no cell has one in both seeds). As a single number it is "not reliable"; it is reported as the range
+  0.034-0.134. The split-off part is a single member in 19 of 20 false splits (r1: 15 of 16, one of 3 members; r2: 4 of 4).
+- Wide-RTT: not testable on these runs. No single-queue leaf has a planned access-delay spread above 20 ms (largest
+  15 ms), so the false splits cannot be related to wide RTT spread either way; this is "not tested", not "no effect".
+- Event formation against NPR: frozen SETS on its own events (E0) has leaf F1 0.858 / 0.863 (r1 / r2, k = 2); the same
+  SETS on E1-0.5 events 0.872 / 0.886, about +0.02; NPR-B 0.962 / 0.959. Event formation alone moves leaf F1 by about
+  0.02; the rest of the gain is NPR's.
+
+## 18 K5 build deviation (2026-11-19, user accepted)
+
+The K5 rebuild (qvideo, 2026-11-19 22:11) also recompiled four mvfst client objects and relinked qvideo-client:
+the libc6-dev 2.39-0ubuntu8.12 upgrade (2026-11-13) left newer /usr/include headers. Same mvfst sources and compile
+commands, same runtime libc as K3. K5's client therefore differs from the K1-K3 client (linked 2026-11-10) only by
+the glibc patch-release headers it was compiled against; the old client binary cannot be rebuilt bit-identically.
+Disclose when K5 is compared with K1-K3 reference cells. Details: reports/k5-start/K5-START.md section 8.
