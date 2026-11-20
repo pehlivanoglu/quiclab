@@ -1,0 +1,10 @@
+start 2026-11-19T18:43:37-05:00 free_gb 223
+sim wall_s 1065.375628028 peak_rss_mb 9339
+quicsim done: simulated 335 s, wall 489.924 s, clients 301, late_arrivals 0, files_open_at_exit 0
+health_lite wall_s 21.812914369 peak_rss_mb 307
+score_detector wall_s 189.515691239 peak_rss_mb 1433
+score_gt3_sets wall_s 118.352843271 peak_rss_mb 2604
+score_gt1_gtq wall_s 1399.152023432 peak_rss_mb 11109
+spread wall_s 39.010160907 peak_rss_mb 134
+sets_npr wall_s 198.139035656 peak_rss_mb 2251
+end 2026-11-19T19:34:19-05:00

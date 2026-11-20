@@ -1,0 +1,74 @@
+{
+ "1_completeness": {
+  "ok": true,
+  "done_line": true,
+  "meta": true,
+  "late_arrivals": 0,
+  "files_open_at_exit": 0
+ },
+ "2_accounting": {
+  "ok": null,
+  "why": "plan asks for no totals (run before the totals file / trace 'full')"
+ },
+ "3_service_rate": {
+  "ok": true,
+  "egress": {
+   "router-eth1": {
+    "busy": 0,
+    "ok": null,
+    "why": "not enough busy time"
+   },
+   "router-eth2": {
+    "busy": 4139,
+    "median": 1.0099,
+    "within_tol": 0.9981,
+    "ok": true
+   }
+  }
+ },
+ "4_sender_records": {
+  "ok": true,
+  "client_record_failures": [],
+  "n_client_failures": 0,
+  "video_unacked": 519049,
+  "bg_lost": 1565219,
+  "drops": 2054146,
+  "drops_from": "tracer-counts.csv (validation only: run has no totals file)",
+  "balance": 30122
+ },
+ "5_load_share": {
+  "ok": true,
+  "egress": {
+   "main": {
+    "hop": "router->switch",
+    "load": 0.506,
+    "U": 0.5,
+    "share": 0.308,
+    "s": 0.3,
+    "ok": true
+   }
+  }
+ },
+ "6_events_vs_plan": {
+  "ok": true,
+  "sources": 19,
+  "mismatches": []
+ },
+ "7_drops_elsewhere": {
+  "ok": true,
+  "queues": 610,
+  "drops_outside_bottlenecks": [],
+  "n_bad": 0
+ },
+ "8_stimulus_load": {
+  "ok": true,
+  "windows": 18,
+  "skipped_overlap": 0,
+  "no_metrics_for": [],
+  "ratio_min": 1.0242,
+  "ratio_max": 1.0528,
+  "out_of_tolerance": [],
+  "n_out": 0
+ },
+ "ok": true
+}

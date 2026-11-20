@@ -1,0 +1,196 @@
+{
+ "spread": [
+  {
+   "stimuli": 18,
+   "onsets found": 5389,
+   "missed": 11,
+   "p50": 280,
+   "p90": 558,
+   "p98": 801,
+   "max": 891,
+   "stimuli >0.5 s": 3,
+   "late onsets": 16,
+   "share outside 0.5 s %": 0.3
+  },
+  {
+   "stimuli": 18,
+   "onsets found": 5400,
+   "missed": 0,
+   "p50": 66,
+   "p90": 356,
+   "p98": 647,
+   "max": 726,
+   "stimuli >0.5 s": 1,
+   "late onsets": 1,
+   "share outside 0.5 s %": 0.02
+  }
+ ],
+ "sets": [
+  {
+   "V k2": {
+    "leaf F1 mean": 0.5,
+    "pair P": 1.0,
+    "pair R": 0.996,
+    "first F1>=0.9 (events, s)": [
+     19,
+     139.28
+    ]
+   },
+   "V k3": {
+    "leaf F1 mean": 0.5,
+    "pair P": 1.0,
+    "pair R": 0.9967,
+    "first F1>=0.9 (events, s)": [
+     19,
+     139.28
+    ]
+   }
+  },
+  {
+   "V k2": {
+    "leaf F1 mean": 0.885,
+    "pair P": 1.0,
+    "pair R": 1.0,
+    "first F1>=0.9 (events, s)": [
+     4,
+     61.62
+    ]
+   },
+   "V k3": {
+    "leaf F1 mean": 0.808,
+    "pair P": 1.0,
+    "pair R": 1.0,
+    "first F1>=0.9 (events, s)": [
+     6,
+     74.72
+    ]
+   }
+  }
+ ],
+ "diag": [
+  {
+   "E0 closes": 40,
+   "E0 first group close": 21,
+   "E0 first group t s": 137.963,
+   "E1 events": 22,
+   "SETS@E1-0.5 k=2": {
+    "first exact": {
+     "close": 8,
+     "t0": 89.847,
+     "stim": 4
+    },
+    "mean leaf F1": 0.6818,
+    "pair P/R": [
+     1.0,
+     1.0
+    ],
+    "false-split closes": 0,
+    "cpu s": 0.01
+   },
+   "SETS@E1-0.5 k=3": {
+    "first exact": {
+     "close": 8,
+     "t0": 89.847,
+     "stim": 4
+    },
+    "mean leaf F1": 0.6818,
+    "pair P/R": [
+     1.0,
+     1.0
+    ],
+    "false-split closes": 0,
+    "cpu s": 0.0
+   },
+   "NPR-A": {
+    "first exact": {
+     "close": 2,
+     "t0": 14.998,
+     "stim": 0
+    },
+    "mean leaf F1": 0.9572,
+    "pair P/R": [
+     1.0,
+     1.0
+    ],
+    "false-split closes": 0,
+    "cpu s": 0.02
+   },
+   "NPR-B": {
+    "first exact": {
+     "close": 2,
+     "t0": 14.998,
+     "stim": 0
+    },
+    "mean leaf F1": 0.9572,
+    "pair P/R": [
+     1.0,
+     0.9722
+    ],
+    "false-split closes": 10,
+    "cpu s": 0.16
+   }
+  },
+  {
+   "E0 closes": 26,
+   "E0 first group close": 4,
+   "E0 first group t s": 60.314,
+   "E1 events": 19,
+   "SETS@E1-0.5 k=2": {
+    "first exact": {
+     "close": 2,
+     "t0": 39.524,
+     "stim": 1
+    },
+    "mean leaf F1": 0.9474,
+    "pair P/R": [
+     1.0,
+     0.9941
+    ],
+    "false-split closes": 16,
+    "cpu s": 0.0
+   },
+   "SETS@E1-0.5 k=3": {
+    "first exact": {
+     "close": 3,
+     "t0": 60.307,
+     "stim": 2
+    },
+    "mean leaf F1": 0.8947,
+    "pair P/R": [
+     1.0,
+     0.9937
+    ],
+    "false-split closes": 16,
+    "cpu s": 0.0
+   },
+   "NPR-A": {
+    "first exact": {
+     "close": 1,
+     "t0": 14.998,
+     "stim": 0
+    },
+    "mean leaf F1": 1.0,
+    "pair P/R": [
+     1.0,
+     1.0
+    ],
+    "false-split closes": 0,
+    "cpu s": 0.02
+   },
+   "NPR-B": {
+    "first exact": {
+     "close": 1,
+     "t0": 14.998,
+     "stim": 0
+    },
+    "mean leaf F1": 1.0,
+    "pair P/R": [
+     1.0,
+     1.0
+    ],
+    "false-split closes": 0,
+    "cpu s": 0.86
+   }
+  }
+ ]
+}

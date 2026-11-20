@@ -1,0 +1,8 @@
+start 2026-11-19T11:26:57-05:00 free_gb 231
+plan wall_s .203688933 peak_rss_mb 35
+sim wall_s 1032.945674427 peak_rss_mb 8955
+quicsim done: simulated 335 s, wall 474.667 s, clients 301, late_arrivals 0, files_open_at_exit 0
+score_detector wall_s 184.105948200 peak_rss_mb 1407
+score_sets wall_s 200.304262962 peak_rss_mb 2293
+score_truth wall_s 1528.636377903 peak_rss_mb 11002
+end 2026-11-19T12:16:18-05:00

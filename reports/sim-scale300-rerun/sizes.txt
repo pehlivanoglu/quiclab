@@ -1,0 +1,5 @@
+## sizes 2026-11-19T19:34:08-05:00
+5425147097	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1-fast
+2551660998	reports/sim-cache/scale300
+zstd-3 run 910056907
+free_gb 217

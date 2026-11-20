@@ -1,0 +1,464 @@
+{
+ "testbed|sim-B-A1-calm-base-pfifo-r1": {
+  "calm_min": 6.7017500000000005,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.7905770880740104,
+  "sub_kf_share": 0.9166666666666666,
+  "score_p99": 0.05856447790532
+ },
+ "testbed|sim-B-A1-calm-base-pfifo-r2": {
+  "calm_min": 6.64785,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.3538211602247343,
+  "sub_kf_share": 0.8888888888888888,
+  "score_p99": 0.054450033912713525
+ },
+ "testbed|sim-B-A1-calm-base-codel-r1": {
+  "calm_min": 6.55105,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.3738255699468025,
+  "sub_kf_share": 1.0,
+  "score_p99": 0.05934837757787991
+ },
+ "testbed|sim-B-A1-calm-base-codel-r2": {
+  "calm_min": 6.6533500000000005,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.7515011234941795,
+  "sub_kf_share": 0.8,
+  "score_p99": 0.051106452447189435
+ },
+ "testbed|sim-B-A1-calm-split4l-pfifo-r1": {
+  "calm_min": 13.23025,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.6802592543602729,
+  "sub_kf_share": 0.6666666666666666,
+  "score_p99": 0.0613030573474202
+ },
+ "testbed|sim-B-A1-calm-split4l-pfifo-r2": {
+  "calm_min": 13.275350000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.129913712256174,
+  "sub_kf_share": 0.8,
+  "score_p99": 0.06034140404919932
+ },
+ "testbed|sim-B-A1-calm-split4l-codel-r1": {
+  "calm_min": 13.179100000000002,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.8346548702111676,
+  "sub_kf_share": 0.6363636363636364,
+  "score_p99": 0.05845475934484275
+ },
+ "testbed|sim-B-A1-calm-split4l-codel-r2": {
+  "calm_min": 13.433200000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.5955394098204448,
+  "sub_kf_share": 1.0,
+  "score_p99": 0.058227619962651335
+ },
+ "testbed|sim-B-A2-sburst-def-pfifo-r1": {
+  "calm_min": 10.1552,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 1.0
+ },
+ "testbed|sim-B-A2-sburst-def-pfifo-r2": {
+  "calm_min": 10.66615,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0937545412355911,
+  "sub_kf_share": 1.0,
+  "score_p99": 1.0
+ },
+ "testbed|sim-B-A2-sburst-def-codel-r1": {
+  "calm_min": 10.1849,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.09818456734970396,
+  "sub_kf_share": 1.0,
+  "score_p99": 1.0
+ },
+ "testbed|sim-B-A2-sburst-def-codel-r2": {
+  "calm_min": 10.73105,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 1.0
+ },
+ "testbed|sim-B-A2-sburst-def-pie-r1": {
+  "calm_min": 10.0991,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "testbed|sim-B-A2-sburst-def-pie-r2": {
+  "calm_min": 10.794300000000002,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "testbed|sim-B-A4-hhier-def-pfifo-r1": {
+  "calm_min": 59.5848,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.02018381814754545
+ },
+ "testbed|sim-B-A4-hhier-def-pfifo-r2": {
+  "calm_min": 56.002649999999996,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0714251914864743,
+  "sub_kf_share": 0.25,
+  "score_p99": 0.01902321429309363
+ },
+ "testbed|sim-B-A4-hhier-def-codel-r1": {
+  "calm_min": 59.615050000000004,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.03354857540168128,
+  "sub_kf_share": 0.5,
+  "score_p99": 0.014118555088780623
+ },
+ "testbed|sim-B-A4-hhier-def-codel-r2": {
+  "calm_min": 55.984500000000004,
+  "alarms_per_min": 0.017862086827604068,
+  "sub_per_min": 0.053586260482812204,
+  "sub_kf_share": 0.3333333333333333,
+  "score_p99": 0.015369248308428536
+ },
+ "testbed|sim-B-G1-sburst-n16-pfifo-r1": {
+  "calm_min": 40.492650000000005,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 2.5436715058164876,
+  "sub_kf_share": 0.1262135922330097,
+  "score_p99": 0.0757842418089638
+ },
+ "testbed|sim-B-G1-sburst-n16-pfifo-r2": {
+  "calm_min": 42.68329999999999,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.0308481302992039,
+  "sub_kf_share": 0.09090909090909091,
+  "score_p99": 0.04234111798850167
+ },
+ "testbed|sim-B-G1-sburst-n24-pfifo-r1": {
+  "calm_min": 60.77664999999999,
+  "alarms_per_min": 0.032907374789495646,
+  "sub_per_min": 2.5174141713964167,
+  "sub_kf_share": 0.1111111111111111,
+  "score_p99": 0.07160717462564756
+ },
+ "testbed|sim-B-G1-sburst-n24-pfifo-r2": {
+  "calm_min": 64.10525,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.6239738554954548,
+  "sub_kf_share": 0.025,
+  "score_p99": 0.04335706821596506
+ },
+ "v1 matched|sim-B-A1-calm-base-pfifo-r1": {
+  "calm_min": 7.5229,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A1-calm-base-pfifo-r2": {
+  "calm_min": 7.5306,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A1-calm-base-codel-r1": {
+  "calm_min": 7.5229,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A1-calm-base-codel-r2": {
+  "calm_min": 7.5306,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A1-calm-split4l-pfifo-r1": {
+  "calm_min": 15.10465,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.019194937520768535
+ },
+ "v1 matched|sim-B-A1-calm-split4l-pfifo-r2": {
+  "calm_min": 15.135449999999999,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.02400451228011403
+ },
+ "v1 matched|sim-B-A1-calm-split4l-codel-r1": {
+  "calm_min": 15.10465,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.019194937520768535
+ },
+ "v1 matched|sim-B-A1-calm-split4l-codel-r2": {
+  "calm_min": 15.135449999999999,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.02400451228011403
+ },
+ "v1 matched|sim-B-A2-sburst-def-pfifo-r1": {
+  "calm_min": 10.188750000000002,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A2-sburst-def-pfifo-r2": {
+  "calm_min": 10.75525,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A2-sburst-def-codel-r1": {
+  "calm_min": 10.161800000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A2-sburst-def-codel-r2": {
+  "calm_min": 10.70135,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A2-sburst-def-pie-r1": {
+  "calm_min": 10.0485,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A2-sburst-def-pie-r2": {
+  "calm_min": 10.618850000000002,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A4-hhier-def-pfifo-r1": {
+  "calm_min": 60.08200000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A4-hhier-def-pfifo-r2": {
+  "calm_min": 56.51635,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A4-hhier-def-codel-r1": {
+  "calm_min": 59.82900000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-A4-hhier-def-codel-r2": {
+  "calm_min": 56.33485000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "v1 matched|sim-B-G1-sburst-n16-pfifo-r1": {
+  "calm_min": 41.07345,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.011426269847075187
+ },
+ "v1 matched|sim-B-G1-sburst-n16-pfifo-r2": {
+  "calm_min": 43.57210000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.021991438338481197
+ },
+ "v1 matched|sim-B-G1-sburst-n24-pfifo-r1": {
+  "calm_min": 61.6253,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.010994317177523387
+ },
+ "v1 matched|sim-B-G1-sburst-n24-pfifo-r2": {
+  "calm_min": 65.30149999999999,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.04594075174383438,
+  "sub_kf_share": 1.0,
+  "score_p99": 0.022152517914426652
+ },
+ "B2 matched|sim-B-A1-calm-base-pfifo-r1": {
+  "calm_min": 6.525750000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.4597172738765658,
+  "sub_kf_share": 0.3333333333333333,
+  "score_p99": 0.06388396989404951
+ },
+ "B2 matched|sim-B-A1-calm-base-pfifo-r2": {
+  "calm_min": 7.07245,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.5655748715084589,
+  "sub_kf_share": 0.5,
+  "score_p99": 0.05931224097590603
+ },
+ "B2 matched|sim-B-A1-calm-base-codel-r1": {
+  "calm_min": 6.525750000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.4597172738765658,
+  "sub_kf_share": 0.3333333333333333,
+  "score_p99": 0.06388396989404951
+ },
+ "B2 matched|sim-B-A1-calm-base-codel-r2": {
+  "calm_min": 7.07245,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.5655748715084589,
+  "sub_kf_share": 0.5,
+  "score_p99": 0.05931224097590603
+ },
+ "B2 matched|sim-B-A1-calm-split4l-pfifo-r1": {
+  "calm_min": 14.0899,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.5677825960439747,
+  "sub_kf_share": 0.75,
+  "score_p99": 0.05849602186391166
+ },
+ "B2 matched|sim-B-A1-calm-split4l-pfifo-r2": {
+  "calm_min": 14.03215,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.9264439162922289,
+  "sub_kf_share": 0.7692307692307693,
+  "score_p99": 0.06395647968292086
+ },
+ "B2 matched|sim-B-A1-calm-split4l-codel-r1": {
+  "calm_min": 14.0899,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.5677825960439747,
+  "sub_kf_share": 0.75,
+  "score_p99": 0.05849602186391166
+ },
+ "B2 matched|sim-B-A1-calm-split4l-codel-r2": {
+  "calm_min": 14.03215,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.9264439162922289,
+  "sub_kf_share": 0.7692307692307693,
+  "score_p99": 0.06395647968292086
+ },
+ "B2 matched|sim-B-A2-sburst-def-pfifo-r1": {
+  "calm_min": 10.0749,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "B2 matched|sim-B-A2-sburst-def-pfifo-r2": {
+  "calm_min": 10.6997,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.18692112862977467,
+  "sub_kf_share": 0.5,
+  "score_p99": 0.0
+ },
+ "B2 matched|sim-B-A2-sburst-def-codel-r1": {
+  "calm_min": 10.08755,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.003188999144594935
+ },
+ "B2 matched|sim-B-A2-sburst-def-codel-r2": {
+  "calm_min": 10.681000000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.1872483849826795,
+  "sub_kf_share": 0.5,
+  "score_p99": 0.0
+ },
+ "B2 matched|sim-B-A2-sburst-def-pie-r1": {
+  "calm_min": 10.0012,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.0,
+  "sub_kf_share": NaN,
+  "score_p99": 0.0
+ },
+ "B2 matched|sim-B-A2-sburst-def-pie-r2": {
+  "calm_min": 10.606200000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.18856895023665401,
+  "sub_kf_share": 0.5,
+  "score_p99": 0.0
+ },
+ "B2 matched|sim-B-A4-hhier-def-pfifo-r1": {
+  "calm_min": 59.40825,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.01683267896293865,
+  "sub_kf_share": 1.0,
+  "score_p99": 0.007470464201137244
+ },
+ "B2 matched|sim-B-A4-hhier-def-pfifo-r2": {
+  "calm_min": 56.05655,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.035678257045786796,
+  "sub_kf_share": 1.0,
+  "score_p99": 0.0074503126740179055
+ },
+ "B2 matched|sim-B-A4-hhier-def-codel-r1": {
+  "calm_min": 59.415949999999995,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.016830497534752874,
+  "sub_kf_share": 1.0,
+  "score_p99": 0.010835921544582119
+ },
+ "B2 matched|sim-B-A4-hhier-def-codel-r2": {
+  "calm_min": 55.870099999999994,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.08949330679558477,
+  "sub_kf_share": 0.4,
+  "score_p99": 0.014927898060359112
+ },
+ "B2 matched|sim-B-G1-sburst-n16-pfifo-r1": {
+  "calm_min": 40.251749999999994,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.4906184203171293,
+  "sub_kf_share": 0.1,
+  "score_p99": 0.06023175754849716
+ },
+ "B2 matched|sim-B-G1-sburst-n16-pfifo-r2": {
+  "calm_min": 42.59310000000001,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.8686853034881236,
+  "sub_kf_share": 0.0,
+  "score_p99": 0.035195269332781116
+ },
+ "B2 matched|sim-B-G1-sburst-n24-pfifo-r1": {
+  "calm_min": 60.277249999999995,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 1.5760506658814064,
+  "sub_kf_share": 0.031578947368421054,
+  "score_p99": 0.05861276709753769
+ },
+ "B2 matched|sim-B-G1-sburst-n24-pfifo-r2": {
+  "calm_min": 63.87975,
+  "alarms_per_min": 0.0,
+  "sub_per_min": 0.735757419213444,
+  "sub_kf_share": 0.02127659574468085,
+  "score_p99": 0.03616128513204995
+ }
+}

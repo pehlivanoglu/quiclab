@@ -1,0 +1,69 @@
+per client-s raw/zstd full: ({'router-trace': 28.9134328358209, 'publishers': 19.49054726368159, 'rest': 3.651741293532338, 'tick cache': 12.401990049751245}, {'router-trace': 3.9172781263851775, 'publishers': 4.433830845771144, 'rest': 0.7442786069651741, 'tick cache': 4.04179104477612})
+
+== dur 600 sample True: runs 52, client-s 15.84 M
+ zstd GB {'router-trace': 26.3, 'publishers': 62.2, 'rest': 11.8, 'tick cache': 64.0} sum 164.3
+ raw GB  {'router-trace': 194.4, 'publishers': 282.7, 'rest': 57.8, 'tick cache': 196.4} sum 731.4
+ hours: sim 1 core 20.8 (hi 25.8); heavy scoring serial 43.4; light 16.8
+    100 L10     f 0.30 trace   0.8 GB | mem quicsim 0.4 health   2.4 gtq   2.9 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   2.5 gtq   6.0 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.4 GB raw   2.1
+    100 L50     f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    100 L100    f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    100 uneven  f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    300 L10     f 0.10 trace   1.5 GB | mem quicsim 0.5 health   4.6 gtq   5.6 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health   4.8 gtq  11.5 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.0 GB raw   5.3
+    300 L50     f 0.50 trace   3.1 GB | mem quicsim 0.5 health   9.7 gtq  11.9 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  10.0 gtq  24.2 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.3 GB raw   7.1
+    300 L100    f 1.00 trace   5.2 GB | mem quicsim 0.5 health  16.0 gtq  19.7 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  16.6 gtq  40.1 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.6 GB raw   9.4
+    300 uneven  f 0.50 trace   3.1 GB | mem quicsim 0.5 health   9.7 gtq  11.9 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  10.0 gtq  24.2 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.3 GB raw   7.1
+   1000 L10     f 0.10 trace   5.0 GB | mem quicsim 0.9 health  15.3 gtq  18.8 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  15.9 gtq  38.3 det  18.3 sets  25.3 gt3 14.4 | run zstd   3.4 GB raw  17.6
+   1000 L50     f 0.15 trace   5.7 GB | mem quicsim 0.9 health  17.4 gtq  21.4 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  18.1 gtq  43.6 det  18.3 sets  25.3 gt3 14.4 | run zstd   3.5 GB raw  18.4
+   1000 L100    f 0.30 trace   7.7 GB | mem quicsim 0.9 health  23.8 gtq  29.2 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  24.7 gtq  59.5 det  18.3 sets  25.3 gt3 14.4 | run zstd   3.9 GB raw  20.7
+   1000 uneven  f 0.15 trace   5.7 GB | mem quicsim 0.9 health  17.4 gtq  21.4 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  18.1 gtq  43.6 det  18.3 sets  25.3 gt3 14.4 | run zstd   3.5 GB raw  18.4
+
+== dur 600 sample False: runs 52, client-s 15.84 M
+ zstd GB {'router-trace': 62.0, 'publishers': 70.2, 'rest': 11.8, 'tick cache': 64.0} sum 208.1
+ raw GB  {'router-trace': 458.0, 'publishers': 308.7, 'rest': 57.8, 'tick cache': 196.4} sum 1021.0
+ hours: sim 1 core 20.8 (hi 25.8); heavy scoring serial 91.3; light 16.8
+    100 L10     f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    100 L50     f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    100 L100    f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    100 uneven  f 1.00 trace   1.7 GB | mem quicsim 0.4 health   5.3 gtq   6.6 det  0.8 sets  1.4 GB | min sim   4.7-  3.6 health   5.5 gtq  13.4 det   1.8 sets   1.6 gt3  1.4 | run zstd   0.5 GB raw   3.1
+    300 L10     f 1.00 trace   5.2 GB | mem quicsim 0.5 health  16.0 gtq  19.7 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  16.6 gtq  40.1 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.6 GB raw   9.4
+    300 L50     f 1.00 trace   5.2 GB | mem quicsim 0.5 health  16.0 gtq  19.7 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  16.6 gtq  40.1 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.6 GB raw   9.4
+    300 L100    f 1.00 trace   5.2 GB | mem quicsim 0.5 health  16.0 gtq  19.7 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  16.6 gtq  40.1 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.6 GB raw   9.4
+    300 uneven  f 1.00 trace   5.2 GB | mem quicsim 0.5 health  16.0 gtq  19.7 det  2.5 sets  4.1 GB | min sim  14.2- 14.2 health  16.6 gtq  40.1 det   5.5 sets   6.0 gt3  4.3 | run zstd   1.6 GB raw   9.4
+   1000 L10     f 1.00 trace  17.3 GB | mem quicsim 0.9 health  53.5 gtq  65.7 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  55.4 gtq 133.8 det  18.3 sets  25.3 gt3 14.4 | run zstd   5.5 GB raw  31.2
+   1000 L50     f 1.00 trace  17.3 GB | mem quicsim 0.9 health  53.5 gtq  65.7 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  55.4 gtq 133.8 det  18.3 sets  25.3 gt3 14.4 | run zstd   5.5 GB raw  31.2
+   1000 L100    f 1.00 trace  17.3 GB | mem quicsim 0.9 health  53.5 gtq  65.7 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  55.4 gtq 133.8 det  18.3 sets  25.3 gt3 14.4 | run zstd   5.5 GB raw  31.2
+   1000 uneven  f 1.00 trace  17.3 GB | mem quicsim 0.9 health  53.5 gtq  65.7 det  8.4 sets 13.7 GB | min sim  47.2- 63.1 health  55.4 gtq 133.8 det  18.3 sets  25.3 gt3 14.4 | run zstd   5.5 GB raw  31.2
+
+== dur 900 sample True: runs 52, client-s 23.76 M
+ zstd GB {'router-trace': 39.5, 'publishers': 93.3, 'rest': 17.7, 'tick cache': 96.0} sum 246.5
+ raw GB  {'router-trace': 291.6, 'publishers': 424.1, 'rest': 86.8, 'tick cache': 294.7} sum 1097.1
+ hours: sim 1 core 31.2 (hi 38.6); heavy scoring serial 65.1; light 25.2
+    100 L10     f 0.30 trace   1.2 GB | mem quicsim 0.4 health   3.6 gtq   4.4 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   3.7 gtq   8.9 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.6 GB raw   3.1
+    100 L50     f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    100 L100    f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    100 uneven  f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    300 L10     f 0.10 trace   2.2 GB | mem quicsim 0.5 health   6.9 gtq   8.5 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health   7.1 gtq  17.2 det   8.2 sets   9.0 gt3  6.5 | run zstd   1.5 GB raw   7.9
+    300 L50     f 0.50 trace   4.7 GB | mem quicsim 0.5 health  14.5 gtq  17.8 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  15.0 gtq  36.3 det   8.2 sets   9.0 gt3  6.5 | run zstd   1.9 GB raw  10.7
+    300 L100    f 1.00 trace   7.8 GB | mem quicsim 0.5 health  24.1 gtq  29.6 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  24.9 gtq  60.2 det   8.2 sets   9.0 gt3  6.5 | run zstd   2.5 GB raw  14.1
+    300 uneven  f 0.50 trace   4.7 GB | mem quicsim 0.5 health  14.5 gtq  17.8 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  15.0 gtq  36.3 det   8.2 sets   9.0 gt3  6.5 | run zstd   1.9 GB raw  10.7
+   1000 L10     f 0.10 trace   7.4 GB | mem quicsim 0.9 health  23.0 gtq  28.2 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  23.8 gtq  57.5 det  27.5 sets  38.0 gt3 21.6 | run zstd   5.1 GB raw  26.4
+   1000 L50     f 0.15 trace   8.5 GB | mem quicsim 0.9 health  26.1 gtq  32.1 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  27.1 gtq  65.4 det  27.5 sets  38.0 gt3 21.6 | run zstd   5.3 GB raw  27.6
+   1000 L100    f 0.30 trace  11.6 GB | mem quicsim 0.9 health  35.7 gtq  43.8 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  37.0 gtq  89.3 det  27.5 sets  38.0 gt3 21.6 | run zstd   5.8 GB raw  31.0
+   1000 uneven  f 0.15 trace   8.5 GB | mem quicsim 0.9 health  26.1 gtq  32.1 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  27.1 gtq  65.4 det  27.5 sets  38.0 gt3 21.6 | run zstd   5.3 GB raw  27.6
+
+== dur 900 sample False: runs 52, client-s 23.76 M
+ zstd GB {'router-trace': 93.1, 'publishers': 105.3, 'rest': 17.7, 'tick cache': 96.0} sum 312.1
+ raw GB  {'router-trace': 687.0, 'publishers': 463.1, 'rest': 86.8, 'tick cache': 294.7} sum 1531.5
+ hours: sim 1 core 31.2 (hi 38.6); heavy scoring serial 137.0; light 25.2
+    100 L10     f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    100 L50     f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    100 L100    f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    100 uneven  f 1.00 trace   2.6 GB | mem quicsim 0.4 health   8.0 gtq   9.9 det  1.3 sets  2.1 GB | min sim   7.1-  5.4 health   8.3 gtq  20.1 det   2.7 sets   2.4 gt3  2.2 | run zstd   0.8 GB raw   4.7
+    300 L10     f 1.00 trace   7.8 GB | mem quicsim 0.5 health  24.1 gtq  29.6 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  24.9 gtq  60.2 det   8.2 sets   9.0 gt3  6.5 | run zstd   2.5 GB raw  14.1
+    300 L50     f 1.00 trace   7.8 GB | mem quicsim 0.5 health  24.1 gtq  29.6 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  24.9 gtq  60.2 det   8.2 sets   9.0 gt3  6.5 | run zstd   2.5 GB raw  14.1
+    300 L100    f 1.00 trace   7.8 GB | mem quicsim 0.5 health  24.1 gtq  29.6 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  24.9 gtq  60.2 det   8.2 sets   9.0 gt3  6.5 | run zstd   2.5 GB raw  14.1
+    300 uneven  f 1.00 trace   7.8 GB | mem quicsim 0.5 health  24.1 gtq  29.6 det  3.8 sets  6.2 GB | min sim  21.3- 21.3 health  24.9 gtq  60.2 det   8.2 sets   9.0 gt3  6.5 | run zstd   2.5 GB raw  14.1
+   1000 L10     f 1.00 trace  26.0 GB | mem quicsim 0.9 health  80.2 gtq  98.5 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  83.1 gtq 200.7 det  27.5 sets  38.0 gt3 21.6 | run zstd   8.2 GB raw  46.9
+   1000 L50     f 1.00 trace  26.0 GB | mem quicsim 0.9 health  80.2 gtq  98.5 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  83.1 gtq 200.7 det  27.5 sets  38.0 gt3 21.6 | run zstd   8.2 GB raw  46.9
+   1000 L100    f 1.00 trace  26.0 GB | mem quicsim 0.9 health  80.2 gtq  98.5 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  83.1 gtq 200.7 det  27.5 sets  38.0 gt3 21.6 | run zstd   8.2 GB raw  46.9
+   1000 uneven  f 1.00 trace  26.0 GB | mem quicsim 0.9 health  80.2 gtq  98.5 det 12.6 sets 20.5 GB | min sim  70.9- 94.6 health  83.1 gtq 200.7 det  27.5 sets  38.0 gt3 21.6 | run zstd   8.2 GB raw  46.9

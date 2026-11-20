@@ -1,0 +1,58 @@
+| run | frozen | light | items 1-6 | totals = tracer | busy-rate median / share (frozen interdeq within tol) | balance / drops |
+|---|---|---|---|---|---|---|
+| B2 matched sim-B-A1-calm-base-codel-r1 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 matched sim-B-A1-calm-base-codel-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 matched sim-B-A1-calm-base-pfifo-r1 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 matched sim-B-A1-calm-base-pfifo-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 matched sim-B-A1-calm-split4l-codel-r1 | True | True | o-oooo | - |  | 2 / 0 |
+| B2 matched sim-B-A1-calm-split4l-codel-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 matched sim-B-A1-calm-split4l-pfifo-r1 | True | True | o-oooo | - |  | 2 / 0 |
+| B2 matched sim-B-A1-calm-split4l-pfifo-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 matched sim-B-A2-sburst-def-codel-r1 | True | True | o-oooo | - | router-eth2 1.0097 / 0.9998 (0.97149) | 1192 / 88956 |
+| B2 matched sim-B-A2-sburst-def-codel-r2 | True | True | o-oooo | - | router-eth2 1.01 / 0.9995 (0.97354) | 1363 / 84436 |
+| B2 matched sim-B-A2-sburst-def-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.0095 / 0.9995 (0.9753) | 1167 / 114777 |
+| B2 matched sim-B-A2-sburst-def-pfifo-r2 | True | True | o-oooo | - | router-eth2 1.0095 / 0.9995 (0.97511) | 1092 / 110610 |
+| B2 matched sim-B-A2-sburst-def-pie-r1 | True | True | o-oooo | - | router-eth2 1.0096 / 0.9997 (0.97464) | 714 / 121912 |
+| B2 matched sim-B-A2-sburst-def-pie-r2 | True | True | o-oooo | - | router-eth2 1.0095 / 0.9997 (0.97564) | 630 / 120150 |
+| B2 matched sim-B-A4-hhier-def-codel-r1 | True | True | o-oooo | - | r1-eth2 1.0096 / 0.9986 (0.891); r2-eth2 1.0091 / 0.9995 (0.92349); r2-eth4 1.0094 / 0.9998 (0.91365) | 4002 / 241013 |
+| B2 matched sim-B-A4-hhier-def-codel-r2 | True | True | o-oooo | - | r1-eth2 1.0097 / 0.9989 (0.8956); r2-eth2 1.0093 / 0.9998 (0.92675); r2-eth4 1.0093 / 0.9997 (0.91509) | 4066 / 245837 |
+| B2 matched sim-B-A4-hhier-def-pfifo-r1 | True | True | o-oooo | - | r1-eth2 1.0098 / 0.9991 (0.91569); r2-eth2 1.0099 / 0.9995 (0.92989); r2-eth4 1.0099 / 0.9998 (0.92346) | 3098 / 337711 |
+| B2 matched sim-B-A4-hhier-def-pfifo-r2 | True | True | o-oooo | - | r1-eth2 1.0097 / 0.9994 (0.91764); r2-eth2 1.0096 / 0.9996 (0.93287); r2-eth4 1.0099 / 0.9998 (0.92441) | 3096 / 328856 |
+| B2 matched sim-B-G1-sburst-n16-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.0098 / 0.9996 (0.85977) | 1315 / 81819 |
+| B2 matched sim-B-G1-sburst-n16-pfifo-r2 | True | True | o-oooo | - | router-eth2 1.0098 / 0.9996 (0.86033) | 1361 / 82947 |
+| B2 matched sim-B-G1-sburst-n24-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.01 / 0.998 (0.87112) | 2091 / 123000 |
+| B2 matched sim-B-G1-sburst-n24-pfifo-r2 | True | True | o-oooo | - | router-eth2 1.01 / 0.9989 (0.86923) | 2209 / 125353 |
+| B2 spec sim-B-A1-calm-base-codel-r1 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 spec sim-B-A1-calm-base-codel-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 spec sim-B-A1-calm-base-pfifo-r1 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 spec sim-B-A1-calm-base-pfifo-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 spec sim-B-A1-calm-split4l-codel-r1 | True | True | o-oooo | - |  | 3 / 0 |
+| B2 spec sim-B-A1-calm-split4l-codel-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 spec sim-B-A1-calm-split4l-pfifo-r1 | True | True | o-oooo | - |  | 3 / 0 |
+| B2 spec sim-B-A1-calm-split4l-pfifo-r2 | True | True | o-oooo | - |  | 0 / 0 |
+| B2 spec sim-B-A2-sburst-def-codel-r1 | True | True | o-oooo | - | router-eth2 1.01 / 0.999 (0.9634) | 1496 / 82301 |
+| B2 spec sim-B-A2-sburst-def-codel-r2 | True | True | o-oooo | - | router-eth2 1.0101 / 0.9993 (0.96572) | 1109 / 80680 |
+| B2 spec sim-B-A2-sburst-def-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.0095 / 0.999 (0.9688) | 1106 / 111233 |
+| B2 spec sim-B-A2-sburst-def-pfifo-r2 | True | True | o-oooo | - | router-eth2 1.0095 / 0.9995 (0.96946) | 1118 / 111033 |
+| B2 spec sim-B-A2-sburst-def-pie-r1 | True | True | o-oooo | - | router-eth2 1.0095 / 0.9992 (0.96638) | 750 / 119464 |
+| B2 spec sim-B-A2-sburst-def-pie-r2 | True | True | o-oooo | - | router-eth2 1.0095 / 0.9992 (0.96615) | 658 / 117099 |
+| B2 spec sim-B-A4-hhier-def-codel-r1 | True | True | o-oooo | - | r1-eth2 1.0095 / 0.9972 (0.87917); r2-eth2 1.009 / 0.9996 (0.91822); r2-eth4 1.009 / 0.9995 (0.90923) | 5275 / 228724 |
+| B2 spec sim-B-A4-hhier-def-codel-r2 | True | True | o-oooo | - | r1-eth2 1.0095 / 0.9986 (0.88246); r2-eth2 1.009 / 0.9996 (0.92142); r2-eth4 1.0091 / 0.9998 (0.91211) | 4833 / 220885 |
+| B2 spec sim-B-A4-hhier-def-pfifo-r1 | True | True | o-oooo | - | r1-eth2 1.0096 / 0.9977 (0.90148); r2-eth2 1.0099 / 0.9995 (0.92543); r2-eth4 1.0099 / 0.9997 (0.91618) | 2776 / 321502 |
+| B2 spec sim-B-A4-hhier-def-pfifo-r2 | True | True | o-oooo | - | r1-eth2 1.0097 / 0.9985 (0.90318); r2-eth2 1.0096 / 0.9996 (0.92495); r2-eth4 1.0099 / 0.9998 (0.91781) | 3056 / 317330 |
+| B2 spec sim-B-G1-sburst-n16-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.0098 / 0.9996 (0.8749) | 1373 / 81327 |
+| B2 spec sim-B-G1-sburst-n16-pfifo-r2 | True | True | o-oooo | - | router-eth2 1.0098 / 0.9993 (0.87305) | 1281 / 81744 |
+| B2 spec sim-B-G1-sburst-n24-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.01 / 0.998 (0.8796) | 2237 / 123595 |
+| B2 spec sim-B-G1-sburst-n24-pfifo-r2 | True | True | o-oooo | - | router-eth2 1.01 / 0.9993 (0.88062) | 2043 / 123742 |
+| regress-d1 matched sim-B-A4-hhier-def-pfifo-r1 | True | True | o-oooo | - | r1-eth2 1.0098 / 0.9991 (0.91569); r2-eth2 1.0099 / 0.9995 (0.92989); r2-eth4 1.0099 / 0.9998 (0.92346) | 3098 / 337711 |
+| regress-d1 matched sim-B-G1-sburst-n24-pfifo-r1 | True | True | o-oooo | - | router-eth2 1.01 / 0.998 (0.87112) | 2091 / 123000 |
+| regress-d1 sample sim-B-A4-hhier-def-pfifo-r1 | True | True | oooooo | True | r1-eth2 1.0098 / 0.9991 (0.91569); r2-eth2 1.0099 / 0.9995 (0.92989); r2-eth4 1.0099 / 0.9998 (0.92346) | 3098 / 337711 |
+| regress-d1 none sim-B-A4-hhier-def-pfifo-r1 | None | True | oooooo | - | r1-eth2 1.0098 / 0.9991 (None); r2-eth2 1.0099 / 0.9995 (None); r2-eth4 1.0099 / 0.9998 (None) | 3098 / 337711 |
+
+negative: {'test': 'truncated sender file', 'file': 'a1-sent.csv', 'caught': True, 'overall': False}
+
+negative: {'test': 'missing counter row', 'file': 'r1-eth1-totals.csv', 'caught': True, 'overall': False}
+
+negative: {'test': 'wrong capacity (x1.25)', 'egress': 'a r2->switch-a', 'links_edited': 1, 'caught': True, 'overall': False}
+
+ACCEPT: 0 problem(s)

@@ -1,0 +1,23 @@
+sim-B-A1-calm-base-pfifo-r1: done
+sim-B-A1-calm-base-pfifo-r2: done
+sim-B-A1-calm-base-codel-r1: done
+sim-B-A1-calm-base-codel-r2: done
+sim-B-A1-calm-split4l-pfifo-r1: done
+sim-B-A1-calm-split4l-pfifo-r2: done
+sim-B-A1-calm-split4l-codel-r1: done
+sim-B-A1-calm-split4l-codel-r2: done
+sim-B-A2-sburst-def-pfifo-r1: done
+sim-B-A2-sburst-def-pfifo-r2: done
+sim-B-A2-sburst-def-codel-r1: done
+sim-B-A2-sburst-def-codel-r2: done
+sim-B-A2-sburst-def-pie-r1: done
+sim-B-A2-sburst-def-pie-r2: done
+sim-B-A4-hhier-def-pfifo-r1: done
+sim-B-A4-hhier-def-pfifo-r2: done
+sim-B-A4-hhier-def-codel-r1: done
+sim-B-A4-hhier-def-codel-r2: done
+sim-B-G1-sburst-n16-pfifo-r1: done
+sim-B-G1-sburst-n16-pfifo-r2: done
+sim-B-G1-sburst-n24-pfifo-r1: done
+sim-B-G1-sburst-n24-pfifo-r2: done
+22 pairs -> /home/ubuntu/Research/Repos/multirelay/quiclab/reports/sim-stageB2-applimited

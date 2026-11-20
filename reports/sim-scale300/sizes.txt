@@ -1,0 +1,21 @@
+## sizes 2026-11-19T12:16:03-05:00
+5231652683	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1
+1246404581	reports/sim-cache/scale300
+98	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/logs
+2837	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/events.csv
+15464	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/v3-plan.json
+20482	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/gtq-health.csv
+29186	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/topology.yaml
+62103	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/qdiscs.txt
+71976	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/scenario.yaml
+78392	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/grouping
+315228	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/sim
+4408940	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/traffic
+5977583	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/router-metrics
+123850212	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/truth
+232172078	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/clients
+1958795497	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/publishers
+2905852607	simulation/runs/scale300/sim-Cs-G1-sburst-n300-pfifo-r1/router-trace
+zstd-3 run 916129013
+zstd-3 cache 406225949
+free_gb 225
