@@ -7,6 +7,7 @@
 // "encoded", so a congested path builds sender-side backlog like a live encoder.
 
 #include "Common.h"
+#include "Adapt.h"
 #include "SendQueue.h"
 
 #include <folly/Synchronized.h>
@@ -51,6 +52,10 @@ DEFINE_bool(owd, true, "write exact one-way delay per 5 ms (<client>-owd.csv) fr
 DEFINE_string(pause, "",
               "client@start_s+duration_s,...: no frame due in the window is produced for that client; "
               "production resumes at the first keyframe due at or after the end (suite v4 pause)");
+DEFINE_double(adapt_x, 0.0,
+              "K5-sender CC-driven rate adaptation: video rate = min(nominal, x * CC estimate) from the next "
+              "frame (BBR: bandwidth estimate; Copa: cwnd / srtt); 0 = off (default)");
+DEFINE_double(adapt_floor, 0.3, "adaptation floor as a fraction of the nominal rate (only with --adapt_x > 0)");
 DEFINE_bool(pkt_log, false,
             "GT-Q t_obs log: every sent packet (<client>-pkts.csv) and every ACK's newly acked "
             "packet numbers (<client>-pktacks.csv); recording only");
@@ -509,6 +514,11 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
     dropsCsv_.open(base + "-drops.csv");
     dropsCsv_ << "t_us,index,gop,keyframe,size,age_us\n";
     queue_.emplace(uint64_t(FLAGS_send_buffer_ms) * 1000);
+    adapter_.emplace(FLAGS_adapt_x, FLAGS_adapt_floor, double(params_.rateKbps) * 1000.0);
+    if (adapter_->enabled()) {
+      adaptCsv_.open(base + "-adapt.csv");
+      adaptCsv_ << "t_us,estimate_bps,target_bps,scale\n";
+    }
     if (FLAGS_record_acks) {
       // Sender-side backlog not yet on the wire: frame queue + QUIC unsent.
       acks_ = std::make_shared<AckRecorder>(base, FLAGS_owd ? request_->recvBasisUs : 0, [this] {
@@ -598,7 +608,8 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
         continue;
       }
       queue_->push({k, k / params_.gopFrames, k % params_.gopFrames == 0,
-                    qvideo::frameSize(params_, k), qvideo::nowUs()}, dropped);
+                    adapter_->apply(qvideo::frameSize(params_, k), uint32_t(sizeof(qvideo::FrameHeader))),
+                    qvideo::nowUs()}, dropped);
     }
     logDrops(dropped);
     pump();
@@ -703,6 +714,14 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
         << queue_->bytes() + unsent << ',' << droppedFrames_ << '\n';
     statsCsv_ << row.str();
     statsCsv_.flush();
+    if (adapter_->enabled()) {
+      const bool copa = info.congestionControlType == quic::CongestionControlType::Copa;
+      const double est = qvideo::ccEstimateBps(copa, bwBps, info.congestionWindow, uint64_t(info.srtt.count()));
+      adapter_->update(est);
+      adaptCsv_ << t << ',' << uint64_t(est) << ',' << uint64_t(adapter_->target()) << ',' << adapter_->scale()
+                << '\n';
+      adaptCsv_.flush();
+    }
     framesCsv_.flush();
     dropsCsv_.flush();
     if (acks_) {
@@ -766,6 +785,8 @@ class Session : public quic::QuicSocket::ConnectionSetupCallback,
   std::unique_ptr<folly::AsyncTimeout> statsTimer_;
   std::unique_ptr<folly::AsyncTimeout> pumpTimer_;
   std::optional<qvideo::SendQueue> queue_;
+  std::optional<qvideo::RateAdapter> adapter_;
+  std::ofstream adaptCsv_;
   uint64_t droppedFrames_{0};
   uint64_t droppedSinceWrite_{0};
   std::ofstream dropsCsv_;

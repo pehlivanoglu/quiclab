@@ -1,4 +1,5 @@
 // Assert-based checks of the frame model, request parsing and playback model.
+#include "Adapt.h"
 #include "Common.h"
 #include "Playback.h"
 #include "Ppbp.h"
@@ -108,5 +109,21 @@ int main() {
     assert(reorder.skipped() == 0 && reorder.stalls() == 0);
   }
   std::puts("qvideo selftest ok");
+  // K5-sender rate adaptation: off by default, x * estimate capped at nominal, floored, no change without estimate.
+  {
+    qvideo::RateAdapter off(0.0, 0.3, 2.5e6);
+    assert(!off.enabled() && off.apply(1000, 40) == 1000 && off.update(1e6) == 1.0);
+    qvideo::RateAdapter a(0.85, 0.3, 2.5e6);
+    assert(a.enabled() && a.scale() == 1.0);
+    assert(a.update(10e6) == 1.0);                                   // 0.85 * 10 Mb/s > nominal: no cut
+    assert(std::abs(a.update(2e6) - 0.68) < 1e-12);                  // 0.85 * 2 / 2.5
+    assert(a.apply(1000, 40) == 680);
+    assert(a.update(0.5e6) == 0.3);                                  // floor
+    assert(a.apply(100, 40) == 40);                                  // never below the frame header
+    assert(a.update(0.0) == 0.3);                                    // no estimate: unchanged
+    assert(qvideo::ccEstimateBps(false, 3000000, 0, 0) == 3e6);      // BBR: its bandwidth estimate
+    assert(qvideo::ccEstimateBps(true, 3000000, 12500, 50000) == 2e6);  // Copa: cwnd * 8 / srtt
+    assert(qvideo::ccEstimateBps(false, 0, 0, 0) == 0.0);
+  }
   return 0;
 }

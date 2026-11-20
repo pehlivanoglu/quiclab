@@ -555,6 +555,8 @@ def _launch_publishers(net, topology: TopologyConfig, record: RunRecord, start_u
             f"--workers={workers}",
             f"--start_unix_us={start_unix_us}",
             f"--send_buffer_ms={publisher.send_buffer_ms}",
+            *([f"--adapt_x={publisher.adapt_x}", f"--adapt_floor={publisher.adapt_floor}"]
+              if publisher.adapt_x > 0 else []),
             f"--out_dir={out_dir}",
             *(["--pkt_log=true"] if pkt_log else []),
             *pause_argv(topology, scenario, pid),
