@@ -177,5 +177,71 @@ def report(path: Path) -> None:
     split_by(R, lambda r: r["aqm"], "AQM", meths)
     split_by(R, lambda r: max(r["leaf_sizes"]) if r["leaf_sizes"] else 0, "largest leaf size", meths)
     long_events(R)
+    late_table(R)
     calibration(R)
     read_time(R)
+    em_table(R)
+    old_vs_new(path)
+
+
+def late_table(R):
+    print("## Late joiner (single-queue; leaves with >= 3 members; the largest client id hidden until the rest is "
+          "grouped)\n")
+    print("| rep | method | cases | released | joined / released | events p50 / p90 | seconds p50 / p90 |")
+    print("|---|---|---|---|---|---|---|")
+    for rep in (1, 2):
+        L = [x for r in R if r["aqm"] not in FQ and r["rep"] == rep for x in r.get("late", [])]
+        for m in dict.fromkeys(x["method"] for x in L):
+            xs = [x for x in L if x["method"] == m]
+            rel = [x for x in xs if x["released"]]
+            j = [x for x in rel if x["joined"]]
+            ev = [x["events"] for x in j]
+            sec = [x["seconds"] for x in j]
+            q = lambda a, p: f"{np.percentile(a, p):.0f}" if a else "-"   # noqa: E731
+            print(f"| r{rep} | {m} | {len(xs)} | {len(rel)} | {len(j)} / {len(rel)} | {q(ev, 50)} / {q(ev, 90)} | "
+                  f"{q(sec, 50)} / {q(sec, 90)} |")
+    print()
+
+
+def old_vs_new(path_new: Path):
+    old = path_new.with_name(path_new.name.replace("rows-v2-", "rows-"))
+    if not old.exists():
+        return
+    Ro = [json.loads(x) for x in old.read_text().splitlines() if x.strip()]
+    Rn = [json.loads(x) for x in path_new.read_text().splitlines() if x.strip()]
+    Ro, Rn = [r for r in Ro if "error" not in r], [r for r in Rn if "error" not in r]
+    sq = lambda r: r["aqm"] not in FQ and r.get("methods")   # noqa: E731
+    print("## First run (pooled m, f) next to the corrected test (single-queue, r1 / r2)\n")
+    print("| method | test | leaf F1 | pair P | pair R | first correct group: events p50 / p90, s p50 / p90 | "
+          "STEP 2 split at alpha, single-leaf runs / every leaf alone |")
+    print("|---|---|---|---|---|---|---|")
+    for m in ("NPR-bin a0.05", "NPR-bin a0.01", "NPR-bin a0.1", "NPR-na0 a0.05"):
+        a = m.split(" a")[1]
+        for label, R in (("first", Ro), ("corrected", Rn)):
+            v = [pooled([r for r in R if sq(r) and r["rep"] == rep], m) for rep in (1, 2)]
+            if not any(v):
+                continue
+            t = [times([r for r in R if sq(r) and r["rep"] == rep], m) for rep in (1, 2)]
+            c = lambda k: " / ".join(f_(x[k]) if x else "-" for x in v)   # noqa: E731
+            tt = " ; ".join(f"{f_(x['ev50'], 0)} / {f_(x['ev90'], 0)}, {f_(x['s50'], 0)} / {f_(x['s90'], 0)}" for x in t)
+            cal = []
+            if m.startswith("NPR-bin"):
+                for sel in (lambda c_, r: c_["whole_run"] and r["aqm"] not in FQ, lambda c_, r: r["aqm"] not in FQ):
+                    o = [c_[f"split_{a}"] for r in R for c_ in r.get("calibration", []) if c_["perm"] == 0 and sel(c_, r)]
+                    cal.append(f"{np.mean(o):.3f}" if o else "-")
+            print(f"| {m} | {label} | {c('F')} | {c('pP')} | {c('pR')} | {tt} | {' / '.join(cal) or '-'} |")
+    print()
+
+
+def em_table(R):
+    tot = None
+    for r in R:
+        for v, x in (r.get("em_starts") or {}).items():
+            if x and v == "bin":
+                tot = x if tot is None else [a + b for a, b in zip(tot, x)]
+    if tot:
+        import npr
+        print("## Null fit: winning EM start (V-bin, all null fits of all runs)\n")
+        print("| start (pi, m0, f0) | " + " | ".join(str(s) for s in npr.EM_STARTS) + " |")
+        print("|---|" + "---|" * len(tot))
+        print("| fits won | " + " | ".join(str(x) for x in tot) + " |\n")

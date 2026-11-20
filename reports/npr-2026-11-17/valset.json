@@ -1,0 +1,6557 @@
+[
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-access-codel-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-access-codel-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-access-codel-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-access-pfifo-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-access-pfifo-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-access-pfifo-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-base-codel-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-base-codel-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-base-codel-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-base-pfifo-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-base-pfifo-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-base-pfifo-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-par4-codel-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "par4",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-par4-codel-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "par4",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-par4-codel-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "par4",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-par4-pfifo-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "par4",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-par4-pfifo-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "par4",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-par4-pfifo-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "par4",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-split4l-codel-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-split4l-codel-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-split4l-codel-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-split4l-pfifo-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-split4l-pfifo-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-split4l-pfifo-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-unevenl-codel-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "unevenl",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "unevenl",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-unevenl-codel-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "unevenl",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "unevenl",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-unevenl-codel-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "unevenl",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "unevenl",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-unevenl-pfifo-r1",
+  "block": "A1",
+  "type": "calm",
+  "variant": "unevenl",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "unevenl",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-unevenl-pfifo-r2",
+  "block": "A1",
+  "type": "calm",
+  "variant": "unevenl",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "unevenl",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A1-calm-unevenl-pfifo-r3",
+  "block": "A1",
+  "type": "calm",
+  "variant": "unevenl",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "unevenl",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-cake-r1",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "cake",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (cake, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-cake-r2",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "cake",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (cake, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-cake-r3",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "cake",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (cake, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-cake-r4",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "cake",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (cake, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-cake-r5",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "cake",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (cake, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-codel-r1",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-codel-r2",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-codel-r3",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-codel-r4",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-codel-r5",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-fq_codel-r1",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "fq_codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-fq_codel-r2",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "fq_codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-fq_codel-r3",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "fq_codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-fq_codel-r4",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "fq_codel",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-fq_codel-r5",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "fq_codel",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pfifo-r1",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pfifo-r2",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pfifo-r3",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pfifo-r4",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pfifo-r5",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pie-r1",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pie-r2",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pie-r3",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pie-r4",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-pie-r5",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-red-r1",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "red",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-red-r2",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "red",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-red-r3",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "red",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-red-r4",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "red",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A2-sburst-def-red-r5",
+  "block": "A2",
+  "type": "sburst",
+  "variant": "def",
+  "aqm": "red",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sjoin-def-codel-r1",
+  "block": "A3",
+  "type": "sjoin",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sjoin-def-codel-r2",
+  "block": "A3",
+  "type": "sjoin",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sjoin-def-codel-r3",
+  "block": "A3",
+  "type": "sjoin",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sjoin-def-pfifo-r1",
+  "block": "A3",
+  "type": "sjoin",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sjoin-def-pfifo-r2",
+  "block": "A3",
+  "type": "sjoin",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sjoin-def-pfifo-r3",
+  "block": "A3",
+  "type": "sjoin",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sramp-def-codel-r1",
+  "block": "A3",
+  "type": "sramp",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sramp-def-codel-r2",
+  "block": "A3",
+  "type": "sramp",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sramp-def-codel-r3",
+  "block": "A3",
+  "type": "sramp",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sramp-def-pfifo-r1",
+  "block": "A3",
+  "type": "sramp",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sramp-def-pfifo-r2",
+  "block": "A3",
+  "type": "sramp",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-sramp-def-pfifo-r3",
+  "block": "A3",
+  "type": "sramp",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-stcp-def-codel-r1",
+  "block": "A3",
+  "type": "stcp",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-stcp-def-codel-r2",
+  "block": "A3",
+  "type": "stcp",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-stcp-def-codel-r3",
+  "block": "A3",
+  "type": "stcp",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-stcp-def-pfifo-r1",
+  "block": "A3",
+  "type": "stcp",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-stcp-def-pfifo-r2",
+  "block": "A3",
+  "type": "stcp",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A3-stcp-def-pfifo-r3",
+  "block": "A3",
+  "type": "stcp",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-codel-r1",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-codel-r2",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-codel-r3",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-codel-r4",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-codel-r5",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-pfifo-r1",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-pfifo-r2",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-pfifo-r3",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-pfifo-r4",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A8-llong2-def-pfifo-r5",
+  "block": "A8",
+  "type": "llong2",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A9-nloss-def-pfifo-r1",
+  "block": "A9",
+  "type": "nloss",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (nloss)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A9-nloss-def-pfifo-r2",
+  "block": "A9",
+  "type": "nloss",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (nloss)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A9-nloss-def-pfifo-r3",
+  "block": "A9",
+  "type": "nloss",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (nloss)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A9-rrev-def-pfifo-r1",
+  "block": "A9",
+  "type": "rrev",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "rev",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (rrev)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A9-rrev-def-pfifo-r2",
+  "block": "A9",
+  "type": "rrev",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "rev",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (rrev)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K1",
+  "run": "v4-A9-rrev-def-pfifo-r3",
+  "block": "A9",
+  "type": "rrev",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "rev",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (rrev)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-access-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-base-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-par-k2-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-par-k4-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k4",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-rev-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "rev",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "rev",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-split4-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "split4",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-split4l-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-tree16-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "tree16",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "tree16",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-calm-uneven-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "uneven",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "uneven",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-GATE-g-persist-base-pfifo-r1",
+  "block": "GATE",
+  "type": "g-persist",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-def-codel-r1",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-def-codel-r2",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-def-codel-r3",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-def-pfifo-r1",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-def-pfifo-r2",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-def-pfifo-r3",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-sustained-pfifo-r1",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "sustained",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N1-hshift-sustained-pfifo-r2",
+  "block": "N1",
+  "type": "hshift",
+  "variant": "sustained",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "shifting bottleneck"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N2-spersist-def-codel-r1",
+  "block": "N2",
+  "type": "spersist",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N2-spersist-def-codel-r2",
+  "block": "N2",
+  "type": "spersist",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N2-spersist-def-pfifo-r1",
+  "block": "N2",
+  "type": "spersist",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N2-spersist-def-pfifo-r2",
+  "block": "N2",
+  "type": "spersist",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N3-hchurn-def-codel-r1",
+  "block": "N3",
+  "type": "hchurn",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "churn"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N3-hchurn-def-codel-r2",
+  "block": "N3",
+  "type": "hchurn",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "churn"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N3-hchurn-def-codel-r3",
+  "block": "N3",
+  "type": "hchurn",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "churn"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N3-hchurn-def-pfifo-r1",
+  "block": "N3",
+  "type": "hchurn",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "churn"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N3-hchurn-def-pfifo-r2",
+  "block": "N3",
+  "type": "hchurn",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "churn"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N3-hchurn-def-pfifo-r3",
+  "block": "N3",
+  "type": "hchurn",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "churn"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f000-pfifo-r1",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f000",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f000-pfifo-r2",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f000",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f000-pfifo-r3",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f000",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f025-pfifo-r1",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f025",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f025-pfifo-r2",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f025",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f025-pfifo-r3",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f025",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f050-pfifo-r1",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f050",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f050-pfifo-r2",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f050",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f050-pfifo-r3",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f050",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f100-pfifo-r1",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f100",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f100-pfifo-r2",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f100",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N4-hconc-f100-pfifo-r3",
+  "block": "N4",
+  "type": "hconc",
+  "variant": "f100",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N5-hsparse-def-codel-r1",
+  "block": "N5",
+  "type": "hsparse",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N5-hsparse-def-codel-r2",
+  "block": "N5",
+  "type": "hsparse",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N5-hsparse-def-codel-r3",
+  "block": "N5",
+  "type": "hsparse",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N5-hsparse-def-pfifo-r1",
+  "block": "N5",
+  "type": "hsparse",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N5-hsparse-def-pfifo-r2",
+  "block": "N5",
+  "type": "hsparse",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N5-hsparse-def-pfifo-r3",
+  "block": "N5",
+  "type": "hsparse",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N6-hhier-bgbursty-pfifo-r1",
+  "block": "N6",
+  "type": "hhier",
+  "variant": "bgbursty",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N6-hhier-bgbursty-pfifo-r2",
+  "block": "N6",
+  "type": "hhier",
+  "variant": "bgbursty",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N6-hhier-bgmix-pfifo-r1",
+  "block": "N6",
+  "type": "hhier",
+  "variant": "bgmix",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N6-hhier-bgmix-pfifo-r2",
+  "block": "N6",
+  "type": "hhier",
+  "variant": "bgmix",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N7-hjoin-def-codel-r1",
+  "block": "N7",
+  "type": "hjoin",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N7-hjoin-def-codel-r2",
+  "block": "N7",
+  "type": "hjoin",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N7-hjoin-def-pfifo-r1",
+  "block": "N7",
+  "type": "hjoin",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N7-hjoin-def-pfifo-r2",
+  "block": "N7",
+  "type": "hjoin",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "join"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-par4-codel-r1",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "par4",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-par4-codel-r2",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "par4",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-par4-pfifo-r1",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "par4",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-par4-pfifo-r2",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "par4",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-split4l-codel-r1",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "split4l",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-split4l-codel-r2",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "split4l",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-split4l-pfifo-r1",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negcalm-split4l-pfifo-r2",
+  "block": "N8",
+  "type": "negcalm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negcalm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-neglossh-def-pfifo-r1",
+  "block": "N8",
+  "type": "neglossh",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (neglossh)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-neglossh-def-pfifo-r2",
+  "block": "N8",
+  "type": "neglossh",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (neglossh)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negpriv-def-codel-r1",
+  "block": "N8",
+  "type": "negpriv",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negpriv)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negpriv-def-codel-r2",
+  "block": "N8",
+  "type": "negpriv",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negpriv)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negpriv-def-pfifo-r1",
+  "block": "N8",
+  "type": "negpriv",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negpriv)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-N8-negpriv-def-pfifo-r2",
+  "block": "N8",
+  "type": "negpriv",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (negpriv)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T1-dclean-def-pfifo-r1",
+  "block": "T1",
+  "type": "dclean",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (dclean)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T1-dclean-def-pfifo-r2",
+  "block": "T1",
+  "type": "dclean",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (dclean)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T1-dclean-ext-pfifo-r1",
+  "block": "T1",
+  "type": "dclean",
+  "variant": "ext",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (dclean)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T1-dclean-ext-pfifo-r2",
+  "block": "T1",
+  "type": "dclean",
+  "variant": "ext",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (dclean)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T1-dclean-hs50-pfifo-r1",
+  "block": "T1",
+  "type": "dclean",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (dclean)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T1-dclean-hs50-pfifo-r2",
+  "block": "T1",
+  "type": "dclean",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (dclean)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit10-codel-r1",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit10",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit10-codel-r2",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit10",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit10-pfifo-r1",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit10",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit10-pfifo-r2",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit10",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit2-codel-r1",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit2",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit2-codel-r2",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit2",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit2-pfifo-r1",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit2-pfifo-r2",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit2",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit5-codel-r1",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit5",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit5-codel-r2",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit5",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit5-pfifo-r1",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit5",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T2-sburst-jit5-pfifo-r2",
+  "block": "T2",
+  "type": "sburst",
+  "variant": "jit5",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "not reliable (re-run list)",
+   "was robustness"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-rrevasym-def-pfifo-r1",
+  "block": "T3",
+  "type": "rrevasym",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "rev",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (rrevasym)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-rrevasym-def-pfifo-r2",
+  "block": "T3",
+  "type": "rrevasym",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "rev",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (rrevasym)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-sdense-def-pfifo-r1",
+  "block": "T3",
+  "type": "sdense",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-sdense-def-pfifo-r2",
+  "block": "T3",
+  "type": "sdense",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u105-codel-r1",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u105",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u105-codel-r2",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u105",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u105-pfifo-r1",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u105",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u105-pfifo-r2",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u105",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u110-codel-r1",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u110",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u110-codel-r2",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u110",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u110-pfifo-r1",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u110",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u110-pfifo-r2",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u110",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u115-codel-r1",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u115",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u115-codel-r2",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u115",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u115-pfifo-r1",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u115",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-T3-smild-u115-pfifo-r2",
+  "block": "T3",
+  "type": "smild",
+  "variant": "u115",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-codel-r3",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-codel-r4",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-codel-r5",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-pfifo-r3",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-pfifo-r4",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-pfifo-r5",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-pie-r3",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "pie",
+  "rep": 3,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-pie-r4",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "pie",
+  "rep": 4,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X1-hhier-s030-pie-r5",
+  "block": "X1",
+  "type": "hhier",
+  "variant": "s030",
+  "aqm": "pie",
+  "rep": 5,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-amixed-access-codel-r3",
+  "block": "X2",
+  "type": "amixed",
+  "variant": "access",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-amixed-access-codel-r4",
+  "block": "X2",
+  "type": "amixed",
+  "variant": "access",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-amixed-access-codel-r5",
+  "block": "X2",
+  "type": "amixed",
+  "variant": "access",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-amixed-access-pfifo-r3",
+  "block": "X2",
+  "type": "amixed",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-amixed-access-pfifo-r4",
+  "block": "X2",
+  "type": "amixed",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-amixed-access-pfifo-r5",
+  "block": "X2",
+  "type": "amixed",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-hindep-s030-codel-r3",
+  "block": "X2",
+  "type": "hindep",
+  "variant": "s030",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-hindep-s030-codel-r4",
+  "block": "X2",
+  "type": "hindep",
+  "variant": "s030",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-hindep-s030-codel-r5",
+  "block": "X2",
+  "type": "hindep",
+  "variant": "s030",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-hindep-s030-pfifo-r3",
+  "block": "X2",
+  "type": "hindep",
+  "variant": "s030",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-hindep-s030-pfifo-r4",
+  "block": "X2",
+  "type": "hindep",
+  "variant": "s030",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-hindep-s030-pfifo-r5",
+  "block": "X2",
+  "type": "hindep",
+  "variant": "s030",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "split4",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-huneven-uneven-codel-r3",
+  "block": "X2",
+  "type": "huneven",
+  "variant": "uneven",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "uneven",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-huneven-uneven-codel-r4",
+  "block": "X2",
+  "type": "huneven",
+  "variant": "uneven",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "uneven",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-huneven-uneven-codel-r5",
+  "block": "X2",
+  "type": "huneven",
+  "variant": "uneven",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "uneven",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-huneven-uneven-pfifo-r3",
+  "block": "X2",
+  "type": "huneven",
+  "variant": "uneven",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "uneven",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-huneven-uneven-pfifo-r4",
+  "block": "X2",
+  "type": "huneven",
+  "variant": "uneven",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "uneven",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X2-huneven-uneven-pfifo-r5",
+  "block": "X2",
+  "type": "huneven",
+  "variant": "uneven",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "uneven",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X3-hdepth-tree16-pfifo-r3",
+  "block": "X3",
+  "type": "hdepth",
+  "variant": "tree16",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "tree16",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X3-hdepth-tree16-pfifo-r4",
+  "block": "X3",
+  "type": "hdepth",
+  "variant": "tree16",
+  "aqm": "pfifo",
+  "rep": 4,
+  "topology": "tree16",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X3-hdepth-tree16-pfifo-r5",
+  "block": "X3",
+  "type": "hdepth",
+  "variant": "tree16",
+  "aqm": "pfifo",
+  "rep": 5,
+  "topology": "tree16",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X3-sburst-s030u070-pie-r3",
+  "block": "X3",
+  "type": "sburst",
+  "variant": "s030u070",
+  "aqm": "pie",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X3-sburst-s030u070-pie-r4",
+  "block": "X3",
+  "type": "sburst",
+  "variant": "s030u070",
+  "aqm": "pie",
+  "rep": 4,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X3-sburst-s030u070-pie-r5",
+  "block": "X3",
+  "type": "sburst",
+  "variant": "s030u070",
+  "aqm": "pie",
+  "rep": 5,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X4-hhier-ext-pfifo-r1",
+  "block": "X4",
+  "type": "hhier",
+  "variant": "ext",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X4-hhier-ext-pfifo-r2",
+  "block": "X4",
+  "type": "hhier",
+  "variant": "ext",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs50-codel-r1",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs50",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs50-codel-r2",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs50",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs50-codel-r3",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs50",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs50-pfifo-r1",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs50-pfifo-r2",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs50-pfifo-r3",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs70-codel-r1",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs70",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs70-codel-r2",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs70",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs70-codel-r3",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs70",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs70-pfifo-r1",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs70",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs70-pfifo-r2",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs70",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X5-sburst-hs70-pfifo-r3",
+  "block": "X5",
+  "type": "sburst",
+  "variant": "hs70",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X6-hhier-hs50-codel-r1",
+  "block": "X6",
+  "type": "hhier",
+  "variant": "hs50",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X6-hhier-hs50-codel-r2",
+  "block": "X6",
+  "type": "hhier",
+  "variant": "hs50",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X6-hhier-hs50-codel-r3",
+  "block": "X6",
+  "type": "hhier",
+  "variant": "hs50",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X6-hhier-hs50-pfifo-r1",
+  "block": "X6",
+  "type": "hhier",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X6-hhier-hs50-pfifo-r2",
+  "block": "X6",
+  "type": "hhier",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K2",
+  "run": "v4-X6-hhier-hs50-pfifo-r3",
+  "block": "X6",
+  "type": "hhier",
+  "variant": "hs50",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-amixed-copa-pfifo-r1",
+  "block": "C1",
+  "type": "amixed",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-amixed-copa-pfifo-r2",
+  "block": "C1",
+  "type": "amixed",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "access",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-calm-copa-def-pfifo-r1",
+  "block": "C1",
+  "type": "calm",
+  "variant": "copa-def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-calm-copa-def-pfifo-r2",
+  "block": "C1",
+  "type": "calm",
+  "variant": "copa-def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-calm-copa-ext-pfifo-r1",
+  "block": "C1",
+  "type": "calm",
+  "variant": "copa-ext",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-calm-copa-ext-pfifo-r2",
+  "block": "C1",
+  "type": "calm",
+  "variant": "copa-ext",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-hhier-copa-codel-r1",
+  "block": "C1",
+  "type": "hhier",
+  "variant": "copa",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-hhier-copa-codel-r2",
+  "block": "C1",
+  "type": "hhier",
+  "variant": "copa",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-hhier-copa-pfifo-r1",
+  "block": "C1",
+  "type": "hhier",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-hhier-copa-pfifo-r2",
+  "block": "C1",
+  "type": "hhier",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-hindep-copa-pfifo-r1",
+  "block": "C1",
+  "type": "hindep",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-hindep-copa-pfifo-r2",
+  "block": "C1",
+  "type": "hindep",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "robustness",
+  "why": [
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sburst-copa-codel-r1",
+  "block": "C1",
+  "type": "sburst",
+  "variant": "copa",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sburst-copa-codel-r2",
+  "block": "C1",
+  "type": "sburst",
+  "variant": "copa",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sburst-copa-fq_codel-r1",
+  "block": "C1",
+  "type": "sburst",
+  "variant": "copa",
+  "aqm": "fq_codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sburst-copa-fq_codel-r2",
+  "block": "C1",
+  "type": "sburst",
+  "variant": "copa",
+  "aqm": "fq_codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "per-flow queue (fq_codel, same-link reading)",
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sburst-copa-pfifo-r1",
+  "block": "C1",
+  "type": "sburst",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sburst-copa-pfifo-r2",
+  "block": "C1",
+  "type": "sburst",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sjoin-copa-pfifo-r1",
+  "block": "C1",
+  "type": "sjoin",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-sjoin-copa-pfifo-r2",
+  "block": "C1",
+  "type": "sjoin",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "join",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-stcp-copa-pfifo-r1",
+  "block": "C1",
+  "type": "stcp",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-C1-stcp-copa-pfifo-r2",
+  "block": "C1",
+  "type": "stcp",
+  "variant": "copa",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "Copa"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-access-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "access",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "access",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-base-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-base-sb-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "base-sb",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-par-k2-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-par-k4-lag-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k4-lag",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-par-k4-per8-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k4-per8",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-par-k4-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k4",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-par-k6-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "par-k6",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-split4l-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "split4l",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-teacup-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "teacup",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "teacup",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-calm-teacup-rev-pfifo-r1",
+  "block": "GATE",
+  "type": "calm",
+  "variant": "teacup-rev",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "teacup",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-fbcold-gate-pfifo-r1",
+  "block": "GATE",
+  "type": "fbcold",
+  "variant": "gate",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-g-calm-onoff-pfifo-r1",
+  "block": "GATE",
+  "type": "g-calm",
+  "variant": "onoff",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-g-pause-base-pfifo-r1",
+  "block": "GATE",
+  "type": "g-pause",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-g-persist-base-pfifo-r1",
+  "block": "GATE",
+  "type": "g-persist",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-GATE-g-shorttcp-base-pfifo-r1",
+  "block": "GATE",
+  "type": "g-shorttcp",
+  "variant": "base",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "gate run (campaign acceptance, 90 s; not a campaign cell)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-calm-ip1.2-pfifo-r1",
+  "block": "I1",
+  "type": "calm",
+  "variant": "ip1.2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-calm-ip1.2-pfifo-r2",
+  "block": "I1",
+  "type": "calm",
+  "variant": "ip1.2",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-calm-ip6-pfifo-r1",
+  "block": "I1",
+  "type": "calm",
+  "variant": "ip6",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-calm-ip6-pfifo-r2",
+  "block": "I1",
+  "type": "calm",
+  "variant": "ip6",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-hhier-ip1.2-pfifo-r1",
+  "block": "I1",
+  "type": "hhier",
+  "variant": "ip1.2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-hhier-ip1.2-pfifo-r2",
+  "block": "I1",
+  "type": "hhier",
+  "variant": "ip1.2",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-hhier-ip6-pfifo-r1",
+  "block": "I1",
+  "type": "hhier",
+  "variant": "ip6",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-hhier-ip6-pfifo-r2",
+  "block": "I1",
+  "type": "hhier",
+  "variant": "ip6",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip1.2-codel-r1",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip1.2",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip1.2-codel-r2",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip1.2",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip1.2-pfifo-r1",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip1.2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip1.2-pfifo-r2",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip1.2",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip6-codel-r1",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip6",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip6-codel-r2",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip6",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip6-pfifo-r1",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip6",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-I1-sburst-ip6-pfifo-r2",
+  "block": "I1",
+  "type": "sburst",
+  "variant": "ip6",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L1-fbload-def-codel-r1",
+  "block": "L1",
+  "type": "fbload",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L1-fbload-def-codel-r2",
+  "block": "L1",
+  "type": "fbload",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L1-fbload-def-pfifo-r1",
+  "block": "L1",
+  "type": "fbload",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L1-fbload-def-pfifo-r2",
+  "block": "L1",
+  "type": "fbload",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L1-fbload-def-pie-r1",
+  "block": "L1",
+  "type": "fbload",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L1-fbload-def-pie-r2",
+  "block": "L1",
+  "type": "fbload",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L10-hhier-bgonoff-pfifo-r1",
+  "block": "L10",
+  "type": "hhier",
+  "variant": "bgonoff",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L10-hhier-bgonoff-pfifo-r2",
+  "block": "L10",
+  "type": "hhier",
+  "variant": "bgonoff",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-spause-def-pfifo-r1",
+  "block": "L11",
+  "type": "spause",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-spause-def-pfifo-r2",
+  "block": "L11",
+  "type": "spause",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "not reliable (re-run list)",
+   "was robustness"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshort-def-codel-r1",
+  "block": "L11",
+  "type": "sshort",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshort-def-codel-r2",
+  "block": "L11",
+  "type": "sshort",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshort-def-pfifo-r1",
+  "block": "L11",
+  "type": "sshort",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshort-def-pfifo-r2",
+  "block": "L11",
+  "type": "sshort",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshortrfc-def-codel-r1",
+  "block": "L11",
+  "type": "sshortrfc",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (sshortrfc)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshortrfc-def-codel-r2",
+  "block": "L11",
+  "type": "sshortrfc",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (sshortrfc)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshortrfc-def-pfifo-r1",
+  "block": "L11",
+  "type": "sshortrfc",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (sshortrfc)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L11-sshortrfc-def-pfifo-r2",
+  "block": "L11",
+  "type": "sshortrfc",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (sshortrfc)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x20-codel-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x20",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x20-codel-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x20",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x20-pie-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x20",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x20-pie-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x20",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x40-codel-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x40",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x40-codel-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x40",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x40-pie-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x40",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x40-pie-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x40",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x60-codel-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x60",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x60-codel-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x60",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x60-pie-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x60",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x60-pie-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x60",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x80-codel-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x80",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x80-codel-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x80",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "excluded",
+  "why": [
+   "not reliable (re-run list)",
+   "was main"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x80-pie-r1",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x80",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L2-fbcross-x80-pie-r2",
+  "block": "L2",
+  "type": "fbcross",
+  "variant": "x80",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L3-fblag-def-codel-r1",
+  "block": "L3",
+  "type": "fblag",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L3-fblag-def-codel-r2",
+  "block": "L3",
+  "type": "fblag",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L3-fblag-def-pie-r1",
+  "block": "L3",
+  "type": "fblag",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L3-fblag-def-pie-r2",
+  "block": "L3",
+  "type": "fblag",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L4-fbscale-par2-pie-r1",
+  "block": "L4",
+  "type": "fbscale",
+  "variant": "par2",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L4-fbscale-par2-pie-r2",
+  "block": "L4",
+  "type": "fbscale",
+  "variant": "par2",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L4-fbscale-par4x8-pie-r1",
+  "block": "L4",
+  "type": "fbscale",
+  "variant": "par4x8",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L4-fbscale-par4x8-pie-r2",
+  "block": "L4",
+  "type": "fbscale",
+  "variant": "par4x8",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L4-fbscale-par6-pie-r1",
+  "block": "L4",
+  "type": "fbscale",
+  "variant": "par6",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L4-fbscale-par6-pie-r2",
+  "block": "L4",
+  "type": "fbscale",
+  "variant": "par6",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r1",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r10",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 10,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r2",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r3",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r4",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 4,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r5",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 5,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r6",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 6,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r7",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 7,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r8",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 8,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-codel-r9",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 9,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r1",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r10",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 10,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r2",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r3",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 3,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r4",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 4,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r5",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 5,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r6",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 6,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r7",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 7,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r8",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 8,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L5-fbcold-def-pie-r9",
+  "block": "L5",
+  "type": "fbcold",
+  "variant": "def",
+  "aqm": "pie",
+  "rep": 9,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L6-ppar-def-codel-r1",
+  "block": "L6",
+  "type": "ppar",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L6-ppar-def-codel-r2",
+  "block": "L6",
+  "type": "ppar",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L6-ppar-def-codel-r3",
+  "block": "L6",
+  "type": "ppar",
+  "variant": "def",
+  "aqm": "codel",
+  "rep": 3,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L6-ppar-def-pfifo-r1",
+  "block": "L6",
+  "type": "ppar",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L6-ppar-def-pfifo-r2",
+  "block": "L6",
+  "type": "ppar",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L6-ppar-def-pfifo-r3",
+  "block": "L6",
+  "type": "ppar",
+  "variant": "def",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L7-hycombo-cap-pfifo-r1",
+  "block": "L7",
+  "type": "hycombo",
+  "variant": "cap",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "hayes",
+  "table": "excluded",
+  "why": [
+   "health_unverified",
+   "was main"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L7-hycombo-cap-pfifo-r2",
+  "block": "L7",
+  "type": "hycombo",
+  "variant": "cap",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "hayes",
+  "table": "excluded",
+  "why": [
+   "health_unverified",
+   "was main"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L7-hycombo-cap-pfifo-r3",
+  "block": "L7",
+  "type": "hycombo",
+  "variant": "cap",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "hayes",
+  "table": "excluded",
+  "why": [
+   "health_unverified",
+   "was main"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L7-hycombo-surge-pfifo-r1",
+  "block": "L7",
+  "type": "hycombo",
+  "variant": "surge",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "hayes",
+  "table": "excluded",
+  "why": [
+   "health_unverified",
+   "was main"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L7-hycombo-surge-pfifo-r2",
+  "block": "L7",
+  "type": "hycombo",
+  "variant": "surge",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "hayes",
+  "table": "excluded",
+  "why": [
+   "health_unverified",
+   "was main"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L7-hycombo-surge-pfifo-r3",
+  "block": "L7",
+  "type": "hycombo",
+  "variant": "surge",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "hayes",
+  "table": "excluded",
+  "why": [
+   "health_unverified",
+   "was main"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-bdp05-pfifo-r1",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "bdp05",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-bdp05-pfifo-r2",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "bdp05",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-bdp1-pfifo-r1",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "bdp1",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-bdp1-pfifo-r2",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "bdp1",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-bdp2-pfifo-r1",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "bdp2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-bdp2-pfifo-r2",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "bdp2",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-rev-pfifo-r1",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "rev",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L8-hytb-rev-pfifo-r2",
+  "block": "L8",
+  "type": "hytb",
+  "variant": "rev",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "teacup",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L9-sbnsb-nsb-pfifo-r1",
+  "block": "L9",
+  "type": "sbnsb",
+  "variant": "nsb",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events (NSB: both leaves at once)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L9-sbnsb-nsb-pfifo-r2",
+  "block": "L9",
+  "type": "sbnsb",
+  "variant": "nsb",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events (NSB: both leaves at once)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L9-sbnsb-nsb-pfifo-r3",
+  "block": "L9",
+  "type": "sbnsb",
+  "variant": "nsb",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "par",
+  "table": "robustness",
+  "why": [
+   "concurrent events (NSB: both leaves at once)"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L9-sbnsb-sb-pfifo-r1",
+  "block": "L9",
+  "type": "sbnsb",
+  "variant": "sb",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "concurrent events (NSB: both leaves at once)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L9-sbnsb-sb-pfifo-r2",
+  "block": "L9",
+  "type": "sbnsb",
+  "variant": "sb",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "concurrent events (NSB: both leaves at once)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-L9-sbnsb-sb-pfifo-r3",
+  "block": "L9",
+  "type": "sbnsb",
+  "variant": "sb",
+  "aqm": "pfifo",
+  "rep": 3,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf",
+   "concurrent events (NSB: both leaves at once)"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-calm-m6-stag-pfifo-r1",
+  "block": "M",
+  "type": "calm",
+  "variant": "m6-stag",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-calm-m6-stag-pfifo-r2",
+  "block": "M",
+  "type": "calm",
+  "variant": "m6-stag",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "excluded",
+  "why": [
+   "no grouping truth (calm)"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-hhier-m7-noroot-pfifo-r1",
+  "block": "M",
+  "type": "hhier",
+  "variant": "m7-noroot",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-hhier-m7-noroot-pfifo-r2",
+  "block": "M",
+  "type": "hhier",
+  "variant": "m7-noroot",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-hhier-m8-mixab-mixab-r1",
+  "block": "M",
+  "type": "hhier",
+  "variant": "m8-mixab",
+  "aqm": "mixab",
+  "rep": 1,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-hhier-m8-mixab-mixab-r2",
+  "block": "M",
+  "type": "hhier",
+  "variant": "m8-mixab",
+  "aqm": "mixab",
+  "rep": 2,
+  "topology": "split4l",
+  "table": "main",
+  "why": [],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m1-q100-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m1-q100",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m1-q100-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m1-q100",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m1-q300-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m1-q300",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m1-q300-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m1-q300",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m10-ip2-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m10-ip2",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m10-ip2-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m10-ip2",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m10-ip8-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m10-ip8",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m10-ip8-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m10-ip8",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m11-bw4x1-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m11-bw4x1",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m11-bw4x1-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m11-bw4x1",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m11-bw4x12-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m11-bw4x12",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m11-bw4x12-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m11-bw4x12",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m11-bw4x8-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m11-bw4x8",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m11-bw4x8-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m11-bw4x8",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m12-jitfwd-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m12-jitfwd",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m12-jitfwd-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m12-jitfwd",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m12-jitrev-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m12-jitrev",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m12-jitrev-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m12-jitrev",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m2-capdrop-codel-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m2-capdrop",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m2-capdrop-codel-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m2-capdrop",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m2-capdrop-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m2-capdrop",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m2-capdrop-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m2-capdrop",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgbursty-codel-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgbursty",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgbursty-codel-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgbursty",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgbursty-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgbursty",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgbursty-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgbursty",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgmix-codel-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgmix",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgmix-codel-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgmix",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgmix-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgmix",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m3-bgmix-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m3-bgmix",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m4-rttwide-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m4-rttwide",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m4-rttwide-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m4-rttwide",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m4-rttx05-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m4-rttx05",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m4-rttx05-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m4-rttx05",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m4-rttx4-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m4-rttx4",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m4-rttx4-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m4-rttx4",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps15-codel-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps15",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps15-codel-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps15",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps15-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps15",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps15-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps15",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps60-codel-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps60",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps60-codel-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps60",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps60-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps60",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m5-fps60-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m5-fps60",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m6-stag-pfifo-r1",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m6-stag",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sburst-m6-stag-pfifo-r2",
+  "block": "M",
+  "type": "sburst",
+  "variant": "m6-stag",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-ssparse-m14-s030u070-pfifo-r1",
+  "block": "M",
+  "type": "ssparse",
+  "variant": "m14-s030u070",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-ssparse-m14-s030u070-pfifo-r2",
+  "block": "M",
+  "type": "ssparse",
+  "variant": "m14-s030u070",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sstress-m9-s030u070-codel-r1",
+  "block": "M",
+  "type": "sstress",
+  "variant": "m9-s030u070",
+  "aqm": "codel",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sstress-m9-s030u070-codel-r2",
+  "block": "M",
+  "type": "sstress",
+  "variant": "m9-s030u070",
+  "aqm": "codel",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sstress-m9-s030u070-pfifo-r1",
+  "block": "M",
+  "type": "sstress",
+  "variant": "m9-s030u070",
+  "aqm": "pfifo",
+  "rep": 1,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": true
+ },
+ {
+  "campaign": "K3",
+  "run": "v4-M-sstress-m9-s030u070-pfifo-r2",
+  "block": "M",
+  "type": "sstress",
+  "variant": "m9-s030u070",
+  "aqm": "pfifo",
+  "rep": 2,
+  "topology": "base",
+  "table": "robustness",
+  "why": [
+   "1 leaf"
+  ],
+  "finished": false
+ }
+]

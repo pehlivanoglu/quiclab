@@ -41,7 +41,7 @@ LAYOUTS = {                     # (P) clients -> leaf sizes, 10 to 500
 }
 SEEDS = (1, 2)
 ALPHAS = (0.05, 0.01, 0.1)
-ROWS = HERE / "step3-rows.jsonl"
+ROWS = HERE / "step3-rows-v2.jsonl"   # corrected test (2026-11-18); first run: step3-rows-v1.jsonl
 
 
 def synth(n_clients, sizes, m, f, rho, na, seed):
@@ -113,8 +113,8 @@ def _worker(n, sizes, m, f, rho, na, seed):
     for k in (1, 2, 3):
         res[f"SETS k{k}"] = sc[k].summary()
     rt["SETS"] = t_s
-    for v in ("bin", "bb"):
-        rd = npr.Reader(clients, variant=v, rho=rho if v == "bb" else 0.0)
+    for v in ("bin",):                      # V-bb dropped (user, 2026-11-18)
+        rd = npr.Reader(clients, variant=v)
         scs = {a: gs.Score(ts, clients) for a in ALPHAS}
         tt = []
         for i, e in enumerate(events):

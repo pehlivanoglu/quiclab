@@ -34,7 +34,7 @@ sys.path.insert(0, str(HERE))
 
 SRC = ROOT / "reports" / "npr-step0b-2026-11-17" / "rows.jsonl"
 ALPHAS = (0.05, 0.01, 0.1)       # (P) main first
-VARIANTS = ("bin", "bb", "na0")
+VARIANTS = ("bin", "na0")      # V-bb dropped (user, 2026-11-18)
 PERMS = 20                       # (P) the note's
 LONG_S = 5.0                     # (P) the note's "events longer than 5 s"
 
@@ -44,9 +44,9 @@ def matrix_col(e, clients):
     return np.array([1.0 if c in ones else (np.nan if c in na else 0.0) for c in clients])
 
 
-def run_npr(events, clients, variant, rho, alphas=ALPHAS):
+def run_npr(events, clients, variant, rho=None, alphas=ALPHAS):
     import npr
-    rd = npr.Reader(clients, variant=variant, rho=rho if variant == "bb" else 0.0)
+    rd = npr.Reader(clients, variant=variant)
     reads = []
     for e in events:
         rd.add(matrix_col(e, clients))
@@ -54,6 +54,8 @@ def run_npr(events, clients, variant, rho, alphas=ALPHAS):
         r = rd.read(alphas)
         r["read_s"] = time.perf_counter() - t
         reads.append(r)
+    if reads:   # winning EM start per null fit (index into npr.EM_STARTS), reported
+        reads[-1]["em_starts"] = [int((np.array(rd.em_starts) == i).sum()) for i in range(len(npr.EM_STARTS))]
     return reads
 
 
@@ -125,6 +127,7 @@ def _worker(row, cand, rho):
                                                      lambda i, a=a: [frozenset(g) for g in reads[i]["groups"][a]])
     out["methods"] = res
     out["read_s"] = {v: [r["read_s"] for r in reads_main[v]] for v in VARIANTS}
+    out["em_starts"] = {v: reads_main[v][-1].get("em_starts") if reads_main[v] else None for v in VARIANTS}
     out["final"] = {v: {str(a): [sorted(g) for g in reads_main[v][-1]["groups"][a]] for a in ALPHAS}
                     for v in VARIANTS if reads_main[v]}
     # long events: duration > LONG_S and the true leaves each contains (a leaf counts when a member is in the event)
@@ -132,6 +135,7 @@ def _worker(row, cand, rho):
     out["durations"] = [e["close"] - e["t0"] for e in ev]
     out["long_leaves"] = [sum(bool(set(e["ones"]) & L) for L in leaf_sets) for e in ev if e["close"] - e["t0"] > LONG_S]
     out["n_events"] = len(ev)
+    out["late"] = [] if calm else late_joiner(ts, clients, ev, e0)
     out["n_events_e0"] = len(e0)
     # STEP 2: calibration on single-leaf groups
     cal = []
@@ -158,7 +162,58 @@ def _worker(row, cand, rho):
 
 
 def rows_path(cand: str) -> Path:
-    return HERE / f"rows-{cand}.jsonl"
+    return HERE / f"rows-v2-{cand}.jsonl"     # corrected test (2026-11-18); the first run is rows-<cand>.jsonl
+
+
+def late_joiner(ts, clients, ev, e0):
+    """grouping_score's late-joiner test (as R1): per true leaf with >= 3 members, its largest client id is hidden
+    (no onset: NA for NPR, absent for SETS) until a group with F1 >= F1_OK on the rest exists; then released.
+    Joined = a group containing it with F1 >= F1_OK on the whole leaf; events and seconds from the release."""
+    from collections import Counter
+
+    import grouping_score as gs
+    import npr
+    from grouping import sets as S
+    from grouping.sets import SetsConfig
+    scfg = SetsConfig()
+    out = []
+    for n, info in ts.items():
+        if info["level"] != "leaf" or len(info["members"]) < 3:
+            continue
+        L = frozenset(info["members"])
+        hid = max(info["members"])
+        rest = L - {hid}
+        for meth, events in (("NPR-bin a0.05", ev), ("SETS k2", ev), ("SETS@E0 k2", e0)):
+            st = {"rel": None, "join": None}
+            rd = npr.Reader(clients) if meth.startswith("NPR") else None
+            table = Counter()
+            for i, e in enumerate(events):
+                hide = st["rel"] is None
+                ones = [c for c in e["ones"] if not (hide and c == hid)]
+                if rd is not None:
+                    col = step_col(ones, e["na"], clients, hid if hide else None)
+                    rd.add(col)
+                    groups = [frozenset(g) for g in rd.read((0.05,))["groups"][0.05]]
+                else:
+                    if len(ones) >= scfg.min_set:
+                        table[frozenset(ones)] += 1
+                    groups = [frozenset(g.members) for g in S.groups(table, 2, scfg)] if table else []
+                if st["rel"] is None:
+                    if any(gs._f1(g, rest)[2] >= gs.F1_OK for g in groups):
+                        st["rel"] = (i, e["close"])
+                elif st["join"] is None and any(hid in g and gs._f1(g, L)[2] >= gs.F1_OK for g in groups):
+                    st["join"] = (i, e["close"])
+                    break
+            rec = {"leaf": n, "method": meth, "released": st["rel"] is not None, "joined": st["join"] is not None}
+            if st["rel"] and st["join"]:
+                rec.update(events=st["join"][0] - st["rel"][0], seconds=st["join"][1] - st["rel"][1])
+            out.append(rec)
+    return out
+
+
+def step_col(ones, na, clients, hidden):
+    s = set(ones)
+    return np.array([np.nan if c == hidden else 1.0 if c in s else (np.nan if c in na else 0.0) for c in clients])
 
 
 def cmd_rows(cand: str, jobs: int, only: str | None, rho: float) -> None:
