@@ -1,0 +1,63 @@
+--- a/src/internet/model/tcp-socket-base.cc	2026-11-18 23:20:05.199181215 -0500
++++ b/src/internet/model/tcp-socket-base.cc	2026-11-18 23:20:05.200320363 -0500
+@@ -37,8 +37,10 @@
+ #include "tcp-tx-buffer.h"
+ 
+ #include "ns3/abort.h"
++#include "ns3/boolean.h"
+ #include "ns3/data-rate.h"
+ #include "ns3/double.h"
++#include "ns3/global-value.h"
+ #include "ns3/inet-socket-address.h"
+ #include "ns3/inet6-socket-address.h"
+ #include "ns3/log.h"
+@@ -90,6 +92,30 @@
+ 
+ NS_OBJECT_ENSURE_REGISTERED(TcpSocketBase);
+ 
++// quiclab simulation patch 2 (mvfst-style application-limited mark), off by default.
++// mvfst 4b691f3 marks the connection application-limited at the end of every write round
++// that leaves less than one packet unsent, with no loss pending, while the window still
++// allows more (QuicTransportBaseLite.cpp:1899-1919 -> Bbr.cpp:648-656 setAppLimited ->
++// BbrBandwidthSampler.cpp:188-191). With this value true, the same check runs at the end
++// of SendPendingData, in addition to the Linux-style check in Send() (patch 1).
++// Set with NS_GLOBAL_VALUE="QuiclabAppLimitedAtDrain=1".
++static GlobalValue g_quiclabAppLimitedAtDrain("QuiclabAppLimitedAtDrain",
++                                              "quiclab: also mark app-limited when a write round "
++                                              "leaves less than one segment unsent (mvfst)",
++                                              BooleanValue(false),
++                                              MakeBooleanChecker());
++
++static bool
++QuiclabAppLimitedAtDrain()
++{
++    static const bool on = [] {
++        BooleanValue v;
++        g_quiclabAppLimitedAtDrain.GetValue(v);
++        return v.Get();
++    }();
++    return on;
++}
++
+ TypeId
+ TcpSocketBase::GetTypeId()
+ {
+@@ -3601,6 +3627,18 @@
+         }
+ 
+         NS_LOG_DEBUG("SendPendingData sent " << nPacketsSent << " segments");
++        if (QuiclabAppLimitedAtDrain())
++        {
++            // quiclab patch 2: end of a write round; marks only if less than one segment is
++            // left unsent, the window is not full and no loss is pending (the mvfst conditions)
++            m_rateOps->CalculateAppLimited(m_tcb->m_cWnd,
++                                           m_tcb->m_bytesInFlight,
++                                           m_tcb->m_segmentSize,
++                                           m_txBuffer->TailSequence(),
++                                           m_tcb->m_nextTxSequence,
++                                           m_txBuffer->GetLost(),
++                                           m_txBuffer->GetRetransmitsCount());
++        }
+     }
+     else
+     {

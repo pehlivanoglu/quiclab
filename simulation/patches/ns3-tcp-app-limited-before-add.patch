@@ -1,0 +1,36 @@
+--- a/src/internet/model/tcp-socket-base.cc	2026-11-18 21:12:10.068739381 -0500
++++ b/src/internet/model/tcp-socket-base.cc	2026-11-18 21:12:10.076731297 -0500
+@@ -916,6 +916,18 @@
+     NS_ABORT_MSG_IF(flags, "use of flags is not supported in TcpSocketBase::Send()");
+     if (m_state == ESTABLISHED || m_state == SYN_SENT || m_state == CLOSE_WAIT)
+     {
++        // quiclab simulation patch: check application-limited BEFORE the new data is added, as
++        // Linux tcp_sendmsg_locked() does (net/ipv4/tcp.c v7.0:1204, tcp_rate_check_app_limited
++        // :1113-1127). After the Add, a write of at least one segment always counts as "data
++        // left to send", so an application that writes in chunks is never marked.
++        m_rateOps->CalculateAppLimited(m_tcb->m_cWnd,
++                                       m_tcb->m_bytesInFlight,
++                                       m_tcb->m_segmentSize,
++                                       m_txBuffer->TailSequence(),
++                                       m_tcb->m_nextTxSequence,
++                                       m_txBuffer->GetLost(),
++                                       m_txBuffer->GetRetransmitsCount());
++
+         // Store the packet into Tx buffer
+         if (!m_txBuffer->Add(p))
+         { // TxBuffer overflow, send failed
+@@ -928,14 +940,6 @@
+             return -1;
+         }
+ 
+-        m_rateOps->CalculateAppLimited(m_tcb->m_cWnd,
+-                                       m_tcb->m_bytesInFlight,
+-                                       m_tcb->m_segmentSize,
+-                                       m_txBuffer->TailSequence(),
+-                                       m_tcb->m_nextTxSequence,
+-                                       m_txBuffer->GetLost(),
+-                                       m_txBuffer->GetRetransmitsCount());
+-
+         // Submit the data to lower layers
+         NS_LOG_LOGIC("txBufSize=" << m_txBuffer->Size() << " state " << TcpStateName[m_state]);
+         if ((m_state == ESTABLISHED || m_state == CLOSE_WAIT) && AvailableWindow() > 0)
